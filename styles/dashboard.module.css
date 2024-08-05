@@ -1,0 +1,191 @@
+.flexContainer {
+    display: flex;
+}
+
+.expenseCardWrapper {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.inflowWrapper {
+    flex: 6;
+}
+
+
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    min-height: 100px;
+}
+
+.leftSection {
+    font-family: "regular";
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 36px;
+}
+
+.rightSection {
+    display: flex;
+    align-items: center;
+}
+
+.rightItem {
+    width: Hug (62px)px;
+    height: Hug (32px)px;
+    padding: 6px 5px 6px 5px;
+    gap: 7px;
+    border-radius: 8px;
+    border: 1px;
+    margin-left: 20px;
+    font-family: "regular";
+    font-size: 16px;
+    border: 1px solid #E3E3E3;
+    padding: 10px;
+    font-family: "regular";
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 14.06px;
+    text-align: left;
+    color: #9A9A9A
+}
+
+.rightItemExp {
+    width: Hug (62px)px;
+    height: Hug (32px)px;
+    padding: 6px 5px 6px 5px;
+    gap: 7px;
+    border-radius: 8px;
+    border: 1px;
+    margin-left: 20px;
+    font-family: "regular";
+    font-size: 16px;
+    border: 1px solid #E3E3E3;
+    padding: 10px;
+    font-family: "regular";
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 14.06px;
+    text-align: left;
+    color: white;
+    background: #316AFF;
+}
+
+.tableSection {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #FFFFFF;
+    border-radius: 30px 30px;
+    padding: 20px;
+}
+
+.tableHeader,
+.tableRow {
+    display: grid;
+    grid-template-columns: 0.5fr 1fr 1fr 2fr 1fr;
+    align-items: center;
+}
+
+.tableRowData {
+    display: grid;
+    grid-template-columns: 0.5fr 1fr 1fr 2fr 1fr;
+    align-items: center;
+}
+
+.tableHeader {
+    background-color: #FFFFFF;
+    font-weight: bold;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tableBody {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.tableRow {
+    border-bottom: 1px solid #E3E3E3
+}
+
+.tableHeader>div,
+.tableRow>div {
+    padding: 12px;
+    text-align: left;
+    font-family: "regular";
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 18.75px;
+    text-align: center;
+    color: #9A9A9A
+}
+
+.tableRowData>div {
+    padding: 12px;
+    text-align: left;
+    font-family: "regular";
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 18.75px;
+    text-align: center;
+    color: #8E8E93
+}
+
+.tableRowData {
+
+    border-bottom: 1px solid #E3E3E3
+}
+
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.expenseCard {
+    width: Fill (225px)px;
+    height: Fixed (130px)px;
+    padding: 11px 11px 8px 11px;
+    gap: 8px;
+    border-radius: 25px;
+    background-color: #FFFFFF;
+    box-shadow: 0px 8px 100px 0px #1E1E1E0A;
+    padding: 20px;
+    margin-top: 2rem;
+}
+
+.vector {
+    margin-top: 1rem;
+}
+
+.expneseAmount {
+    font-family: "regular";
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 36px;
+    text-align: left;
+}
+
+.expenseBar {
+    font-family: "regular";
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 11.72px;
+    text-align: left;
+    color: #9A9A9A;
+}
+
+.openingBlnce {
+    font-family: "regular";
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 18.75px;
+    text-align: left;
+    color: #9A9A9A;
+}

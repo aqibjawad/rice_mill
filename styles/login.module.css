@@ -1,0 +1,162 @@
+/* login.module.css */
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.leftSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-top: 5rem;
+}
+
+.logoSection {
+    text-align: center;
+}
+
+.logo {
+    width: 84.05px;
+    height: 86px;
+    margin: 0 auto;
+}
+
+.companyName {
+    font-family: "regular";
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 36px;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.companyHeadLine {
+    font-family: "regular";
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 48px;
+    text-align: center;
+    color: #316AFF;
+    margin-top: 30px;
+}
+
+.imageSection {
+    margin-top: 30px;
+}
+
+.image2 {
+    max-width: 100%;
+    height: auto;
+    border-radius: 20px;
+}
+
+.rightSecLogin {
+    flex: 1;
+    position: relative;
+    background-image: url('/loginImage.png');
+    background-size: cover;
+    background-position: center;
+    border-radius: 20px;
+    box-sizing: border-box;
+    margin: 50px
+}
+
+.overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% - 40px);
+    /* Adjust width to account for padding */
+    max-width: 546px;
+    padding: 40px;
+    box-shadow: 0px 20px 40px 0px #CDB4DB29;
+    background: linear-gradient(126.64deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 98.11%);
+    border-radius: 40px;
+    border: 1px solid transparent;
+    border-image-slice: 1;
+}
+
+.welcome {
+    font-family: "regular";
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.welcomeLine {
+    font-family: "regular";
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    color: #FBFBFB;
+    margin-top: 30px;
+}
+
+.inputField {
+    margin-top: 20px;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .rightSecLogin {
+        min-height: 100vh;
+    }
+
+    .overlay {
+        position: relative;
+        transform: none;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .companyHeadLine {
+        font-size: 24px;
+        line-height: 36px;
+    }
+
+    .image2 {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .companyName {
+        font-size: 20px;
+    }
+
+    .companyHeadLine {
+        font-size: 20px;
+        line-height: 30px;
+    }
+
+    .welcome {
+        font-size: 20px;
+    }
+
+    .welcomeLine {
+        font-size: 16px;
+    }
+
+    .overlay {
+        position: relative;
+        transform: none;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+        margin-top: 100px;
+    }
+}
