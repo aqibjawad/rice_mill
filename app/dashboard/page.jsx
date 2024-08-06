@@ -6,6 +6,7 @@ import OutFlow from "./outFlow"
 import Ledger from "./ledgaer"
 import Expense from "./expense"
 import Stock from "./stock"
+import Product from "./product"
 
 import styles from "../../styles/dashboard.module.css"
 
@@ -32,6 +33,7 @@ const Page = () => {
                 </div> */}
             </div>
             <Stock />
+            <Product />
         </div>
     )
 }

@@ -11,6 +11,7 @@ const SideBar = () => {
         { name: 'Out Flow', href: '/outflow' },
         { name: 'Ledger', href: '/ledger' },
         { name: 'Stock', href: '/stock' },
+        { name: 'Product', href: '/product' },
     ];
 
     return (
