@@ -1,5 +1,5 @@
 // AddLedgerEntry.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Box } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -24,7 +24,7 @@ const top100Films = [
     { label: 'Self' },
 ];
 
-const AddLedgerEntry = ({ open, handleClose }) => {
+const AddLedgerEntry = ({ open, handleClose, editData = null }) => {
     const [formData, setFormData] = useState({
         person_name: '',
         reference_id: '',
@@ -34,6 +34,12 @@ const AddLedgerEntry = ({ open, handleClose }) => {
         opening_balance: '',
         description: ''
     });
+
+    useEffect(() => {
+        if (editData) {
+            setFormData(editData);
+        }
+    }, [editData]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -52,23 +58,29 @@ const AddLedgerEntry = ({ open, handleClose }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const data = new FormData();
         for (const key in formData) {
             data.append(key, formData[key]);
         }
 
         try {
-            const response = await fetch('https://backend-ghulambari.worldcitizenconsultants.com/api/customer', {
-                method: 'POST',
+            const url = editData
+                ? `https://backend-ghulambari.worldcitizenconsultants.com/api/customer/${editData.id}`
+                : 'https://backend-ghulambari.worldcitizenconsultants.com/api/customer';
+
+            const method = editData ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
                 body: data
             });
 
             if (response.ok) {
-                console.log('Form submitted successfully');
+                console.log(editData ? 'Entry updated successfully' : 'Form submitted successfully');
                 handleClose();
             } else {
-                console.error('Form submission failed');
+                console.error(editData ? 'Entry update failed' : 'Form submission failed');
             }
         } catch (error) {
             console.error('An error occurred', error);
@@ -84,7 +96,7 @@ const AddLedgerEntry = ({ open, handleClose }) => {
         >
             <Box sx={style}>
                 <div className={styles.ledgerHead}>
-                    Add Ledger
+                    {editData ? 'Edit Ledger' : 'Add Ledger'}
                 </div>
 
                 <div className='mt-10' style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -168,15 +180,16 @@ const AddLedgerEntry = ({ open, handleClose }) => {
                     />
                 </div>
 
+
                 <div className='mt-5' style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div style={{ flex: 1, marginRight: '10px' }}>
                         <div className={styles.saveBtn} onClick={handleSubmit}>
-                            Save
+                            {editData ? 'Update' : 'Save'}
                         </div>
                     </div>
                     <div style={{ flex: 1, marginLeft: '10px' }}>
-                        <div className={styles.editBtn}>
-                            Edit
+                        <div className={styles.editBtn} onClick={handleClose}>
+                            Cancel
                         </div>
                     </div>
                 </div>

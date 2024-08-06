@@ -188,3 +188,20 @@
 .tableRow:last-child {
     border-bottom: none;
 }
+
+.deleteButton {
+    color: #ff4d4f;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 50px;
+    height: 50px;
+}
+
+.tableHeader,
+.tableRowData {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    align-items: center;
+    gap: 1rem;
+}

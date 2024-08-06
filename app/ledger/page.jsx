@@ -7,36 +7,65 @@ const Page = () => {
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingData, setEditingData] = useState(null);
+
+
+    const handleEdit = (row) => {
+        setEditingData(row);
+        setIsModalOpen(true);
+    };
 
     useEffect(() => {
-        // Function to fetch data
-        const fetchData = async () => {
-            try {
-                const response = await fetch('https://backend-ghulambari.worldcitizenconsultants.com/api/customer');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const result = await response.json();
-                console.log(result); // Log the whole result to inspect
-                const data = result.data; // Extract the 'data' property
-                // Check if data is an array
-                if (Array.isArray(data)) {
-                    setTableData(data);
-                } else {
-                    throw new Error('Fetched data is not an array')  ;
-                }
-            } catch (error) {
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchData();
     }, []);
 
+    const fetchData = async () => {
+        try {
+            const response = await fetch('https://backend-ghulambari.worldcitizenconsultants.com/api/customer');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const result = await response.json();
+            const data = result.data;
+            if (Array.isArray(data)) {
+                setTableData(data);
+            } else {
+                throw new Error('Fetched data is not an array');
+            }
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            const response = await fetch(`https://backend-ghulambari.worldcitizenconsultants.com/api/customer/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete customer');
+            }
+
+            // Remove the deleted item from the state
+            setTableData(tableData.filter(item => item.id !== id));
+        } catch (error) {
+            console.error('Error deleting customer:', error);
+            // You might want to show an error message to the user here
+        }
+    };
+
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingData(null);
+        fetchData(); // Refresh the data after closing the modal
+    };
 
     return (
         <div className={styles.pageContainer}>
@@ -70,6 +99,7 @@ const Page = () => {
                         <div>Firm Name</div>
                         <div>Opening Balance</div>
                         <div>Description</div>
+                        <div>Action</div>
                     </div>
                     <div className={styles.tableBody}>
                         {tableData.map((row) => (
@@ -81,6 +111,15 @@ const Page = () => {
                                 <div>{row.firm_name}</div>
                                 <div>{row.opening_balance}</div>
                                 <div>{row.description}</div>
+                                <div>
+                                    <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
+                                    <button 
+                                        onClick={() => handleEdit(row)}
+                                        className={styles.editButton}
+                                    >
+                                        Edit
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
