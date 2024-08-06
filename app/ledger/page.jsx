@@ -1,26 +1,48 @@
-import React from "react";
-import styles from "../../styles/dashboard.module.css"
+"use client";
+
+import React, { useState, useEffect } from "react";
+import styles from "../../styles/ledger.module.css";
 
 const Page = () => {
-    // Sample data for the table
-    const tableData = [
-        { id: 1, sr: 1, paymentType: 'Cash', person: 'John Doe', description: 'Office Supplies', amount: 500 },
-        { id: 2, sr: 2, paymentType: 'Bank Transfer', person: 'Jane Smith', description: 'Utility Bill', amount: 750 },
-        { id: 2, sr: 2, paymentType: 'Bank Transfer', person: 'Jane Smith', description: 'Utility Bill', amount: 750 },
-        { id: 2, sr: 2, paymentType: 'Bank Transfer', person: 'Jane Smith', description: 'Utility Bill', amount: 750 },
-        { id: 2, sr: 2, paymentType: 'Bank Transfer', person: 'Jane Smith', description: 'Utility Bill', amount: 750 },
-        { id: 2, sr: 2, paymentType: 'Bank Transfer', person: 'Jane Smith', description: 'Utility Bill', amount: 750 },
-        { id: 2, sr: 2, paymentType: 'Bank Transfer', person: 'Jane Smith', description: 'Utility Bill', amount: 750 },
+    const [tableData, setTableData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-        { id: 3, amount: "Total : 750" },
-        // Add more rows as needed
-    ];
+    useEffect(() => {
+        // Function to fetch data
+        const fetchData = async () => {
+            try {
+                const response = await fetch('https://backend-ghulambari.worldcitizenconsultants.com/api/customer');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const result = await response.json();
+                console.log(result); // Log the whole result to inspect
+                const data = result.data; // Extract the 'data' property
+                // Check if data is an array
+                if (Array.isArray(data)) {
+                    setTableData(data);
+                } else {
+                    throw new Error('Fetched data is not an array');
+                }
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
 
     return (
-        <div>
+        <div className={styles.pageContainer}>
             <div className={styles.container}>
                 <div className={styles.leftSection}>
-                    Ledger
+                    Customer
                 </div>
                 <div className={styles.rightSection}>
                     <div className={styles.rightItemExp}>
@@ -38,28 +60,34 @@ const Page = () => {
                 </div>
             </div>
 
-            <div className={styles.tableSection}>
-                <div className={styles.tableHeader}>
-                    <div>Sr.</div>
-                    <div>Payment Type</div>
-                    <div>Person</div>
-                    <div>Description</div>
-                    <div>Amount</div>
-                </div>
-                <div className={styles.tableBody}>
-                    {tableData.map((row) => (
-                        <div key={row.id} className={styles.tableRowData}>
-                            <div>{row.sr}</div>
-                            <div>{row.paymentType}</div>
-                            <div>{row.person}</div>
-                            <div>{row.description}</div>
-                            <div>{row.amount}</div>
-                        </div>
-                    ))}
+            <div className={styles.contentContainer}>
+                <div className={styles.tableSection}>
+                    <div className={styles.tableHeader}>
+                        <div>Sr.</div>
+                        <div>Person Name</div>
+                        <div>Contact</div>
+                        <div>Address</div>
+                        <div>Firm Name</div>
+                        <div>Opening Balance</div>
+                        <div>Description</div>
+                    </div>
+                    <div className={styles.tableBody}>
+                        {tableData.map((row) => (
+                            <div key={row.id} className={styles.tableRowData}>
+                                <div>{row.id}</div>
+                                <div>{row.person_name}</div>
+                                <div>{row.contact}</div>
+                                <div>{row.address}</div>
+                                <div>{row.firm_name}</div>
+                                <div>{row.opening_balance}</div>
+                                <div>{row.description}</div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default Page
+export default Page;
