@@ -23,7 +23,7 @@ const Page = () => {
                 if (Array.isArray(data)) {
                     setTableData(data);
                 } else {
-                    throw new Error('Fetched data is not an array');
+                    throw new Error('Fetched data is not an array')  ;
                 }
             } catch (error) {
                 setError(error.message);
