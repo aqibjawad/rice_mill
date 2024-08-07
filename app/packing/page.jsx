@@ -1,13 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import styles from "../../styles/product.module.css";
+import styles from "../../styles/packing.module.css";
 import { Skeleton } from "@mui/material";
 
+import AddPacking from "../addPacking/page";
+
 const Page = () => {
+
+    const [open, setOpen] = useState(false);
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingData, setEditingData] = useState(null);
 
@@ -22,7 +31,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('https://backend-ghulambari.worldcitizenconsultants.com/api/product');
+            const response = await fetch('https://backend-ghulambari.worldcitizenconsultants.com/api/packing');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -42,7 +51,7 @@ const Page = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`https://backend-ghulambari.worldcitizenconsultants.com/api/product/${id}`, {
+            const response = await fetch(`https://backend-ghulambari.worldcitizenconsultants.com/api/packing/${id}`, {
                 method: 'DELETE',
             });
 
@@ -66,10 +75,10 @@ const Page = () => {
         <div className={styles.pageContainer}>
             <div className={styles.container}>
                 <div className={styles.leftSection}>
-                    Product
+                    Packing
                 </div>
                 <div className={styles.rightSection}>
-                    <div className={styles.rightItemExp}>
+                    <div className={styles.rightItemExp} onClick={handleOpen}>
                         + Add
                     </div>
                     <div className={styles.rightItem}>
@@ -99,24 +108,28 @@ const Page = () => {
                         <>
                             <div className={styles.tableHeader}>
                                 <div>Sr.</div>
-                                <div> Product Name </div>
-                                <div>Product Description</div>
-                                <div>Action</div>
+                                <div> Packing Weight </div>
+                                <div>  Actions </div>
                             </div>
                             <div className={styles.tableBody}>
                                 {tableData.map((row) => (
                                     <div key={row.id} className={styles.tableRowData}>
                                         <div>{row.id}</div>
-                                        <div>{row.product_name}</div>
-                                        <div>{row.product_description}</div>
-                                        <div>
-                                            <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
-                                            <button
-                                                onClick={() => handleEdit(row)}
-                                                className={styles.editButton}
-                                            >
-                                                Edit
-                                            </button>
+                                        <div>{row.packing_size}</div>
+
+                                        <div className="flex">
+                                            <div className="flex-grow">
+                                                <div className="mr-5">
+                                                    <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
+
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="">
+                                                    <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.deleteButton} />
+
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -125,6 +138,9 @@ const Page = () => {
                     )}
                 </div>
             </div>
+            
+            {/* Use the AddLedgerEntry component */}
+            <AddPacking open={open} handleClose={handleClose} />
         </div>
     );
 }

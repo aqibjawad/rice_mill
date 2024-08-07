@@ -1,0 +1,14 @@
+@media print {
+    /* Hide everything except the payment receipt */
+    body > *:not(.paymentCard) {
+      display: none !important;
+    }
+  
+    /* Ensure the payment receipt takes up the full page */
+    .paymentCard {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+  }

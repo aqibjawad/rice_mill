@@ -15,7 +15,6 @@ const style = {
     transform: 'translate(-50%, -50%)',
     width: 600,
     bgcolor: 'background.paper',
-    border: 'none',
     boxShadow: 24,
     p: 4,
 };
@@ -96,7 +95,7 @@ const AddLedgerEntry = ({ open, handleClose, editData = null }) => {
         >
             <Box sx={style}>
                 <div className={styles.ledgerHead}>
-                    {editData ? 'Edit Ledger' : 'Add Ledger'}
+                    {editData ? 'Edit Customer' : 'Add Customer'}
                 </div>
 
                 <div className='mt-10' style={{ display: 'flex', justifyContent: 'space-between' }}>

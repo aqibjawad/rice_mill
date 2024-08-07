@@ -1,0 +1,88 @@
+.paymentHeading {
+    font-family: "regular";
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 18.75px;
+    text-align: left;
+}
+
+.addressComp {
+    width: 505px;
+    height: 22px;
+    left: 68px;
+    border-radius: 2px;
+    background: #3D3D3D;
+    font-family: "regular";
+    font-size: 10px;
+    font-weight: 500;
+    text-align: center;
+    color: #FFFFFF;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.paymentCard {
+    width: 564px;
+    height: 220px;
+    top: 21px;
+    left: 15px;
+    border: 1px;
+    border: 1px solid #000000;
+    padding: 10px;
+}
+
+.paymentHeading {
+    font-family: "regular";
+    font-size: 8px;
+    font-weight: 500;
+    line-height: 9.38px;
+    text-align: left;
+    color: #000000;
+    margin-top: 0.5rem;
+}
+
+.trans {
+    font-family: "regular";
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 11.72px;
+    text-align: left;
+    margin-top: 1rem;
+}
+
+/* Table Styles */
+.tableSection {
+    margin-top: 0.5rem;
+    margin-left: -1rem;
+}
+
+.tableHeader,
+.tableRow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    /* Create 5 equal columns */
+    align-items: center;
+    justify-content: center;
+    /* Center content horizontally */
+    gap: -1rem;
+    /* Optional: Adjust spacing between columns */
+}
+
+.tableHeader>div,
+.tableRow>div {
+    text-align: center;
+    font-family: "regular";
+    font-size: 8px;
+    font-weight: 500;
+    color: black;
+}
+
+.tableRowData>div {
+    text-align: center;
+    font-family: "regular";
+    font-size: 14px;
+    font-weight: 500;
+    color: #8E8E93;
+}

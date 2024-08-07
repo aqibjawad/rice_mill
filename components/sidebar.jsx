@@ -9,18 +9,17 @@ const SideBar = () => {
         { name: 'Dashboard', href: '/dashboard' },
         { name: 'In Flow', href: '/inflow' },
         { name: 'Out Flow', href: '/outflow' },
-        { name: 'Ledger', href: '/ledger' },
+        { name: 'Customer', href: '/customer' },
         { name: 'Stock', href: '/stock' },
         { name: 'Product', href: '/product' },
+        { name: 'Packing', href: '/packing' },
     ];
 
     return (
         <div className={styles.sideBarComp}>
             {menuItems.map((item, index) => (
-                <Link href={item.href}>
-
+                <Link key={item.name} href={item.href}>
                     <div
-                        key={index}
                         className={`${styles.sideBarText} ${activeItem === item.name ? styles.active : ''}`}
                         onClick={() => setActiveItem(item.name)}
                         style={index === 0 ? { marginTop: "5rem" } : {}}
@@ -28,7 +27,6 @@ const SideBar = () => {
                         {item.name}
                     </div>
                 </Link>
-
             ))}
         </div>
     );
