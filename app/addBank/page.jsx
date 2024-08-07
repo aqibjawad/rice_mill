@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Box } from '@mui/material';
 
-import styles from "../../styles/ledger.module.css";
+import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 
 const style = {
@@ -16,7 +16,12 @@ const style = {
     outline: 'none',
 };
 
-const AddBank = ({ open, handleClose, editData = null }) => {
+const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => {
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
 
     const [formData, setFormData] = useState({
         packing_size: '',
@@ -71,38 +76,63 @@ const AddBank = ({ open, handleClose, editData = null }) => {
 
     return (
         <Modal
-            open={open}
-            onClose={handleClose}
+            open={isOpen}
+            onClose={onClose}
             aria-labelledby="modal-title"
             aria-describedby="modal-description"
         >
             <Box sx={style}>
+
+                <div className={styles.logocontainer}>
+                    <img className={styles.logo} src="/logo.png" />
+                </div>
+
                 <div className={styles.ledgerHead}>
-                    {editData ? 'Edit Packing' : 'Add Packing'}
+                    {editData ? 'Edit Packing' : 'Add Bank'}
                 </div>
 
                 <div className='mt-10' style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div style={{ flex: 1, marginRight: '10px' }}>
                         <InputWithTitle
-                            title="Packing Weight"
+                            title="Add Bank Name"
                             type="text"
-                            placeholder="Packing Weight"
+                            placeholder="Add Bank Name"
                             name="packing_size"
                             value={formData.packing_size}
                             onChange={handleInputChange}
                         />
-                    </div>
-                </div>
 
-                <div className='mt-5' style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <div style={{ flex: 1, marginRight: '10px' }}>
-                        <div className={styles.saveBtn} onClick={handleSubmit}>
-                            {editData ? 'Update' : 'Save'}
+                        <div className='mt-5' style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ flex: 1, marginRight: '10px' }}>
+                                <div className={styles.saveBtn} onClick={handleSubmit}>
+                                    {editData ? 'Update' : 'Save'}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div style={{ flex: 1, marginLeft: '10px' }}>
-                        <div className={styles.editBtn} onClick={handleClose}>
-                            Cancel
+
+                    <div style={{ flex: 1, marginRight: '10px' }}>
+                        <div className={styles.bankList}>
+                            Bank Name List
+                        </div>
+
+                        <div className={styles.contentContainer}>
+                            <div className={styles.tableSection}>
+                                <>
+                                    <div className={styles.tableHeader}>
+                                        <div>Sr.</div>
+                                        <div> Name </div>
+                                        <div>Action</div>
+                                    </div>
+                                    <div className={styles.tableBody}>
+                                        <div className={styles.tableRowData}>
+                                            <div>Sr.</div>
+                                            <div> Name </div>
+                                            <div>Action</div>
+                                        </div>
+                                    </div>
+                                </>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -111,4 +141,4 @@ const AddBank = ({ open, handleClose, editData = null }) => {
     );
 };
 
-export default AddBank;
+export default AddPacking;

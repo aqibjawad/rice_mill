@@ -13,6 +13,7 @@ const SideBar = () => {
         { name: 'Stock', href: '/stock' },
         { name: 'Product', href: '/product' },
         { name: 'Packing', href: '/packing' },
+        { name: 'Payments', href: '/payments' },
     ];
 
     return (
