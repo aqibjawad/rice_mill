@@ -5,6 +5,8 @@ import styles from "../../styles/product.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
 
+import {products} from "../../networkApi/Constants"
+
 const style = {
     position: 'absolute',
     top: '50%',
@@ -52,10 +54,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
         }
 
         try {
-            const url = editData
-                ? `https://backend-ghulambari.worldcitizenconsultants.com/api/product/${editData.id}`
-                : 'https://backend-ghulambari.worldcitizenconsultants.com/api/product';
-
+            const url = products
             const method = editData ? 'PUT' : 'POST';
 
             const response = await fetch(url, {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/product.module.css";
 import { Skeleton } from "@mui/material";
+import { products } from "../../networkApi/Constants";
 
 const Page = () => {
     const [tableData, setTableData] = useState([]);
@@ -22,7 +23,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('https://backend-ghulambari.worldcitizenconsultants.com/api/product');
+            const response = await fetch(products);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -42,17 +43,17 @@ const Page = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`https://backend-ghulambari.worldcitizenconsultants.com/api/product/${id}`, {
+            const response = await fetch(products.delete(id), {
                 method: 'DELETE',
             });
 
             if (!response.ok) {
-                throw new Error('Failed to delete customer');
+                throw new Error('Failed to delete product');
             }
 
             setTableData(tableData.filter(item => item.id !== id));
         } catch (error) {
-            console.error('Error deleting customer:', error);
+            console.error('Error deleting product:', error);
         }
     };
 

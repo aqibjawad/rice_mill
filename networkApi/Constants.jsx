@@ -1,26 +1,6 @@
-const baseURL = "https://petscontrol.accuratesap.com/admin/public";
+const baseURL = "https://backend-ghulambari.worldcitizenconsultants.com";
 const apiPrefix = baseURL + "/api";
 
-export const login = apiPrefix + "/login";
-export const getCountriesURL = apiPrefix + "/get_countries";
-export const addSupplier = apiPrefix + "/add-supplier";
-export const getAllSuppliers = apiPrefix + "/get_suppliers";
-export const getAllBrandNames = apiPrefix + "/get_brands";
-export const addBrand = apiPrefix + "/add-brand";
+export const banks = apiPrefix + "/bank";
 
-// Add Client
-export const addClient = apiPrefix + "/add-client";
-
-// Add address
-export const addAddress = apiPrefix + "/add_client_addressess";
-
-// add employee
-export const addEmployee = apiPrefix + "/add-employee";
-
-export const getServiceAgreements = apiPrefix + "/get_services";
-
-export const addServiceAgreements = apiPrefix + "/add-agreement";
-
-export const addVendor = apiPrefix + "/add-vendor";
-
-export const getVendorsUrl = apiPrefix + "/get_vendors";
+export const products = apiPrefix + "/product";

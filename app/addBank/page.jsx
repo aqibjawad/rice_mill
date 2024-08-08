@@ -4,6 +4,8 @@ import { Modal, Box } from '@mui/material';
 import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 
+import {banks} from "../../networkApi/Constants"
+
 const style = {
     position: 'absolute',
     top: '50%',
@@ -24,22 +26,22 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
     const handleClose = () => setOpen(false);
 
     const [formData, setFormData] = useState({
-        packing_size: '',
+        bank_name: '',
     });
 
     useEffect(() => {
         if (editData) {
             setFormData(editData);
         } else {
-            setFormData({ packing_size: '' });
+            setFormData({ bank_name: '' });
         }
     }, [editData]);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value } = e.target; // Destructure `name` and `value` from e.target
         setFormData(prevState => ({
             ...prevState,
-            [name]: value
+            [name]: value // Use `name` as the key in formData
         }));
     };
 
@@ -52,9 +54,7 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
         }
 
         try {
-            const url = editData
-                ? `https://backend-ghulambari.worldcitizenconsultants.com/api/packing/${editData.id}`
-                : 'https://backend-ghulambari.worldcitizenconsultants.com/api/packing';
+            const url = banks;
 
             const method = editData ? 'PUT' : 'POST';
 
@@ -87,7 +87,7 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
                     <img className={styles.logo} src="/logo.png" />
                 </div>
 
-                <div className={styles.ledgerHead}>
+                <div className={styles.ledgerHead}> 
                     {editData ? 'Edit Packing' : 'Add Bank'}
                 </div>
 
@@ -97,8 +97,8 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
                             title="Add Bank Name"
                             type="text"
                             placeholder="Add Bank Name"
-                            name="packing_size"
-                            value={formData.packing_size}
+                            name="bank_name"
+                            value={formData.bank_name}
                             onChange={handleInputChange}
                         />
 
