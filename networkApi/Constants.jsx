@@ -4,3 +4,7 @@ const apiPrefix = baseURL + "/api";
 export const banks = apiPrefix + "/bank";
 
 export const products = apiPrefix + "/product";
+
+export const customers = apiPrefix + "/customer";
+
+export const packings = apiPrefix + "/packing";

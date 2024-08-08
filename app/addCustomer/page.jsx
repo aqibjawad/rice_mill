@@ -8,6 +8,9 @@ import styles from "../../styles/ledger.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
 
+import {customers} from "../../networkApi/Constants"
+
+
 const style = {
     position: 'absolute',
     top: '50%',
@@ -64,9 +67,7 @@ const AddLedgerEntry = ({ open, handleClose, editData = null }) => {
         }
 
         try {
-            const url = editData
-                ? `https://backend-ghulambari.worldcitizenconsultants.com/api/customer/${editData.id}`
-                : 'https://backend-ghulambari.worldcitizenconsultants.com/api/customer';
+            const url = customers
 
             const method = editData ? 'PUT' : 'POST';
 

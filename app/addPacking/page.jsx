@@ -4,6 +4,8 @@ import { Modal, Box } from '@mui/material';
 import styles from "../../styles/ledger.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 
+import {packings} from "../../networkApi/Constants"
+
 const style = {
     position: 'absolute',
     top: '50%',
@@ -47,9 +49,7 @@ const AddBank = ({ open, handleClose, editData = null }) => {
         }
 
         try {
-            const url = editData
-                ? `https://backend-ghulambari.worldcitizenconsultants.com/api/packing/${editData.id}`
-                : 'https://backend-ghulambari.worldcitizenconsultants.com/api/packing';
+            const url = packings
 
             const method = editData ? 'PUT' : 'POST';
 

@@ -5,6 +5,7 @@ import styles from "../../styles/ledger.module.css";
 import { Skeleton } from "@mui/material";
 
 import AddLedgerEntry from "../addCustomer/page"; 
+import {customers} from "../../networkApi/Constants"
 
 const Page = () => {
 
@@ -30,7 +31,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('https://backend-ghulambari.worldcitizenconsultants.com/api/customer');
+            const response = await fetch(products);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -50,7 +51,7 @@ const Page = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`https://backend-ghulambari.worldcitizenconsultants.com/api/customer/${id}`, {
+            const response = await fetch(products.delete(id), {
                 method: 'DELETE',
             });
 

@@ -31,7 +31,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('https://backend-ghulambari.worldcitizenconsultants.com/api/packing');
+            const response = await fetch(packings);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -51,7 +51,7 @@ const Page = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`https://backend-ghulambari.worldcitizenconsultants.com/api/packing/${id}`, {
+            const response = await fetch(packings.delete(id), {
                 method: 'DELETE',
             });
 
