@@ -12,7 +12,7 @@ import { customers } from "../../networkApi/Constants"
 
 import { banks } from "../../networkApi/Constants"
 
-import { payment_Out } from "../../networkApi/Constants"
+import { payment_In } from "../../networkApi/Constants"
 
 const Payment = () => {
     const [tableData, setTableData] = useState([]);
@@ -109,7 +109,7 @@ const Payment = () => {
         };
 
         try {
-            await axios.post(payment_Out, paymentData);
+            await axios.post(payment_In, paymentData);
             console.log('Payment data sent to the backend successfully!');
         } catch (error) {
             console.error('Error sending payment data to the backend:', error);

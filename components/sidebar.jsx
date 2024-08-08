@@ -7,13 +7,12 @@ const SideBar = () => {
 
     const menuItems = [
         { name: 'Dashboard', href: '/dashboard' },
-        { name: 'In Flow', href: '/inflow' },
-        { name: 'Out Flow', href: '/outflow' },
+        { name: 'Amount Recieves', href: '/inflow' },
+        { name: 'Payments', href: '/outflow' },
         { name: 'Customer', href: '/customer' },
         { name: 'Stock', href: '/stock' },
         { name: 'Product', href: '/product' },
         { name: 'Packing', href: '/packing' },
-        { name: 'Payments', href: '/payments' },
     ];
 
     return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box } from '@mui/material';
+import { Modal, Box, Grid, Stack } from '@mui/material';
 import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import { banks as banksApi } from "../../networkApi/Constants"; // Adjust import based on actual path
@@ -9,11 +9,12 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 600,
+    width: { xs: '90%', sm: 600 },
+    height: { xs: '90%', sm: 'auto' },
     bgcolor: 'background.paper',
     boxShadow: 24,
     p: 4,
-    outline: 'none',
+    overflow: { xs: 'auto', sm: 'initial' },
 };
 
 const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => {
@@ -58,7 +59,7 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
         const { name, value } = e.target;
         setFormData(prevState => ({
             ...prevState,
-            [name]: value 
+            [name]: value
         }));
     };
 
@@ -71,10 +72,10 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
         }
 
         try {
-            const url = editData 
+            const url = editData
                 ? `${banksApi}/${editData.id}` // URL for updating existing bank
                 : banksApi; // URL for adding new bank
-            
+
             const method = editData ? 'PUT' : 'POST';
 
             const response = await fetch(url, {
@@ -109,67 +110,61 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
             aria-describedby="modal-description"
         >
             <Box sx={style}>
-
                 <div className={styles.logocontainer}>
                     <img className={styles.logo} src="/logo.png" />
                 </div>
 
-                <div className={styles.ledgerHead}> 
+                <div className={styles.ledgerHead} style={{ fontSize: '1.5rem', padding: '1rem' }}>
                     {editData ? 'Edit Packing' : 'Add Bank'}
                 </div>
 
-                <div className='mt-10' style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <div style={{ flex: 1, marginRight: '10px' }}>
-                        <InputWithTitle
-                            title="Add Bank Name"
-                            type="text"
-                            placeholder="Add Bank Name"
-                            name="bank_name"
-                            value={formData.bank_name}
-                            onChange={handleInputChange}
-                        />
+                <div style={{ height: { xs: 'calc(100% - 72px)', sm: 'auto' }, overflowY: { xs: 'auto', sm: 'initial' } }}>
+                    <Grid container spacing={2} className="mt-10">
+                        <Grid item lg={6} xs={12} sm={12}>
+                            <InputWithTitle
+                                title="Add Bank Name"
+                                type="text"
+                                placeholder="Add Bank Name"
+                                name="bank_name"
+                                value={formData.bank_name}
+                                onChange={handleInputChange}
+                            />
 
-                        <div className='mt-5' style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <div style={{ flex: 1, marginRight: '10px' }}>
-                                <div className={styles.saveBtn} onClick={handleSubmit}>
-                                    {editData ? 'Update' : 'Save'}
+                            <div style={{marginTop:"1rem"}} className={styles.saveBtn} onClick={handleSubmit}>
+                                {editData ? 'Update' : 'Save'}
+                            </div>
+                        </Grid>
+
+                        <Grid item lg={6} xs={12} sm={12}>
+                            <div className={styles.bankList}>Bank Name List</div>
+                            <div className={styles.contentContainer}>
+                                <div className={styles.tableSection}>
+                                    <>
+                                        <div className={styles.tableHeader}>
+                                            <div>Sr.</div>
+                                            <div> Name </div>
+                                            <div>Action</div>
+                                        </div>
+                                        <div className={styles.tableBody}>
+                                            {loading ? (
+                                                <div>Loading...</div>
+                                            ) : error ? (
+                                                <div>Error: {error}</div>
+                                            ) : (
+                                                tableData.map((row) => (
+                                                    <div key={row.id} className={styles.tableRowData}>
+                                                        <div>{row.id}</div>
+                                                        <div>{row.bank_name}</div>
+                                                        <div>Action</div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div style={{ flex: 1, marginRight: '10px' }}>
-                        <div className={styles.bankList}>
-                            Bank Name List
-                        </div>
-
-                        <div className={styles.contentContainer}>
-                            <div className={styles.tableSection}>
-                                <>
-                                    <div className={styles.tableHeader}>
-                                        <div>Sr.</div>
-                                        <div> Name </div>
-                                        <div>Action</div>
-                                    </div>
-                                    <div className={styles.tableBody}>
-                                        {loading ? (
-                                            <div>Loading...</div>
-                                        ) : error ? (
-                                            <div>Error: {error}</div>
-                                        ) : (
-                                            tableData.map((row) => (
-                                                <div key={row.id} className={styles.tableRowData}>
-                                                    <div>{row.id}</div>
-                                                    <div>{row.bank_name}</div>
-                                                    <div>Action</div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </>
-                            </div>
-                        </div>
-                    </div>
+                        </Grid>
+                    </Grid>
                 </div>
             </Box>
         </Modal>
