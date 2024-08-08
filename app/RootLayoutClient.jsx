@@ -3,6 +3,8 @@
 import { usePathname } from 'next/navigation';
 import SideBar from "../components/sidebar"
 
+import Header from "../components/header"
+
 export default function RootLayoutClient({ children }) {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
@@ -10,9 +12,14 @@ export default function RootLayoutClient({ children }) {
   return (
     <div className={`layout-container ${isHomePage ? 'home-layout' : ''}`}>
       {!isHomePage && <SideBar />}
-      <main className={`main-content ${isHomePage ? 'full-width' : ''}`}>
-        {children}
-      </main>
+
+      <div className={`main-content`}>
+        <Header />
+        <main className={`main-content-child ${isHomePage ? 'full-width' : ''}`}>
+          {children}
+        </main>
+      </div>
+
     </div>
   );
 }

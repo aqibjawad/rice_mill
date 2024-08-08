@@ -110,14 +110,9 @@ const Page = () => {
                                         <div>{row.id}</div>
                                         <div>{row.product_name}</div>
                                         <div>{row.product_description}</div>
-                                        <div>
+                                        <div className={styles.iconContainer}>
                                             <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
-                                            <button
-                                                onClick={() => handleEdit(row)}
-                                                className={styles.editButton}
-                                            >
-                                                Edit
-                                            </button>
+                                            <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
                                         </div>
                                     </div>
                                 ))}

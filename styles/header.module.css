@@ -1,0 +1,47 @@
+.header {
+    height: 80px;
+    left: 232px;
+    padding: 10px 30px 10px 30px;
+    background: #FFFFFF;
+    padding: 20px;
+}
+
+.nameCont {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.userName {
+    font-family: "regular";
+    font-size: 20px;
+    font-weight: 400;
+    text-align: left;
+    color: #1E1E1E;
+}
+
+.userEmail {
+    font-family: "regular";
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 12.99px;
+    text-align: left;
+    color: #9A9A9A;
+}
+
+.companyName {
+    font-family: "regular";
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.logoutBtn{
+    background-color: #316AFF;
+    color:white;
+    width: 120px;
+    border-radius: 50px;
+    text-align: center;
+    justify-content: center;
+    padding: 10px;
+}

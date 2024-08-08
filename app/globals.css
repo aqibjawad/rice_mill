@@ -15,9 +15,12 @@
 
 .main-content {
   flex: 1;
-  padding: 20px;
   overflow-y: auto;
   background-color: #F5F5F5;
+}
+
+.main-content-child{
+  padding: 20px;
 }
 
 @font-face {

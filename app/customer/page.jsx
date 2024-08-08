@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger.module.css";
 import { Skeleton } from "@mui/material";
 
-import AddLedgerEntry from "../addCustomer/page"; 
-import {customers} from "../../networkApi/Constants"
+import AddLedgerEntry from "../addCustomer/page";
+import { customers } from "../../networkApi/Constants"
 
 const Page = () => {
 
@@ -78,7 +78,7 @@ const Page = () => {
                     Customer
                 </div>
                 <div className={styles.rightSection}>
-                    <div className={styles.rightItemExp}  onClick={handleOpen}>
+                    <div className={styles.rightItemExp} onClick={handleOpen}>
                         + Add
                     </div>
                     <div className={styles.rightItem}>
@@ -112,7 +112,6 @@ const Page = () => {
                                 <div>Contact</div>
                                 <div>Address</div>
                                 <div>Firm Name</div>
-                                <div>Opening Balance</div>
                                 <div>Description</div>
                                 <div>Action</div>
                             </div>
@@ -124,16 +123,14 @@ const Page = () => {
                                         <div>{row.contact}</div>
                                         <div>{row.address}</div>
                                         <div>{row.firm_name}</div>
-                                        <div>{row.opening_balance}</div>
                                         <div>{row.description}</div>
-                                        <div>
+                                        <div className={styles.iconContainer}>
                                             <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
-                                            <button
-                                                onClick={() => handleEdit(row)}
-                                                className={styles.editButton}
-                                            >
-                                                Edit
-                                            </button>
+                                            <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
+                                            
+                                            <div className={styles.ledgerDiv}>
+                                                Ledger
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -142,8 +139,7 @@ const Page = () => {
                     )}
                 </div>
             </div>
-               {/* Use the AddLedgerEntry component */}
-               <AddLedgerEntry open={open} handleClose={handleClose} />
+            <AddLedgerEntry open={open} handleClose={handleClose} />
         </div>
     );
 }

@@ -147,6 +147,7 @@
     text-align: center;
     color: #8E8E93
 }
+
 .tableHeader,
 .tableRowData {
     display: grid;
@@ -177,6 +178,7 @@
     line-height: 36px;
     text-align: center;
 }
+
 .logocontainer {
     display: flex;
     justify-content: center;
@@ -186,4 +188,20 @@
 .logo {
     max-width: 100%;
     height: auto;
+}
+
+.paymentInBtn {
+    width: 200px;
+    height: 47px;
+    padding: 14px;
+    gap: 10px;
+    border-radius: 35px;
+    background: #316AFF;
+    color: white;
+    font-family: "regular";
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 18.75px;
+    text-align: center;
+    margin-top: 2rem;
 }
