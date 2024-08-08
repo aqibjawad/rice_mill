@@ -33,3 +33,15 @@
     background: #316AFF;
     color: white;
 }
+
+.imgContainer {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    width: 100%; /* Ensure the container takes full width */
+}
+
+.logo {
+    max-width: 100%; /* Ensure the image scales properly */
+    height: auto; /* Maintain aspect ratio */
+    margin-top: 2rem;
+}

@@ -18,8 +18,11 @@ const SideBar = () => {
 
     return (
         <div className={styles.sideBarComp}>
+            <div className={styles.imgContainer}>
+                <img className={styles.logo} src="/logo.png" alt="Logo" />
+            </div>
             {menuItems.map((item, index) => (
-                <Link key={item.name} href={item.href}>
+                <Link key={item.name} href={item.href} passHref>
                     <div
                         className={`${styles.sideBarText} ${activeItem === item.name ? styles.active : ''}`}
                         onClick={() => setActiveItem(item.name)}
@@ -31,6 +34,6 @@ const SideBar = () => {
             ))}
         </div>
     );
-}
+};
 
 export default SideBar;

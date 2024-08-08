@@ -29,7 +29,7 @@ const PaymentReceipt = () => {
 
             const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
             const imgX = (pdfWidth - imgWidth * ratio) / 2;
-            const imgY = 30; // Add some top margin
+            const imgY = -4; // Add some top margin
 
             pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
             pdf.save("payment_receipt.pdf");
@@ -39,45 +39,59 @@ const PaymentReceipt = () => {
     return (
         <div>
             <div ref={receiptRef} style={{ width: '210mm', padding: '10mm', boxSizing: 'border-box' }}>
+
                 <div className={styles.paymentCard}>
-                    <div className={styles.paymentHeading}>
-                        Ghulam Bari Rice Mills
+
+                    <div className='' style={{ display: 'flex', alignItems: 'center' }}>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <img className={styles.paymentLogo} src="/logo.png" alt="Payment Logo" />
+                        </div>
+
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div className={styles.paymentHeadingName}>
+                                Ghulam Bari Rice Mills
+                            </div>
+                        </div>
                     </div>
 
-                    < div className={styles.addressComp} >
+                    <div className={styles.addressComp} >
                         Hujra Road, Near Ghala Mandi Chunian. 0336 4046155, 0301 4046155, 0300 - 7971654, 0300 5061234
                     </div>
 
-                    < div className="flex" >
+                    <div className={styles.paymentRecipet}>
+                        Payment Receipt
+                    </div>
+
+                    <div className="flex mt-2">
                         <div className="flex-grow" >
                             <div className={styles.paymentHeading}>
-                                Reference No.__________
+                                Reference No.______________________________
                             </div>
                         </div>
 
                         < div className="flex-grow" >
                             <div className={styles.paymentHeading}>
-                                Party Name: __________
+                                Party Name: ______________________________
                             </div>
                         </div>
 
-                        < div className="flex-grow mt-5" >
+                        < div className="flex-grow" >
                             <div className={styles.paymentHeading}>
-                                Date : __________
+                                Date : ______________________________
                             </div>
                         </div>
                     </div>
 
-                    < div className="flex" >
+                    < div className="flex mt-3">
                         <div className="flex-grow" >
                             <div className={styles.paymentHeading}>
-                                Amount.______________________________
+                                Amount._______________________________
                             </div>
                         </div>
 
                         < div className="flex-grow" >
                             <div className={styles.paymentHeading}>
-                                Bank and Cheque: _____________________________________
+                                Bank and Cheque: _______________________________________________________________
                             </div>
                         </div>
                     </div>
@@ -129,13 +143,13 @@ const PaymentReceipt = () => {
                             <div className="flex" >
                                 <div className="flex-grow" >
                                     <div className={styles.paymentHeading}>
-                                        Recieved By: ________
+                                        Recieved By: _____________________
                                     </div>
                                 </div>
 
                                 < div className="flex-grow" >
                                     <div className={styles.paymentHeading}>
-                                        Signature: _________
+                                        Signature: ______________________
                                     </div>
                                 </div>
                             </div>
@@ -143,7 +157,7 @@ const PaymentReceipt = () => {
                     </div>
                 </div>
             </div>
-            <button onClick={generatePDF}>Generate A4 PDF</button>
+            <button className={styles.generateBtn} onClick={generatePDF}>Generate A4 PDF</button>
         </div>
     );
 };
