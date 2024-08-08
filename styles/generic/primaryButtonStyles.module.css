@@ -1,0 +1,12 @@
+.container {
+  background-color: var(--appblue);
+  height: 50px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "regular";
+  color: white;
+  border-radius: 25px;
+  cursor: pointer;
+}

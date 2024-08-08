@@ -6,9 +6,9 @@ const BlueButton = ({ children, ...rest }) => {
   return (
     <>
       <div {...rest} className={styles.buttonContainer}>
-          {children}
+        {children}
       </div>
-    </> 
+    </>
   );
 };
 
