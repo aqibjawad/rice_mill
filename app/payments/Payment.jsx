@@ -1,18 +1,45 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
+import {customers} from "../../networkApi/Constants"
+
 const Payment = () => {
+
+    const [tableData, setTableData] = useState([]);
+
     const [activeTab, setActiveTab] = useState("tab1");
-    const top100Films = [
-        { label: 'Self' },
-    ];
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
+    }; 
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const response = await fetch(customers);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const result = await response.json();
+            const data = result.data;
+            if (Array.isArray(data)) {
+                const formattedData = data.map(customer => ({ label: customer.person_name }));
+                setTableData(formattedData);
+            } else {
+                throw new Error('Fetched data is not an array');
+            }
+        } catch (error) {
+            console.error(error.message);
+        }
     };
 
     return (
@@ -22,7 +49,7 @@ const Payment = () => {
                     <Autocomplete
                         disablePortal
                         id="combo-box-demo"
-                        options={top100Films}
+                        options={tableData}
                         sx={{ width: 750 }}
                         renderInput={(params) => <TextField {...params} label="Select Party" />}
                     />
@@ -63,8 +90,8 @@ const Payment = () => {
                                         <Autocomplete
                                             disablePortal
                                             id="combo-box-demo"
-                                            options={top100Films}
-                                            sx={{ width: 400 }}
+                                            options={tableData}
+                                            sx={{ width: 500 }}
                                             renderInput={(params) => <TextField {...params} label="Select Bank" />}
                                         />
                                     </div>

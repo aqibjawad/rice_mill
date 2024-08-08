@@ -4,6 +4,8 @@ import { Modal, Box } from '@mui/material';
 import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 
+import { expense } from "../../networkApi/Constants";
+
 const style = {
     position: 'absolute',
     top: '50%',
@@ -17,17 +19,42 @@ const style = {
 };
 
 const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
-    const [formData, setFormData] = useState({
-        packing_size: '',
-    });
+    const [formData, setFormData] = useState({ expense_category: '' });
+    const [tableData, setTableData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         if (editData) {
             setFormData(editData);
         } else {
-            setFormData({ packing_size: '' });
+            setFormData({ expense_category: '' });
         }
     }, [editData]);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const response = await fetch(expense); // Fetch initial bank data
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const result = await response.json();
+            const data = result.data;
+            if (Array.isArray(data)) {
+                setTableData(data);
+            } else {
+                throw new Error('Fetched data is not an array');
+            }
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -47,8 +74,8 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
 
         try {
             const url = editData
-                ? `https://backend-ghulambari.worldcitizenconsultants.com/api/packing/${editData.id}`
-                : 'https://backend-ghulambari.worldcitizenconsultants.com/api/packing';
+                ? `${expense}/${editData.id}` // URL for updating existing bank
+                : expense; // URL for adding new bank
 
             const method = editData ? 'PUT' : 'POST';
 
@@ -58,8 +85,16 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
             });
 
             if (response.ok) {
+                const result = await response.json();
+                if (editData) {
+                    // Update existing bank in the table data
+                    setTableData(tableData.map(item => item.id === editData.id ? result.data : item));
+                } else {
+                    // Add new bank to the table data
+                    setTableData([...tableData, result.data]);
+                }
                 console.log(editData ? 'Entry updated successfully' : 'Form submitted successfully');
-                handleCloseExpense();
+                handleCloseExpense(); // Close modal
             } else {
                 console.error(editData ? 'Entry update failed' : 'Form submission failed');
             }
@@ -81,17 +116,17 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
                 </div>
 
                 <div className={styles.ledgerHead}>
-                    {editData ? 'Edit Packing' : 'Add Expense'}
+                    {editData ? 'Edit Expense' : 'Add Expense'}
                 </div>
 
                 <div className='mt-10' style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div style={{ flex: 1, marginRight: '10px' }}>
                         <InputWithTitle
-                            title="Add Bank Name"
-                            type="text"
-                            placeholder="Add Bank Name"
-                            name="packing_size"
-                            value={formData.packing_size}
+                            title="Expense Category"
+                            type="text" 
+                            placeholder="Add Expense Category"
+                            name="expense_category"
+                            value={formData.expense_category}
                             onChange={handleInputChange}
                         />
 
@@ -106,7 +141,7 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
 
                     <div style={{ flex: 1, marginRight: '10px' }}>
                         <div className={styles.bankList}>
-                            Bank Name List
+                            Expense Category List
                         </div>
 
                         <div className={styles.contentContainer}>
@@ -114,15 +149,19 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
                                 <>
                                     <div className={styles.tableHeader}>
                                         <div>Sr.</div>
-                                        <div> Name </div>
+                                        <div>Name</div>
                                         <div>Action</div>
                                     </div>
                                     <div className={styles.tableBody}>
-                                        <div className={styles.tableRowData}>
-                                            <div>Sr.</div>
-                                            <div> Name </div>
-                                            <div>Action</div>
-                                        </div>
+                                        {tableData.map((item, index) => (
+                                            <div key={item.id} className={styles.tableRowData}>
+                                                <div>{index + 1}</div>
+                                                <div>{item.expense_category}</div>
+                                                <div>
+                                                    {/* Action buttons like Edit/Delete can be added here */}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </>
                             </div>

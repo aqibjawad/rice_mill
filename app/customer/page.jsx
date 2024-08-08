@@ -31,7 +31,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(products);
+            const response = await fetch(customers);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

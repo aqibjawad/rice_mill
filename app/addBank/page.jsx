@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Box } from '@mui/material';
-
 import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
-
-import {banks} from "../../networkApi/Constants"
+import { banks as banksApi } from "../../networkApi/Constants"; // Adjust import based on actual path
 
 const style = {
     position: 'absolute',
@@ -19,15 +17,10 @@ const style = {
 };
 
 const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => {
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-
-    const [formData, setFormData] = useState({
-        bank_name: '',
-    });
+    const [formData, setFormData] = useState({ bank_name: '' });
+    const [tableData, setTableData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         if (editData) {
@@ -37,11 +30,35 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
         }
     }, [editData]);
 
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const response = await fetch(banksApi); // Fetch initial bank data
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const result = await response.json();
+            const data = result.data;
+            if (Array.isArray(data)) {
+                setTableData(data);
+            } else {
+                throw new Error('Fetched data is not an array');
+            }
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleInputChange = (e) => {
-        const { name, value } = e.target; // Destructure `name` and `value` from e.target
+        const { name, value } = e.target;
         setFormData(prevState => ({
             ...prevState,
-            [name]: value // Use `name` as the key in formData
+            [name]: value 
         }));
     };
 
@@ -54,8 +71,10 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
         }
 
         try {
-            const url = banks;
-
+            const url = editData 
+                ? `${banksApi}/${editData.id}` // URL for updating existing bank
+                : banksApi; // URL for adding new bank
+            
             const method = editData ? 'PUT' : 'POST';
 
             const response = await fetch(url, {
@@ -64,8 +83,16 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
             });
 
             if (response.ok) {
+                const result = await response.json();
+                if (editData) {
+                    // Update existing bank in the table data
+                    setTableData(tableData.map(item => item.id === editData.id ? result.data : item));
+                } else {
+                    // Add new bank to the table data
+                    setTableData([...tableData, result.data]);
+                }
                 console.log(editData ? 'Entry updated successfully' : 'Form submitted successfully');
-                handleClose();
+                onClose(); // Close modal
             } else {
                 console.error(editData ? 'Entry update failed' : 'Form submission failed');
             }
@@ -125,11 +152,19 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
                                         <div>Action</div>
                                     </div>
                                     <div className={styles.tableBody}>
-                                        <div className={styles.tableRowData}>
-                                            <div>Sr.</div>
-                                            <div> Name </div>
-                                            <div>Action</div>
-                                        </div>
+                                        {loading ? (
+                                            <div>Loading...</div>
+                                        ) : error ? (
+                                            <div>Error: {error}</div>
+                                        ) : (
+                                            tableData.map((row) => (
+                                                <div key={row.id} className={styles.tableRowData}>
+                                                    <div>{row.id}</div>
+                                                    <div>{row.bank_name}</div>
+                                                    <div>Action</div>
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
                                 </>
                             </div>
