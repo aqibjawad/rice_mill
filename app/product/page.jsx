@@ -5,7 +5,15 @@ import styles from "../../styles/product.module.css";
 import { Skeleton } from "@mui/material";
 import { products } from "../../networkApi/Constants";
 
+import AddProduct from "../addProduct/page";
+
 const Page = () => {
+
+    const [open, setOpen] = useState(false);
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
+    
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -70,8 +78,8 @@ const Page = () => {
                     Product
                 </div>
                 <div className={styles.rightSection}>
-                    <div className={styles.rightItemExp}>
-                        + Add
+                    <div className={styles.rightItemExp} onClick={handleOpen}>
+                        Add
                     </div>
                     <div className={styles.rightItem}>
                         date
@@ -121,6 +129,7 @@ const Page = () => {
                     )}
                 </div>
             </div>
+            <AddProduct open={open} handleClose={handleClose} />
         </div>
     );
 }

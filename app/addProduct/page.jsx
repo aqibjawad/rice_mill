@@ -17,6 +17,7 @@ const style = {
     border: 'none',
     boxShadow: 24,
     p: 4,
+    outline:"none"
 };
 
 const AddProduct = ({ open, handleClose, editData = null }) => {

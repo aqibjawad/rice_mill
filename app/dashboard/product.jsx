@@ -1,8 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "../../styles/dashboard.module.css";
 import AddProduct from "../addProduct/page";
+
+import { Skeleton } from "@mui/material";
+import { products } from "../../networkApi/Constants";
 
 const Product = () => {
     const [open, setOpen] = useState(false);
@@ -10,12 +13,57 @@ const Product = () => {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    // Sample data for the table
-    const tableData = [
-        { id: 1, sr: 1, paymentType: 'Cash', person: 'John Doe', description: 'Office Supplies', amount: 500 },
-        { id: 2, sr: 2, paymentType: 'Bank Transfer', person: 'Jane Smith', description: 'Utility Bill', amount: 750 },
-        { id: 3, amount: "Total : 1250" },
-    ];
+    const [tableData, setTableData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingData, setEditingData] = useState(null);
+
+    const handleEdit = (row) => {
+        setEditingData(row);
+        setIsModalOpen(true);
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const response = await fetch(products);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const result = await response.json();
+            const data = result.data;
+            if (Array.isArray(data)) {
+                setTableData(data);
+            } else {
+                throw new Error('Fetched data is not an array');
+            }
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            const response = await fetch(products.delete(id), {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete product');
+            }
+
+            setTableData(tableData.filter(item => item.id !== id));
+        } catch (error) {
+            console.error('Error deleting product:', error);
+        }
+    };
 
     return (
         <div>
@@ -39,24 +87,40 @@ const Product = () => {
                 </div>
             </div>
 
-            <div className={styles.tableSection}>
-                <div className={styles.tableHeader}>
-                    <div>Sr.</div>
-                    <div>Payment Type</div>
-                    <div>Person</div>
-                    <div>Description</div>
-                    <div>Amount</div>
-                </div>
-                <div className={styles.tableBody}>
-                    {tableData.map((row) => (
-                        <div key={row.id} className={styles.tableRowData}>
-                            <div>{row.sr}</div>
-                            <div>{row.paymentType}</div>
-                            <div>{row.person}</div>
-                            <div>{row.description}</div>
-                            <div>{row.amount}</div>
-                        </div>
-                    ))}
+            <div className={styles.contentContainer}>
+                <div className={styles.tableSection}>
+                    {loading ? (
+                        <>
+                            <Skeleton variant="rectangular" width="100%" height={40} />
+                            {[...Array(5)].map((_, index) => (
+                                <Skeleton key={index} variant="rectangular" width="100%" height={30} style={{ marginTop: '10px' }} />
+                            ))}
+                        </>
+                    ) : error ? (
+                        <div>Error: {error}</div>
+                    ) : (
+                        <>
+                            <div className={styles.tableHeader}>
+                                <div>Sr.</div>
+                                <div> Product Name </div>
+                                <div>Product Description</div>
+                                <div>Action</div>
+                            </div>
+                            <div className={styles.tableBody}>
+                                {tableData.map((row) => (
+                                    <div key={row.id} className={styles.tableRowData}>
+                                        <div>{row.id}</div>
+                                        <div>{row.product_name}</div>
+                                        <div>{row.product_description}</div>
+                                        <div className={styles.iconContainer}>
+                                            <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
+                                            <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
