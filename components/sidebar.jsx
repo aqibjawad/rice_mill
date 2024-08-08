@@ -22,7 +22,7 @@ const SideBar = () => {
                 <img className={styles.logo} src="/logo.png" alt="Logo" />
             </div>
             {menuItems.map((item, index) => (
-                <Link key={item.name} href={item.href} passHref>
+                <Link key={index} href={item.href} passHref>
                     <div
                         className={`${styles.sideBarText} ${activeItem === item.name ? styles.active : ''}`}
                         onClick={() => setActiveItem(item.name)}
