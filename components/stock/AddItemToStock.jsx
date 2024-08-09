@@ -5,8 +5,6 @@ import { Box, Modal, Skeleton, Typography } from "@mui/material";
 
 import { packings, products, stocks } from "@/networkApi/Constants";
 
-import styles from "../../styles/paymentss.module.css";
-
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 
@@ -15,6 +13,10 @@ import APICall from "../../networkApi/APICall";
 import InputWithTitle from "../generic/InputWithTitle";
 import PrimaryButton from "../generic/PrimaryButton";
 import MultilineInput from "../generic/MultilineInput";
+
+import Swal from 'sweetalert2';
+
+import styles from "../../styles/paymentss.module.css";
 
 const AddItemToStock = ({ open, handleClose }) => {
   const [allProducts, setAllproducts] = useState([]);
@@ -132,10 +134,10 @@ const AddItemToStock = ({ open, handleClose }) => {
 
   const addItem = async () => {
     if (!validateInputs()) return;
-
+  
     setIsLoading(true);
     setError('');
-
+  
     try {
       const data = {
         "product_id[0]": selectedProductID,
@@ -144,15 +146,37 @@ const AddItemToStock = ({ open, handleClose }) => {
         quantity: parseInt(quantity),
         price: parseFloat(price)
       };
-
+  
       const response = await api.postDataWithToken(stocks, data);
-
+  
       if (response.status === 201) {
+        // Show success alert
+        Swal.fire({
+          title: 'Success!',
+          text: 'Item added to stock successfully.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
+  
+        // Close the modal
         handleClose();
+  
+        // Call the onItemAdded prop to update the parent component
+        if (props.onItemAdded) {
+          props.onItemAdded(response.data);
+        }
       }
     } catch (error) {
       console.error('Error adding item:', error);
       setError('An error occurred while adding the item. Please try again.');
+      
+      // Show error alert
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to add item to stock.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -178,7 +202,7 @@ const AddItemToStock = ({ open, handleClose }) => {
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
-      <Box sx={modalStyle}>
+      <Box sx={modalStyle}> 
         <div className="mb-10">
           <div className={styles.logocontainer}>
             <img className={styles.logo} src="/logo.png" />
