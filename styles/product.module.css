@@ -49,8 +49,6 @@
     flex: 6;
 }
 
-
-
 .container {
     display: flex;
     justify-content: space-between;
@@ -119,6 +117,8 @@
     background-color: #FFFFFF;
     border-radius: 30px 30px;
     padding: 20px;
+    overflow-y: auto;
+
 }
 
 .tableHeader,
@@ -127,6 +127,7 @@
     grid-template-columns: repeat(5, 1fr);
     align-items: center;
     gap: 1rem;
+    overflow-y: auto;
 }
 
 

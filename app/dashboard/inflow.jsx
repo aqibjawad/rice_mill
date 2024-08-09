@@ -1,6 +1,8 @@
 import React from "react";
 import styles from "../../styles/dashboard.module.css"
 
+import { Grid } from '@mui/material';
+
 const Inflow = () => {
     // Sample data for the table
     const tableData = [
@@ -18,21 +20,41 @@ const Inflow = () => {
 
     return (
         <div>
-            <div className={styles.container}>
-                <div className={styles.leftSection}>
-                    Inflow
-                </div>
-                <div className={styles.rightSection}>
-                    <div className={styles.rightItem}>
-                        date
-                    </div>
-                    <div className={styles.rightItem}>
-                        view all
-                    </div>
-                    <div className={styles.rightItemExp}>
-                        export
-                    </div>
-                </div>
+           <div className={styles.container}>
+                <Grid container spacing={2}>
+                    <Grid item lg={9} sm={12} xs={12} md={4}>
+                        <div className={styles.leftSection}>
+                            Inflow
+                        </div>
+                    </Grid>
+                    <Grid item lg={2} sm={12} xs={12} md={8}>
+                        <Grid container spacing={2}>
+                            <div className={styles.rightSection}>
+                                <Grid item sm={5}>
+                                    <div className={styles.rightItemExp} >
+                                        Add
+                                    </div>
+                                </Grid>
+                                <Grid item sm={6}>
+                                    <div className={styles.rightItem}>
+                                        date
+                                    </div>
+                                </Grid>
+                                <Grid item sm={6}>
+                                    <div className={styles.rightItem}>
+                                        view all
+                                    </div>
+                                </Grid>
+                                <Grid item>
+                                    <div className={styles.rightItemExp}>
+                                        export
+                                    </div>
+                                </Grid>
+                            </div>
+
+                        </Grid>
+                    </Grid>
+                </Grid>
             </div>
 
             <div className={styles.tableSection}>

@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import styles from "../../styles/dashboard.module.css";
+import styles from "../../styles/product.module.css";
 import AddProduct from "../addProduct/page";
 
 import { Skeleton } from "@mui/material";
 import { products } from "../../networkApi/Constants";
+import { Grid} from '@mui/material';
 
 const Product = () => {
     const [open, setOpen] = useState(false);
@@ -51,7 +52,7 @@ const Product = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(products.delete(id), {
+            const response = await fetch(`${products}/${id}`, {
                 method: 'DELETE',
             });
 
@@ -66,25 +67,42 @@ const Product = () => {
     };
 
     return (
-        <div>
+        <div className={styles.pageContainer}>
             <div className={styles.container}>
-                <div className={styles.leftSection}>
-                    Product
-                </div>
-                <div className={styles.rightSection}>
-                    <div className={styles.rightItemExp} onClick={handleOpen}>
-                        Add
-                    </div>
-                    <div className={styles.rightItem}>
-                        date
-                    </div>
-                    <div className={styles.rightItem}>
-                        view all
-                    </div>
-                    <div className={styles.rightItemExp}>
-                        export
-                    </div>
-                </div>
+                <Grid container spacing={2}>
+                    <Grid item lg={10} sm={12} xs={12} md={4}>
+                        <div className={styles.leftSection}>
+                            Product
+                        </div>
+                    </Grid>
+                    <Grid item lg={2} sm={12} xs={12} md={8}>
+                        <Grid container spacing={2}>
+                            <div className={styles.rightSection}>
+                                <Grid item sm={5}>
+                                    <div className={styles.rightItemExp} >
+                                        Add
+                                    </div>
+                                </Grid>
+                                <Grid item sm={6}>
+                                    <div className={styles.rightItem}>
+                                        date
+                                    </div>
+                                </Grid>
+                                <Grid item sm={6}>
+                                    <div className={styles.rightItem}>
+                                        view all
+                                    </div>
+                                </Grid>
+                                <Grid item>
+                                    <div className={styles.rightItemExp}>
+                                        export
+                                    </div>
+                                </Grid>
+                            </div>
+
+                        </Grid>
+                    </Grid>
+                </Grid>
             </div>
 
             <div className={styles.contentContainer}>
@@ -123,8 +141,6 @@ const Product = () => {
                     )}
                 </div>
             </div>
-
-            {/* Use the AddProductEntry component */}
             <AddProduct open={open} handleClose={handleClose} />
         </div>
     )

@@ -1,41 +1,41 @@
 import React from "react";
-
-import Inflow from "./inflow"
-import ExpenseCard from "./expenseCard"
-import OutFlow from "./outFlow"
-import Ledger from "./ledgaer"
-import Expense from "./expense"
-import Stock from "./stock"
-import Product from "./product"
-
-import styles from "../../styles/dashboard.module.css"
+import Grid from "@mui/material/Grid";
+import Inflow from "./inflow";
+import ExpenseCard from "./expenseCard";
+import OutFlow from "./outFlow";
+import Ledger from "./ledgaer";
+import Expense from "./expense";
+import Stock from "./stock";
+import Product from "./product";
 
 const Page = () => {
     return (
-        <div>
-            <div className={styles.flexContainer}>
-                <div className={styles.expenseCardWrapper}>
-                    <ExpenseCard />
-                </div>
-                <div className={styles.inflowWrapper}>
-                    <Inflow />
-                </div>
-            </div>
-            <OutFlow />
-            <div className="flex">
-                <div className="flex-grow">
-                    <div className="mr-5"> <Ledger /> </div>
-                </div>
-                {/* <div>
-                    <div className="">
-                        <Expense />
-                    </div>
-                </div> */}
-            </div>
-            <Stock />
-            <Product />
-        </div>
-    )
+        <Grid container spacing={3}>
+            <Grid item lg={2} xs={12} sm={6} md={4}>
+                <ExpenseCard />
+            </Grid>
+
+            <Grid item lg={10} xs={12} sm={6} md={8}>
+                <Inflow />
+            </Grid>
+
+            <Grid item xs={12}>
+                <OutFlow />
+            </Grid>
+
+            <Grid item lg={12} xs={12} md={6}>
+                <Ledger />
+            </Grid>
+
+            <Grid item lg={12} xs={12} sm={6} md={4}>
+                <Stock />
+            </Grid>
+
+            <Grid lg={12} item xs={12} sm={6} md={12}>
+                <Product />
+            </Grid>
+        </Grid>
+    );
 }
 
-export default Page
+export default Page;
