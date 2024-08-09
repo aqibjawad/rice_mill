@@ -15,6 +15,7 @@ const SideBar = () => {
     { name: "Packing", href: "/packing" },
     { name: "Payments", href: "/payments" },
     { name: "Purchase", href: "/purchase" },
+    { name: "Supplier", href: "/supplier" },
   ];
 
   return (
