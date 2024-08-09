@@ -17,3 +17,5 @@ export const stocks = apiPrefix + "/product_stock";
 
 export const suppliers = apiPrefix + "/supplier";
 
+export const buyer = apiPrefix + "/buyer";
+
