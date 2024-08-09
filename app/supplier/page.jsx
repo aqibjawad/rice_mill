@@ -9,23 +9,24 @@ import { suppliers } from "../../networkApi/Constants"
 
 import Swal from 'sweetalert2';
 
-
 const Page = () => {
-
+    
     const [open, setOpen] = useState(false);
-
     const [tableData, setTableData] = useState([]);
-
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [editingData, setEditingData] = useState(null);
 
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => {
+        setOpen(false);
+        setEditingData(null);
+        fetchData();
+    };
 
     const handleEdit = (row) => {
         setEditingData(row);
-        setOpenAddToStockModal(true);
+        setOpen(true);
     };
 
     useEffect(() => {
@@ -81,10 +82,6 @@ const Page = () => {
                 confirmButtonText: 'OK'
             });
         }
-    };
-
-    const handleDateChange = (date) => {
-        setSelectedDate(date);
     };
 
     return (
@@ -153,7 +150,7 @@ const Page = () => {
                     )}
                 </div>
             </div>
-            <AddSupplier open={open} handleClose={handleClose} />
+            <AddSupplier open={open} handleClose={handleClose} editData={editingData} />
         </div>
     );
 }

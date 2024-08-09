@@ -1,4 +1,3 @@
-// AddSupplier.jsx
 import React, { useState, useEffect } from "react";
 import { Modal, Box } from "@mui/material";
 import TextField from "@mui/material/TextField";
@@ -20,15 +19,16 @@ const style = {
   boxShadow: 24,
   borderRadius: 10,
   p: 4,
-  outline:"none"
+  outline: "none"
 };
 
 const top100Films = [{ label: "Self" }];
 
 const AddSupplier = ({ open, handleClose, editData = null }) => {
+
   const [formData, setFormData] = useState({
     person_name: "",
-    reference_id: "",
+    reference_id: "self",
     contact: "",
     address: "",
     firm_name: "",
@@ -38,9 +38,22 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
 
   useEffect(() => {
     if (editData) {
-      setFormData(editData);
+      setFormData({
+        ...editData,
+        reference_id: "self" // Ensure reference_id is always "self"
+      });
+    } else {
+      setFormData({
+        person_name: "",
+        reference_id: "self",
+        contact: "",
+        address: "",
+        firm_name: "",
+        opening_balance: "",
+        description: "",
+      });
     }
-  }, [editData]);
+  }, [editData, open]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -50,25 +63,29 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
     }));
   };
 
-  const handleReferenceChange = (event, value) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      reference_id: value ? value.label : "",
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const data = new FormData();
-    for (const key in formData) {
+
+    // Only include the specified fields
+    const fieldsToInclude = [
+      "person_name",
+      "reference_id",
+      "contact",
+      "address",
+      "firm_name",
+      "opening_balance",
+      "description"
+    ];
+
+    fieldsToInclude.forEach(key => {
       data.append(key, formData[key]);
-    }
+    });
 
     try {
-      const url = suppliers;
-
-      const method = editData ? "PUT" : "POST";
+      const url = editData ? `${suppliers}/${editData.id}` : suppliers;
+      const method = "POST";
 
       const response = await fetch(url, {
         method: method,
@@ -101,7 +118,7 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
     >
       <Box sx={style}>
         <div className={styles.ledgerHead}>
-          {editData ? "Edit Suppliers" : "Add Suppliers"}
+          {editData ? "Edit Supplier" : "Add Supplier"}
         </div>
 
         <div
@@ -180,8 +197,8 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
               renderInput={(params) => (
                 <TextField {...params} label="Reference" />
               )}
-              onChange={handleReferenceChange}
-              value={formData.reference_id}
+              value={{ label: "Self" }}
+              disabled
             />
           </div>
         </div>
