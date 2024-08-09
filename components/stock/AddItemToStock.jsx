@@ -5,6 +5,8 @@ import { Box, Modal, Skeleton, Typography } from "@mui/material";
 
 import { packings, products, stocks } from "@/networkApi/Constants";
 
+import styles from "../../styles/paymentss.module.css";
+
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 
@@ -130,10 +132,10 @@ const AddItemToStock = ({ open, handleClose }) => {
 
   const addItem = async () => {
     if (!validateInputs()) return;
-  
+
     setIsLoading(true);
     setError('');
-  
+
     try {
       const data = {
         "product_id[0]": selectedProductID,
@@ -142,9 +144,9 @@ const AddItemToStock = ({ open, handleClose }) => {
         quantity: parseInt(quantity),
         price: parseFloat(price)
       };
-  
+
       const response = await api.postDataWithToken(stocks, data);
-  
+
       if (response.status === 201) {
         handleClose();
       }
@@ -166,6 +168,7 @@ const AddItemToStock = ({ open, handleClose }) => {
     boxShadow: 24,
     borderRadius: 2,
     p: 4,
+    outline: 'none'
   };
 
   return (
@@ -177,6 +180,13 @@ const AddItemToStock = ({ open, handleClose }) => {
     >
       <Box sx={modalStyle}>
         <div className="mb-10">
+          <div className={styles.logocontainer}>
+            <img className={styles.logo} src="/logo.png" />
+          </div>
+
+          <div className={styles.ledgerHead} style={{ fontSize: '1.5rem', padding: '1rem' }}>
+           Add Items In Stock 
+          </div>
           {fetchingProducts ? (
             <Skeleton height={70} />
           ) : (

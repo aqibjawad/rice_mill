@@ -127,7 +127,7 @@ const Page = () => {
                                         <div className={styles.iconContainer}>
                                             <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
                                             <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
-                                            
+
                                             <div className={styles.ledgerDiv}>
                                                 Ledger
                                             </div>
