@@ -4,40 +4,37 @@ import styles from "../../styles/stock.module.css";
 import AddItemToStock from "../../components/stock/AddItemToStock";
 import APICall from "../../networkApi/APICall";
 import { stocks } from "@/networkApi/Constants";
-import DatePicker from "react-datepicker"; // Make sure to install this package
+import DatePicker from "react-datepicker";
 
 import Swal from 'sweetalert2';
 
 const Page = () => {
-
   const api = new APICall();
-  const [openAddToStockModal, setOpenAddToStockMoal] = useState(false);
-
+  const [openAddToStockModal, setOpenAddToStockModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-
-
-
-  const openAddStockModal = () => {
-    setOpenAddToStockMoal(true);
-  };
-  const closeStockModal = () => {
-    setOpenAddToStockMoal(false);
-  };
-
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingData, setEditingData] = useState(null);
+
+  const openAddStockModal = () => {
+    setEditingData(null);
+    setOpenAddToStockModal(true);
+  };
+
+  const closeStockModal = () => {
+    setOpenAddToStockModal(false);
+    setEditingData(null);
+  };
 
   const handleEdit = (row) => {
     setEditingData(row);
-    setIsModalOpen(true);
+    setOpenAddToStockModal(true);
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [selectedDate]);
 
   const fetchData = async () => {
     try {
@@ -76,7 +73,6 @@ const Page = () => {
 
       setTableData(tableData.filter(item => item.id !== id));
 
-      // Show success alert
       Swal.fire({
         title: 'Deleted!',
         text: 'The stock item has been deleted successfully.',
@@ -87,7 +83,6 @@ const Page = () => {
     } catch (error) {
       console.error('Error deleting Stock:', error);
 
-      // Show error alert
       Swal.fire({
         title: 'Error!',
         text: 'Failed to delete the stock item.',
@@ -97,16 +92,9 @@ const Page = () => {
     }
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingData(null);
-    fetchData();
-  };
-
   const handleDateChange = (date) => {
     setSelectedDate(date);
   };
-
 
   return (
     <div>
@@ -114,7 +102,7 @@ const Page = () => {
         <div className={styles.leftSection}>Stock</div>
         <div className={styles.rightSection}>
           <div
-            onClick={() => openAddStockModal()}
+            onClick={openAddStockModal}
             className={styles.rightItemExp}
           >
             + Add Item in Stock
@@ -128,7 +116,7 @@ const Page = () => {
       <div className={styles.tableSection}>
         <div className={styles.tableHeader}>
           <div>Sr No</div>
-          <div>Pakcing Size</div>
+          <div>Packing Size</div>
           <div>Packing Unit</div>
           <div>Price</div>
           <div>Product Description</div>
@@ -159,6 +147,8 @@ const Page = () => {
       <AddItemToStock
         open={openAddToStockModal}
         handleClose={closeStockModal}
+        editingData={editingData}
+        onItemUpdated={fetchData}
       />
     </div>
   );

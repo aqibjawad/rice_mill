@@ -1,25 +1,18 @@
 "use client";
 import React, { useEffect, useState } from "react";
-
 import { Box, Modal, Skeleton, Typography } from "@mui/material";
-
 import { packings, products, stocks } from "@/networkApi/Constants";
-
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-
 import APICall from "../../networkApi/APICall";
-
 import InputWithTitle from "../generic/InputWithTitle";
 import PrimaryButton from "../generic/PrimaryButton";
 import MultilineInput from "../generic/MultilineInput";
-
 import Swal from 'sweetalert2';
-
 import styles from "../../styles/paymentss.module.css";
 
-const AddItemToStock = ({ open, handleClose }) => {
-  const [allProducts, setAllproducts] = useState([]);
+const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
+  const [allProducts, setAllProducts] = useState([]);
   const [fetchingProducts, setFetchingProducts] = useState(false);
   const [productsList, setProductsList] = useState([]);
   const [selectedProductID, setSelectedProductID] = useState([]);
@@ -42,14 +35,31 @@ const AddItemToStock = ({ open, handleClose }) => {
     if (open) {
       fetchProducts();
       fetchPacking();
+      if (editingData) {
+        setSelectedProductID([editingData.product_id]);
+        setSelectedPackingID([editingData.packing_id]);
+        setDescription(editingData.product_description);
+        setQuantity(editingData.quantity.toString());
+        setPrice(editingData.price.toString());
+      } else {
+        resetForm();
+      }
     }
-  }, [open]);
+  }, [open, editingData]);
+
+  const resetForm = () => {
+    setSelectedProductID([]);
+    setSelectedPackingID([]);
+    setDescription('');
+    setQuantity('');
+    setPrice('');
+  };
 
   const fetchProducts = async () => {
     setFetchingProducts(true);
     try {
       const response = await api.getDataWithToken(products);
-      setAllproducts(response.data);
+      setAllProducts(response.data);
       const list = response.data.map((item, index) => ({
         label: item.product_name,
         index: index,
@@ -132,48 +142,59 @@ const AddItemToStock = ({ open, handleClose }) => {
     return true;
   };
 
-  const addItem = async () => {
+  const handleSubmit = async () => {
     if (!validateInputs()) return;
-  
+
     setIsLoading(true);
     setError('');
-  
+
     try {
-      const data = {
-        "product_id[0]": selectedProductID,
-        "packing_id[0]": selectedPackingID[0],
-        "product_description[0]": [description.trim()],
-        quantity: parseInt(quantity),
-        price: parseFloat(price)
-      };
-  
-      const response = await api.postDataWithToken(stocks, data);
-  
-      if (response.status === 201) {
-        // Show success alert
+      let data;
+      if (editingData) {
+        data = {
+          product_id: selectedProductID,
+          packing_id: selectedPackingID,
+          product_description: description.trim(),
+          quantity: parseInt(quantity),
+          price: parseFloat(price)
+        };
+      } else {
+        data = {
+          "product_id[0]": selectedProductID[0],
+          "packing_id[0]": selectedPackingID[0],
+          "product_description[0]": description.trim(),
+          "quantity[0]": parseInt(quantity),
+          "price[0]": parseFloat(price)
+        };
+      }
+
+      let response;
+      if (editingData) {
+        response = await api.updateFormDataWithToken(`${stocks}/${editingData.id}`, data);
+      } else {
+        response = await api.postDataWithToken(stocks, data);
+      }
+
+      if (response.status === 200 || response.status === 201) {
         Swal.fire({
           title: 'Success!',
-          text: 'Item added to stock successfully.',
+          text: editingData ? 'Item updated successfully.' : 'Item added to stock successfully.',
           icon: 'success',
           confirmButtonText: 'OK'
         });
-  
-        // Close the modal
+
         handleClose();
-  
-        // Call the onItemAdded prop to update the parent component
-        if (props.onItemAdded) {
-          props.onItemAdded(response.data);
+        if (onItemUpdated) {
+          onItemUpdated();
         }
       }
     } catch (error) {
-      console.error('Error adding item:', error);
-      setError('An error occurred while adding the item. Please try again.');
-      
-      // Show error alert
+      console.error('Error submitting item:', error);
+      setError('An error occurred. Please try again.');
+
       Swal.fire({
         title: 'Error!',
-        text: 'Failed to add item to stock.',
+        text: editingData ? 'Failed to update item.' : 'Failed to add item to stock.',
         icon: 'error',
         confirmButtonText: 'OK'
       });
@@ -202,14 +223,14 @@ const AddItemToStock = ({ open, handleClose }) => {
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
-      <Box sx={modalStyle}> 
+      <Box sx={modalStyle}>
         <div className="mb-10">
           <div className={styles.logocontainer}>
-            <img className={styles.logo} src="/logo.png" />
+            <img className={styles.logo} src="/logo.png" alt="Logo" />
           </div>
 
           <div className={styles.ledgerHead} style={{ fontSize: '1.5rem', padding: '1rem' }}>
-           Add Items In Stock 
+            {editingData ? 'Update Item In Stock' : 'Add Item In Stock'}
           </div>
           {fetchingProducts ? (
             <Skeleton height={70} />
@@ -218,6 +239,7 @@ const AddItemToStock = ({ open, handleClose }) => {
               disablePortal
               id="product-select"
               options={productsList}
+              value={productsList.find(item => item.id === selectedProductID[0]) || null}
               renderInput={(params) => (
                 <TextField {...params} label="Select Product" />
               )}
@@ -233,6 +255,7 @@ const AddItemToStock = ({ open, handleClose }) => {
               disablePortal
               id="packing-select"
               options={allPackingsList}
+              value={allPackingsList.find(item => item.id === selectedPackingID[0]) || null}
               renderInput={(params) => (
                 <TextField {...params} label="Select Packing" />
               )}
@@ -274,8 +297,8 @@ const AddItemToStock = ({ open, handleClose }) => {
         )}
         <div className="mt-10">
           <PrimaryButton
-            onClick={addItem}
-            title={"Add Item"}
+            onClick={handleSubmit}
+            title={editingData ? "Update Item" : "Add Item"}
             disabled={isLoading}
           />
         </div>
