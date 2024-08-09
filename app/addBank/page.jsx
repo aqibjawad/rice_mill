@@ -130,7 +130,7 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
                                 onChange={handleInputChange}
                             />
 
-                            <div style={{marginTop:"1rem"}} className={styles.saveBtn} onClick={handleSubmit}>
+                            <div style={{ marginTop: "1rem" }} className={styles.saveBtn} onClick={handleSubmit}>
                                 {editData ? 'Update' : 'Save'}
                             </div>
                         </Grid>

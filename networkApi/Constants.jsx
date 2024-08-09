@@ -12,3 +12,5 @@ export const packings = apiPrefix + "/packing";
 export const expense = apiPrefix + "/expense_category";
 
 export const payment_In = apiPrefix + "/payment_in";
+
+export const stocks = apiPrefix + "/product_stock";
