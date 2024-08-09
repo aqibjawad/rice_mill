@@ -1,22 +1,24 @@
+/* Base styles (for desktops and tablets) */
 .header {
     height: 80px;
-    left: 232px;
-    padding: 10px 30px 10px 30px;
-    background: #FFFFFF;
     padding: 20px;
+    background: #FFFFFF;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .nameCont {
     display: flex;
+    flex-direction: row;
+    /* Ensure horizontal alignment */
     align-items: center;
-    width: 100%;
 }
 
 .userName {
     font-family: "regular";
     font-size: 20px;
     font-weight: 400;
-    text-align: left;
     color: #1E1E1E;
 }
 
@@ -24,24 +26,75 @@
     font-family: "regular";
     font-size: 15px;
     font-weight: 500;
-    line-height: 12.99px;
-    text-align: left;
     color: #9A9A9A;
+    margin-left: 10px;
+    /* Add some spacing if needed */
 }
 
 .companyName {
     font-family: "regular";
     font-size: 24px;
     font-weight: 600;
-    text-align: center;
 }
 
-.logoutBtn{
+.logoutBtn {
     background-color: #316AFF;
-    color:white;
+    color: white;
     width: 120px;
     border-radius: 50px;
     text-align: center;
-    justify-content: center;
     padding: 10px;
+}
+
+/* Tablet styles */
+@media (max-width: 1024px) {
+    .header {
+        padding: 15px;
+    }
+
+    .nameCont {
+        margin-right: auto;
+    }
+
+    .userEmail {
+        font-size: 14px;
+    }
+
+    .companyName {
+        font-size: 20px;
+        margin-right: 4rem;
+    }
+
+    .logoutBtn {
+        width: 120px;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: row;
+        align-items: flex-start;
+        padding: 10px;
+    }
+
+    .nameCont {
+        flex-direction: row;
+        margin-bottom: 10px;
+    }
+
+    .userEmail {
+        font-size: 14px;
+    }
+
+    .companyName {
+        font-size: 18px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .logoutBtn {
+        width: 100px;
+        padding: 8px;
+    }
 }
