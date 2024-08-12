@@ -41,7 +41,7 @@ const SideBar = () => {
           <img className={styles.logo} src="/logo.png" alt="Logo" />
         </div>
         {menuItems.map((item, index) => (
-          <Link key={index} href={item.href} passHref>
+          <Link key={index} href={item.href}>
             <div
               className={`${styles.sideBarItem} ${activeItem === item.name ? styles.active : ""
                 }`}

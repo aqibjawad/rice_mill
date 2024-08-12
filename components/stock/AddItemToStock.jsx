@@ -228,7 +228,7 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
           <div className={styles.logocontainer}>
             <img className={styles.logo} src="/logo.png" alt="Logo" />
           </div>
-
+ 
           <div className={styles.ledgerHead} style={{ fontSize: '1.5rem', padding: '1rem' }}>
             {editingData ? 'Update Item In Stock' : 'Add Item In Stock'}
           </div>

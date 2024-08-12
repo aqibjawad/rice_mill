@@ -1,8 +1,10 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, Grid, Stack } from '@mui/material';
+import { Modal, Box, Grid } from '@mui/material';
 import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
-import { banks as banksApi } from "../../networkApi/Constants"; // Adjust import based on actual path
+import { banks as banksApi } from "../../networkApi/Constants";
 
 const style = {
     position: 'absolute',
@@ -17,7 +19,7 @@ const style = {
     overflow: { xs: 'auto', sm: 'initial' },
 };
 
-const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => {
+export const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => {
     const [formData, setFormData] = useState({ bank_name: '' });
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
 
     const fetchData = async () => {
         try {
-            const response = await fetch(banksApi); // Fetch initial bank data
+            const response = await fetch(banksApi);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -73,8 +75,8 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
 
         try {
             const url = editData
-                ? `${banksApi}/${editData.id}` // URL for updating existing bank
-                : banksApi; // URL for adding new bank
+                ? `${banksApi}/${editData.id}`
+                : banksApi;
 
             const method = editData ? 'PUT' : 'POST';
 
@@ -86,14 +88,12 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
             if (response.ok) {
                 const result = await response.json();
                 if (editData) {
-                    // Update existing bank in the table data
                     setTableData(tableData.map(item => item.id === editData.id ? result.data : item));
                 } else {
-                    // Add new bank to the table data
                     setTableData([...tableData, result.data]);
                 }
                 console.log(editData ? 'Entry updated successfully' : 'Form submitted successfully');
-                onClose(); // Close modal
+                onClose();
             } else {
                 console.error(editData ? 'Entry update failed' : 'Form submission failed');
             }
@@ -111,7 +111,7 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
         >
             <Box sx={style}>
                 <div className={styles.logocontainer}>
-                    <img className={styles.logo} src="/logo.png" />
+                    <img className={styles.logo} src="/logo.png" alt="Logo" />
                 </div>
 
                 <div className={styles.ledgerHead} style={{ fontSize: '1.5rem', padding: '1rem' }}>
@@ -170,5 +170,3 @@ const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => 
         </Modal>
     );
 };
-
-export default AddPacking;

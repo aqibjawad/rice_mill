@@ -1,4 +1,5 @@
 // AddProduct.jsx
+"use client";
 import React, { useState, useEffect } from 'react';
 import { Modal, Box } from '@mui/material';
 import styles from "../../styles/product.module.css";

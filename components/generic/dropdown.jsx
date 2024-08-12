@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 
-const DropDown = ({ title, options }) => {
+const DropDown = ({ title, options = [], onChange }) => {
     const [selectedID, setSelectedID] = useState(null);
 
     return (
@@ -13,11 +13,9 @@ const DropDown = ({ title, options }) => {
                 disablePortal
                 id="dropdown-select"
                 options={options}
-                getOptionLabel={(option) => option.name} 
+                getOptionLabel={(option) => option.label || ''}
                 value={options.find(item => item.id === selectedID) || null}
-                onChange={(event, newValue) => {
-                    setSelectedID(newValue ? newValue.id : null);
-                }}
+                onChange={onChange}
                 renderInput={(params) => (
                     <TextField {...params} label={title} />
                 )}

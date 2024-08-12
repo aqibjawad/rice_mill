@@ -19,3 +19,5 @@ export const suppliers = apiPrefix + "/supplier";
 
 export const buyer = apiPrefix + "/buyer";
 
+export const purchaseOut = apiPrefix + "/payment_out";
+

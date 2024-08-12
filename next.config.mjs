@@ -1,4 +1,23 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
-export default nextConfig;
+const nextPWA = require('next-pwa');
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    output: "export",
+    distDir: "out",
+    trailingSlash: true,
+    images: {
+        unoptimized: true,
+    },
+};
+
+const withPWA = nextPWA({
+    dest: ".",
+    disable: process.env.NODE_ENV === 'development',
+    register: true,
+    skipWaiting: true,
+});
+
+export default withPWA(nextConfig);
