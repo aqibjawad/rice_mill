@@ -21,31 +21,32 @@ const OutFlow = () => {
                         </div>
                     </Grid>
                     <Grid item lg={2} sm={12} xs={12} md={8}>
-                        <Grid container spacing={2}>
-                            <div className={styles.rightSection}>
-                                <Grid item sm={5}>
-                                    <div className={styles.rightItemExp} >
+                        <div className={styles.rightSection}>
+
+                            <Grid container spacing={2}>
+                                <Grid item xs={6} sm={6} md={3}>
+                                    <div className={styles.rightItemExp}>
                                         Add
                                     </div>
                                 </Grid>
-                                <Grid item sm={6}>
+                                <Grid item xs={6} sm={6} md={3}>
                                     <div className={styles.rightItem}>
                                         date
                                     </div>
                                 </Grid>
-                                <Grid item sm={6}>
+                                <Grid item xs={6} sm={6} md={3}>
                                     <div className={styles.rightItem}>
                                         view all
                                     </div>
                                 </Grid>
-                                <Grid item>
+                                <Grid item xs={6} sm={6} md={3}>
                                     <div className={styles.rightItemExp}>
                                         export
                                     </div>
                                 </Grid>
-                            </div>
+                            </Grid>
+                        </div>
 
-                        </Grid>
                     </Grid>
                 </Grid>
             </div>
