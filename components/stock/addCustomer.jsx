@@ -1,4 +1,4 @@
-// AddLedgerEntry.jsx
+// AddCustomer.jsx
 
 "use client";
 import React, { useState, useEffect } from "react";
@@ -26,7 +26,7 @@ const style = {
 
 const top100Films = [{ label: "Self" }];
 
-const AddLedgerEntry = ({ open, handleClose, editData = null }) => {
+const AddCustomer = ({ open, handleClose, editData = null }) => {
   const [formData, setFormData] = useState({
     person_name: "",
     reference_id: "",
@@ -217,4 +217,4 @@ const AddLedgerEntry = ({ open, handleClose, editData = null }) => {
   );
 };
 
-export default AddLedgerEntry;
+export default AddCustomer;

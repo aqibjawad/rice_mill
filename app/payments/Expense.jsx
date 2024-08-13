@@ -7,12 +7,13 @@ import MultilineInput from "../../components/generic/MultilineInput";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
-import AddBank from "../addBank/page";
-import AddExpense from "../addExpense/page";
+
+import AddExpense from "../../components/stock/addExpense";
 
 import { banks as banksApi } from "../../networkApi/Constants"; // Adjust import based on actual path
 
 import { expense as expenseApi } from "../../networkApi/Constants"; // Adjust import based on actual path
+import AddBank from "../../components/stock/addBank";
 
 const Expense = () => {
 
@@ -86,7 +87,7 @@ const Expense = () => {
         <div>
             <div className='mt-10' style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ flex: 1, marginRight: '10px' }}>
-                    <div className={styles.bankHead} onClick={handleOpenExpense} style={{ cursor: "pointer", marginBottom:"1rem" }}>
+                    <div className={styles.bankHead} onClick={handleOpenExpense} style={{ cursor: "pointer", marginBottom: "1rem" }}>
                         Add Expense
                     </div>
                     <Autocomplete
@@ -97,7 +98,7 @@ const Expense = () => {
                         renderInput={(params) => <TextField {...params} label="Select Expense Type" />}
                     />
                 </div>
-                <div style={{ flex: 1, marginLeft: '10px', marginTop:"1rem" }}>
+                <div style={{ flex: 1, marginLeft: '10px', marginTop: "1rem" }}>
                     <InputWithTitle
                         title="Amount"
                         type="text"
@@ -128,7 +129,7 @@ const Expense = () => {
                         <div>
                             <div className='mt-10' style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <div style={{ flex: 1, marginRight: '10px' }}>
-                                    <div className={styles.bankHead} onClick={handleOpen} style={{ cursor: "pointer", marginBottom:"1rem" }}>
+                                    <div className={styles.bankHead} onClick={handleOpen} style={{ cursor: "pointer", marginBottom: "1rem" }}>
                                         Add Bank
                                     </div>
                                     <Autocomplete
@@ -141,7 +142,7 @@ const Expense = () => {
                                     />
                                 </div>
 
-                                <div style={{ flex: 1, marginRight: '10px', marginTop:"1rem" }}>
+                                <div style={{ flex: 1, marginRight: '10px', marginTop: "1rem" }}>
                                     <InputWithTitle
                                         title="Cheque Number"
                                         type="text"
@@ -149,7 +150,7 @@ const Expense = () => {
                                         name="cheque_number"
                                     />
                                 </div>
-                                <div style={{ flex: 1, marginLeft: '10px', marginTop:"1rem" }}>
+                                <div style={{ flex: 1, marginLeft: '10px', marginTop: "1rem" }}>
                                     <InputWithTitle
                                         title="Cheque Date"
                                         type="text"

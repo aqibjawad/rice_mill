@@ -7,8 +7,8 @@ import MultilineInput from "../../components/generic/MultilineInput";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
-import AddBank from "../addBank/page";
-import AddExpense from "../addExpense/page";
+import AddBank from "../../components/stock/addBank";
+import AddExpense from "../../components/stock/addExpense";
 
 import { banks as banksApi } from "../../networkApi/Constants"; // Adjust import based on actual path
 

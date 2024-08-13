@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger.module.css";
 import { Skeleton } from "@mui/material";
 
-import AddLedgerEntry from "../addCustomer/page";
+import AddCustomer from "../../components/stock/addCustomer";
 import { customers } from "../../networkApi/Constants"
 
 const Page = () => {
@@ -139,7 +139,7 @@ const Page = () => {
                     )}
                 </div>
             </div>
-            <AddLedgerEntry open={open} handleClose={handleClose} />
+            <AddCustomer open={open} handleClose={handleClose} />
         </div>
     );
 }

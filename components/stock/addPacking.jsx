@@ -20,7 +20,7 @@ const style = {
     outline: 'none',
 };
 
-const AddBank = ({ open, handleClose, editData = null }) => {
+const AddPacking = ({ open, handleClose, editData = null }) => {
 
     const [formData, setFormData] = useState({
         packing_size: '',
@@ -113,4 +113,4 @@ const AddBank = ({ open, handleClose, editData = null }) => {
     );
 };
 
-export default AddBank;
+export default AddPacking;

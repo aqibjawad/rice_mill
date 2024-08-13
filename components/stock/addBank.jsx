@@ -19,7 +19,7 @@ const style = {
     overflow: { xs: 'auto', sm: 'initial' },
 };
 
-export const AddPacking = ({ open: isOpen, handleClose: onClose, editData = null }) => {
+export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null }) => {
     const [formData, setFormData] = useState({ bank_name: '' });
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);

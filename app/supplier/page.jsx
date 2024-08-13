@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger.module.css";
 import { Skeleton } from "@mui/material";
 
-import AddSupplier from "../addSupplier/page"
+import AddSupplier from "../../components/stock/addSupplier"
 import { suppliers } from "../../networkApi/Constants"
 
 import Swal from 'sweetalert2';
