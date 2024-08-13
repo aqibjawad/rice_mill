@@ -4,13 +4,10 @@ import styles from "../../styles/purchase.module.css";
 import AddItemToStock from "../../components/stock/AddItemToStock";
 import APICall from "../../networkApi/APICall";
 import { purchaseOut } from "@/networkApi/Constants";
-
 import Swal from 'sweetalert2';
- 
 import Link from "next/link";
 
 const Page = () => {
-
   const api = new APICall();
 
   const [openAddToStockModal, setOpenAddToStockModal] = useState(false);
@@ -20,44 +17,34 @@ const Page = () => {
   const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
 
-  const openAddStockModal = () => {
-    setEditingData(null);
-    setOpenAddToStockModal(true);
-  };
-
-  const closeStockModal = () => {
-    setOpenAddToStockModal(false);
-    setEditingData(null);
-  };
-
-  const handleEdit = (row) => {
-    setEditingData(row);
-    setOpenAddToStockModal(true);
-  };
-
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-        const response = await fetch(purchaseOut);
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const result = await response.json();
-        const data = result.data;
-        if (Array.isArray(data)) {
-            setTableData(data);
-        } else {
-            throw new Error('Fetched data is not an array');
-        }
+      const response = await fetch(purchaseOut);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const result = await response.json();
+      const data = result.data;
+      if (Array.isArray(data)) {
+        setTableData(data);
+      } else {
+        throw new Error('Fetched data is not an array');
+      }
     } catch (error) {
-        setError(error.message);
+      setError(error.message);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
+
+  const handleEdit = (row) => {
+    const encodedData = encodeURIComponent(JSON.stringify(row));
+    window.location.href = `/addPurchase?editData=${encodedData}`;
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -73,25 +60,21 @@ const Page = () => {
 
       Swal.fire({
         title: 'Deleted!',
-        text: 'The stock item has been deleted successfully.',
+        text: 'The purchase item has been deleted successfully.',
         icon: 'success',
         confirmButtonText: 'OK'
       });
 
     } catch (error) {
-      console.error('Error deleting Stock:', error);
+      console.error('Error deleting Purchase:', error);
 
       Swal.fire({
         title: 'Error!',
-        text: 'Failed to delete the stock item.',
+        text: 'Failed to delete the purchase item.',
         icon: 'error',
         confirmButtonText: 'OK'
       });
     }
-  };
-
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
   };
 
   return (
@@ -100,11 +83,8 @@ const Page = () => {
         <div className={styles.leftSection}>Purchase</div>
         <div className={styles.rightSection}>
           <div className={styles.rightItemExp}>
-            <Link href="/addPurchase"> 
-             + Add Purchase
-            </Link>
+            <Link href="/addPurchase">+ Add Purchase</Link>
           </div>
-          <div className={styles.rightItem}>view all</div>
           <div className={styles.rightItem}>view all</div>
           <div className={styles.rightItemExp}>export</div>
         </div>
@@ -113,16 +93,16 @@ const Page = () => {
       <div className={styles.tableSection}>
         <div className={styles.tableHeader}>
           <div>Sr No</div>
-          <div> Amount </div>
-          <div> Bank Name </div>
-          <div> Cheque  Date</div>
-          <div> Cheque No </div>
-          <div> Customer </div>
-          <div> Description </div>
-          <div> Expense Category </div>
-          <div> payment Flow Type </div>
-          <div> payment Type </div>
-          <div> Action </div>
+          <div>Amount</div>
+          <div>Bank Name</div>
+          <div>Cheque Date</div>
+          <div>Cheque No</div>
+          <div>Customer</div>
+          <div>Description</div>
+          <div>Expense Category</div>
+          <div>Payment Flow Type</div>
+          <div>Payment Type</div>
+          <div>Action</div>
         </div>
         <div className={styles.tableBody}>
           {tableData.map((row, index) => (
@@ -132,13 +112,11 @@ const Page = () => {
               <div>{row.bank_name}</div>
               <div>{row.cheque_date}</div>
               <div>{row.cheque_no}</div>
-              <div>  </div>
+              <div>{row.customer_id}</div>
               <div>{row.description}</div>
               <div>{row.expense_category_id}</div>
               <div>{row.payment_flow_type}</div>
               <div>{row.payment_type}</div>
-
-
               <div className={styles.iconContainer}>
                 <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
                 <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
@@ -147,12 +125,6 @@ const Page = () => {
           ))}
         </div>
       </div>
-      <AddItemToStock
-        open={openAddToStockModal}
-        handleClose={closeStockModal}
-        editingData={editingData}
-        onItemUpdated={fetchData}
-      />
     </div>
   );
 };
