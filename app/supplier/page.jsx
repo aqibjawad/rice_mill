@@ -2,15 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger.module.css";
-import { Skeleton } from "@mui/material";
-
+import { Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import { MdDelete, MdEdit } from "react-icons/md";
 import AddSupplier from "../../components/stock/addSupplier"
 import { suppliers } from "../../networkApi/Constants"
-
 import Swal from 'sweetalert2';
+import Link from "next/link";
 
 const Page = () => {
-    
     const [open, setOpen] = useState(false);
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -107,48 +106,61 @@ const Page = () => {
             </div>
 
             <div className={styles.contentContainer}>
-                <div className={styles.tableSection}>
-                    {loading ? (
-                        <>
-                            <Skeleton variant="rectangular" width="100%" height={40} />
-                            {[...Array(5)].map((_, index) => (
-                                <Skeleton key={index} variant="rectangular" width="100%" height={30} style={{ marginTop: '10px' }} />
-                            ))}
-                        </>
-                    ) : error ? (
-                        <div>Error: {error}</div>
-                    ) : (
-                        <>
-                            <div className={styles.tableHeader}>
-                                <div>Sr.</div>
-                                <div>Person Name</div>
-                                <div>Contact</div>
-                                <div>Address</div>
-                                <div>Firm Name</div>
-                                <div> customer Type </div>
-                                <div>Description</div>
-                                <div>Action</div>
-                            </div>
-                            <div className={styles.tableBody}>
-                                {tableData.map((row) => (
-                                    <div key={row.id} className={styles.tableRowData}>
-                                        <div>{row.id}</div>
-                                        <div>{row.person_name}</div>
-                                        <div>{row.contact}</div>
-                                        <div>{row.address}</div>
-                                        <div>{row.firm_name}</div>
-                                        <div>{row.customer_type}</div>
-                                        <div>{row.description}</div>
-                                        <div className={styles.iconContainer}>
-                                            <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
-                                            <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </div>
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Sr.</TableCell>
+                                <TableCell>Person Name</TableCell>
+                                <TableCell>Contact</TableCell>
+                                <TableCell>Address</TableCell>
+                                <TableCell>Firm Name</TableCell>
+                                <TableCell>Customer Type</TableCell>
+                                <TableCell>Description</TableCell>
+                                <TableCell>Action</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={8}>
+                                        <Skeleton variant="rectangular" width="100%" height={40} />
+                                        {[...Array(5)].map((_, index) => (
+                                            <Skeleton key={index} variant="rectangular" width="100%" height={30} style={{ marginTop: '10px' }} />
+                                        ))}
+                                    </TableCell>
+                                </TableRow>
+                            ) : error ? (
+                                <TableRow>
+                                    <TableCell colSpan={8}>Error: {error}</TableCell>
+                                </TableRow>
+                            ) : (
+                                tableData.map((row) => (
+                                    <TableRow key={row.id}>
+                                        <TableCell>{row.id}</TableCell>
+                                        <TableCell>{row.person_name}</TableCell>
+                                        <TableCell>{row.contact}</TableCell>
+                                        <TableCell>{row.address}</TableCell>
+                                        <TableCell>{row.firm_name}</TableCell>
+                                        <TableCell>{row.customer_type}</TableCell>
+                                        <TableCell>{row.description}</TableCell>
+                                        <TableCell>
+                                            <div className={styles.iconContainer}>
+                                                <div style={{color:"#316AFF", fontSize:"15px", marginTop:"1rem"}}>
+                                                    <Link href={`/supplierLedger?supplierId=${row.id}`}>
+                                                        View Ledger
+                                                    </Link>
+                                                </div>
+                                                <MdDelete onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
+                                                <MdEdit onClick={() => handleEdit(row)} className={styles.editButton} />
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </div>
             <AddSupplier open={open} handleClose={handleClose} editData={editingData} />
         </div>
