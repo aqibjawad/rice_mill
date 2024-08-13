@@ -1,162 +1,167 @@
-/* login.module.css */
-.container {
-    display: flex;
-    min-height: 100vh;
+.Maincontainer {
+    overflow-y: hidden;
 }
 
-.leftSection {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    margin-top: 5rem;
-}
-
-.logoSection {
-    text-align: center;
-}
-
-.logo {
-    width: 84.05px;
-    height: 86px;
-    margin: 0 auto;
-}
-
-.companyName {
-    font-family: "regular";
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 36px;
-    text-align: center;
-    margin-top: 40px;
-}
-
-.companyHeadLine {
-    font-family: "regular";
-    font-size: 32px;
-    font-weight: 600;
-    line-height: 48px;
-    text-align: center;
-    color: #316AFF;
-    margin-top: 30px;
-}
-
-.imageSection {
-    margin-top: 30px;
-}
-
-.image2 {
-    max-width: 100%;
-    height: auto;
-    border-radius: 20px;
-}
-
-.rightSecLogin {
-    flex: 1;
+.loginImageContainer {
     position: relative;
-    background-image: url('/loginImage.png');
-    background-size: cover;
-    background-position: center;
-    border-radius: 20px;
-    box-sizing: border-box;
-    margin: 50px
+    width: 100%;
+    height: 100vh;
 }
 
-.overlay {
+.loginImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     position: absolute;
-    top: 50%;
+    top: 0;
+    left: 0;
+}
+
+.overlayText {
+    position: absolute;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: calc(100% - 40px);
-    /* Adjust width to account for padding */
-    max-width: 546px;
-    padding: 40px;
-    box-shadow: 0px 20px 40px 0px #CDB4DB29;
-    background: linear-gradient(126.64deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 98.11%);
-    border-radius: 40px;
-    border: 1px solid transparent;
-    border-image-slice: 1;
+    color: white;
+    text-align: center;
+    font-family: "regular";
+    font-size: 68px;
+    font-weight: 400;
+    width: 80%;
+    z-index: 1;
 }
 
-.welcome {
+.text2 {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-align: center;
     font-family: "regular";
     font-size: 24px;
-    font-weight: 700;
-    line-height: 1.2;
-    text-align: center;
-    margin-top: 30px;
+    font-weight: 400;
+    width: 80%;
+    z-index: 1;
 }
 
-.welcomeLine {
+.logoCont {
+    position: absolute;
+    width: 158px;
+    height: 158px;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.formSec {
+    width: 100%;
+    height: 438px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 35px;
+    margin-top: 7rem;
+}
+
+.signIn {
     font-family: "regular";
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.2;
-    text-align: center;
-    color: #FBFBFB;
-    margin-top: 30px;
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 48px;
+    text-align: left;
 }
 
-.inputField {
-    margin-top: 20px;
+.signinBtn {
+    width: Fill (449px)px;
+    height: Fixed (48px)px;
+    padding: 17px 10px 17px 10px;
+    gap: 10px;
+    border-radius: 10px;
+    background: #316AFF;
+    font-family: "regular";
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    color: white
 }
 
 @media (max-width: 1024px) {
-    .container {
-        flex-direction: column;
+    .overlayText {
+        font-size: 20px;
+        top: 45%;
     }
 
-    .rightSecLogin {
-        min-height: 100vh;
+    .text2 {
+        font-size: 16px;
+        top: 55%;
     }
 
-    .overlay {
-        position: relative;
-        transform: none;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: auto;
+    .logoCont {
+        position: absolute;
+        width: 158px;
+        height: 158px;
+        left: 50%;
+        transform: translateX(-50%);
     }
 }
 
 @media (max-width: 768px) {
-    .companyHeadLine {
-        font-size: 24px;
-        line-height: 36px;
+    .overlayText {
+        font-size: 20px;
+        top: 45%;
     }
 
-    .image2 {
-        max-width: 100%;
+    .text2 {
+        font-size: 20px;
+        top: 55%;
+    }
+
+    .logoCont {
+        position: absolute;
+        width: 158px;
+        height: 158px;
+        left: 50%;
+        transform: translateX(-50%);
     }
 }
 
-@media (max-width: 480px) {
-    .companyName {
-        font-size: 20px;
+@media (max-width: 425px) {
+    .overlayText {
+        font-size: 25px;
+        top: 35%;
     }
 
-    .companyHeadLine {
-        font-size: 20px;
-        line-height: 30px;
+    .text2 {
+        font-size: 8vw;
+        top: 55%;
     }
 
-    .welcome {
-        font-size: 20px;
+    .logoCont {
+        width: 35vw;
+        top: 2%;
     }
 
-    .welcomeLine {
-        font-size: 16px;
+    .logoCont {
+        position: absolute;
+        width: 158px;
+        height: 158px;
+        left: 50%;
+        transform: translateX(-50%);
     }
 
-    .overlay {
-        position: relative;
-        transform: none;
-        top: 0;
-        left: 0;
+    .loginImage {
         width: 100%;
-        height: auto;
-        margin-top: 100px;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+    }
+
+    .formSec {
+        width: 100%;
+        height: 438px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 }

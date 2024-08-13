@@ -1,51 +1,51 @@
 import React from "react";
-import styles from "../styles/login.module.css";
-import InputWithTitle from "../components/generic/InputWithTitle"
+import { Grid } from "@mui/material";
 
-export default function Home() {
+import styles from "../styles/login.module.css";
+
+import InputWithTitle from "@/components/generic/InputWithTitle";
+
+const Home = () => {
   return (
-    <div className={styles.container}>
-      <div className={styles.leftSection}>
-        <div className={styles.logoSection}>
-          <img className={styles.logo} src="/logo.png" alt="Company Logo" />
-          <div className={styles.companyName}>
-            Ghulam Bari Rice Mill
+    <div>
+      <Grid container spacing={2} className={styles.Maincontainer}>
+        <Grid item xs={12} sm={6} md={4} lg={6}>
+          <div className={styles.loginImageContainer}>
+            <img className={styles.loginImage} src="/loginImage.png" alt="Login Background" />
+            <div>
+              <img className={styles.logoCont} src="/logo.png" />
+            </div>
+            <div className={styles.overlayText}>
+               Ghulam Bari Rice Mill
+            </div>
+            <div className={styles.text2}>
+              Where quality meets tradition, delivering excellence in every grain
+            </div>
           </div>
-          <div className={styles.companyHeadLine}>
-            Where quality meets tradition, <br /> delivering excellence in every <br /> grain
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={4} lg={6}>
+          <div className={styles.formSec}>
+            <div className={styles.signIn}>
+              Sign in
+            </div>
+
+            <div>
+              <InputWithTitle title={"User name or email address"} />
+            </div>
+
+            <div>
+              <InputWithTitle title={"Your password"} />
+            </div>
+
+            <div className={styles.signinBtn}>
+              Sign In
+            </div>
           </div>
-        </div>
-        <div className={styles.imageSection}>
-          <img className={styles.image2} src="/Rectangle 3.png" alt="Company Image" />
-        </div>
-      </div>
-      <div className={styles.rightSecLogin}>
-        <div className={styles.overlay}>
-          <img className={styles.logo} src="/logo.png" alt="Company Logo" />
-          <div className={styles.welcome}>
-            Welcome !
-          </div>
-          <div className={styles.welcomeLine}>
-            Please enter your credentials to login.
-          </div>
-          <div className={styles.inputField}>
-            <InputWithTitle
-              title="Email"
-              type="text"
-              placeholder="Email"
-              name="email"
-            />
-          </div>
-          <div className={styles.inputField}>
-            <InputWithTitle
-              title="Password"
-              type="password"
-              placeholder="Password"
-              name="password"
-            />
-          </div>
-        </div>
-      </div>
+        </Grid>
+      </Grid>
     </div>
-  );
+  )
 }
+
+export default Home
