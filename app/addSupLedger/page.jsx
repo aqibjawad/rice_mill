@@ -3,10 +3,13 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { Grid } from "@mui/material";
 import { useSearchParams } from 'next/navigation';
+
 import InputWithTitle from "@/components/generic/InputWithTitle";
 import Dropdown from "../../components/generic/dropdown";
+import MultilineInput from "@/components/generic/MultilineInput";
+
 import styles from "../../styles/addPurchase.module.css";
-import { supplierLedger, suppliers, products } from "../../networkApi/Constants";
+import { supplierLedger, suppliers, banks } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Tabs from "./tabs";
 
@@ -31,42 +34,29 @@ const AddSupplierContent = ({ searchParams }) => {
   const api = new APICall();
 
   const [formData, setFormData] = useState({
-    customer_id: "",
-    date: "",
-    product_id: "",
-    quantity: "",
-    bardaana: "",
-    bardaanaQuantity: "",
-    truckNumber: "",
-    freight: "",
-    totalAmount: "",
-    bankTax: "",
-    amount: "",
-    chequeNumber: "",
-    remainingAmount: "",
-    firstWeight: "",
-    secondWeight: "",
-    netWeight: "",
-    bardaanaDeduction: "",
-    saafiWeight: "",
-    payment_type: "cash"
+    sup_id: "",
+    payment_type: "cash",
+    description: "",
+
+    cheque_amount: "",
+    cash_amount: "",
+    cheque_no: "",
+
+    cheque_date: "",
+    bank_id: ""
+
   });
 
-  const [productList, setProducts] = useState([]);
   const [supplierList, setSuppliers] = useState([]);
-  const [error, setError] = useState('');
-  const [selectedBardaana, setSelectedBardaana] = useState(null);
-  const [activeTab, setActiveTab] = useState("cash");
+  const [bankList, setBanks] = useState([]);
 
-  const bardaanaList = [
-    { id: 1, name: 'Jama' },
-    { id: 2, name: 'Wapisi' },
-    { id: 3, name: 'Ada Shuda' },
-  ];
+
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState("cash");
 
   useEffect(() => {
     fetchSuppliers();
-    fetchProducts();
+    fetchBanks();
 
     const editData = searchParams.get('editData');
     if (editData) {
@@ -98,18 +88,18 @@ const AddSupplierContent = ({ searchParams }) => {
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchBanks = async () => {
     try {
-      const response = await api.getDataWithToken(products);
+      const response = await api.getDataWithToken(banks);
       const list = response.data.map((item, index) => ({
-        label: `${item.product_name}`,
+        label: `${item.bank_name}`,
         index: index,
         id: item.id,
       }));
-      setProducts(list);
+      setBanks(list);
     } catch (error) {
-      console.error("Error fetching products:", error);
-      setError("Failed to fetch products. Please try again.");
+      console.error("Error fetching banks:", error);
+      setError("Failed to fetch banks. Please try again.");
     }
   };
 
@@ -125,27 +115,17 @@ const AddSupplierContent = ({ searchParams }) => {
     if (selectedOption && selectedOption.id) {
       setFormData(prevState => ({
         ...prevState,
-        customer_id: selectedOption.id.toString()
-      }));
-    }   
-  };
-
-  const handleProductChange = (event, selectedOption) => {
-    if (selectedOption && selectedOption.id) {
-      setFormData(prevState => ({
-        ...prevState,
-        product_id: selectedOption.id.toString()
+        sup_id: selectedOption.id.toString()
       }));
     }
   };
 
-  const handleBardaanaChange = (selectedOption) => {
-    if (selectedOption && selectedOption.name) {
+  const handleBankChange = (event, selectedOption) => {
+    if (selectedOption && selectedOption.id) {
       setFormData(prevState => ({
         ...prevState,
-        bardaana: selectedOption.name
+        bank_id: selectedOption.id.toString()
       }));
-      setSelectedBardaana(selectedOption);
     }
   };
 
@@ -166,7 +146,7 @@ const AddSupplierContent = ({ searchParams }) => {
       } else {
         response = await api.postDataWithToken(supplierLedger, formData);
       }
-      
+
       if (response.status === 200) {
         alert('Form submitted successfully');
         window.location.href = '/purchase';
@@ -182,198 +162,92 @@ const AddSupplierContent = ({ searchParams }) => {
   return (
     <form onSubmit={handleSubmit}>
       <Grid container spacing={2}>
-        <Grid className="mt-10" item xs={12} sm={4}>
+        <Grid className="mt-10" item xs={12} sm={4} lg={6}>
           <Dropdown
             title="Select Party"
             options={supplierList}
             onChange={handlePartyChange}
-            value={supplierList.find(supplier => supplier.id.toString() === formData.customer_id)}
-          /> 
-        </Grid>
-
-        <Grid className="mt-3" item xs={12} sm={5}>
-          <InputWithTitle
-            title={"Select Date"}
-            type="date"
-            placeholder={"Select Date"}
-            name="date"
-            value={formData.date}
-            onChange={handleInputChange}
+            value={supplierList.find(supplier => supplier.id.toString() === formData.sup_id)}
           />
         </Grid>
 
-        <Grid className="mt-6" item xs={12} sm={3}>
+
+        <Grid className="mt-6" item xs={12} sm={3} lg={6}>
           <Tabs activeTab={activeTab} setActiveTab={handleTabChange} />
         </Grid>
 
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <Dropdown
-            title="Select Product"
-            options={productList}
-            onChange={handleProductChange}
-            value={productList.find(product => product.id.toString() === formData.product_id)}
-          />
-        </Grid>
 
-        <Grid className="mt-5" item xs={12} sm={4}>
+        <Grid className="mt-10" item xs={12} sm={4} lg={6}>
           <InputWithTitle
-            title={"Enter Quantity"}
-            placeholder={"Enter Quantity"}
-            name="quantity"
-            value={formData.quantity}
+            title={"Cash amount"}
+            placeholder={"Cash Amount"}
+            name="cash_amount"
+            value={formData.cash_amount}
             onChange={handleInputChange}
           />
         </Grid>
 
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <Dropdown
-            title="Select Bardaana"
-            options={bardaanaList}
-            onChange={handleBardaanaChange}
-            value={bardaanaList.find(b => b.name === formData.bardaana)}
-          />
-        </Grid>
-
-        {selectedBardaana && selectedBardaana.id === 1 && (
-          <Grid className="mt-10" item xs={12} sm={4}>
-            <InputWithTitle
-              title={"Bardaana Quantity"}
-              placeholder={"Enter Bardaana Quantity"}
-              name="bardaanaQuantity"
-              value={formData.bardaanaQuantity}
-              onChange={handleInputChange}
-            />
-          </Grid>
-        )}
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Truck Number"}
-            placeholder={"Enter Truck Number"}
-            name="truckNumber"
-            value={formData.truckNumber}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Freight"}
-            placeholder={"Enter Freight"}
-            name="freight"
-            value={formData.freight}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Total Amount"}
-            placeholder={"Total Amount"}
-            name="totalAmount"
-            value={formData.totalAmount}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Bank Tax"}
-            placeholder={"Bank Tax"}
-            name="bankTax"
-            value={formData.bankTax}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Net Amount"}
-            placeholder={"Net Amount"}
-            name="amount"
-            value={formData.amount}
+        <Grid className="mt-10" item xs={12} sm={4} lg={6}>
+          <MultilineInput
+            title={"description"}
+            placeholder={"description"}
+            name="description"
+            value={formData.description}
             onChange={handleInputChange}
           />
         </Grid>
 
         {activeTab !== "cash" && (
-          <Grid className="mt-10" item xs={12} sm={4}>
-            <InputWithTitle
-              title={"Cheque Number"}
-              placeholder={"Cheque Number"}
-              name="chequeNumber"
-              value={formData.chequeNumber}
-              onChange={handleInputChange}
-            />
-          </Grid>
+          <>
+            <Grid style={{marginTop:"4rem"}} item xs={12} sm={4} lg={3}>
+              <Dropdown
+                title="Select Party"
+                options={bankList}
+                onChange={handleBankChange}
+                value={bankList.find(banks => banks.id.toString() === formData.bank_id)}
+              />
+            </Grid>
+
+            <Grid className="mt-10" item xs={12} sm={4} lg={3}>
+              <InputWithTitle
+                title={"Cheque Number"}
+                placeholder={"Cheque Number"}
+                name="cheque_no"
+                value={formData.cheque_no}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+
+            <Grid className="mt-10" item xs={12} sm={4} lg={3}>
+              <InputWithTitle
+                title={"Cheque Amount"}
+                placeholder={"Cheque Amount"}
+                name="cheque_amount"
+                value={formData.cheque_amount}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid className="mt-10" item xs={12} sm={4} lg={3}>
+              <InputWithTitle
+                title={"Cheque date"}
+                type={"date"}
+                placeholder={"Cheque date"}
+                name="cheque_date"
+                value={formData.cheque_date}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </>
         )}
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Remaining Amount"}
-            placeholder={"Remaining Amount"}
-            name="remainingAmount"
-            value={formData.remainingAmount}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"First Weight"}
-            placeholder={"First Weight"}
-            name="firstWeight"
-            value={formData.firstWeight}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Second Weight"}
-            placeholder={"Second Weight"}
-            name="secondWeight"
-            value={formData.secondWeight}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Net Weight"}
-            placeholder={"Net Weight"}
-            name="netWeight"
-            value={formData.netWeight}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Bardaana Deduction"}
-            placeholder={"Bardaana Deduction"}
-            name="bardaanaDeduction"
-            value={formData.bardaanaDeduction}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Saafi Weight"}
-            placeholder={"Saafi Weight"}
-            name="saafiWeight"
-            value={formData.saafiWeight}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <div className={styles.button_container}>
-          <button type="submit" className={styles.saveBtn}>
-            {formData.id ? 'Update' : 'Save'}
-          </button>
-        </div>
       </Grid>
+
+      <div className={styles.button_container}>
+        <button type="submit" className={styles.saveBtn}>
+          {formData.id ? 'Update' : 'Save'}
+        </button>
+      </div>
     </form>
   );
 }
