@@ -29,6 +29,32 @@
   .header-component {
     display: none;
   }
+
+  .layout-container {
+    display: flex;
+    min-height: 100vh;
+    margin-left: 5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .overlayText {
+      font-size: 20px;
+      top: 45%;
+  }
+
+  .text2 {
+      font-size: 20px;
+      top: 55%;
+  }
+
+  .logoCont {
+      position: absolute;
+      width: 158px;
+      height: 158px;
+      left: 50%;
+      transform: translateX(-50%);
+  }
 }
 
 @font-face {

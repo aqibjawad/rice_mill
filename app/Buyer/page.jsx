@@ -88,7 +88,7 @@ const Page = () => {
         <div className={styles.pageContainer}>
             <div className={styles.container}>
                 <div className={styles.leftSection}>
-                    Buyer ABCLKJ
+                    Buyer
                 </div>
                 <div className={styles.rightSection}>
                     <div className={styles.rightItemExp} onClick={handleOpen}>
