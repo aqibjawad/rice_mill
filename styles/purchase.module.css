@@ -11,8 +11,6 @@
     flex: 6;
 }
 
-
-
 .container {
     display: flex;
     justify-content: space-between;
@@ -87,7 +85,7 @@
 .tableHeader,
 .tableRow {
     display: grid;
-    grid-template-columns: repeat(11, 1fr);
+    grid-template-columns: repeat(16, 1fr);
     align-items: center;
     gap: 1rem;
 }
@@ -95,7 +93,7 @@
 
 .tableRowData {
     display: grid;
-    grid-template-columns: repeat(11, 1fr);
+    grid-template-columns: repeat(16, 1fr);
     align-items: center;
     gap: 1rem;
 }

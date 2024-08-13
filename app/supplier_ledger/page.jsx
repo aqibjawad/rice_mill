@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import styles from "../../styles/purchase.module.css";
-import AddItemToStock from "../../components/stock/AddItemToStock";
 import APICall from "../../networkApi/APICall";
 import { supplierLedger } from "@/networkApi/Constants";
 import Swal from 'sweetalert2';
@@ -93,31 +92,48 @@ const Page = () => {
       <div className={styles.tableSection}>
         <div className={styles.tableHeader}>
           <div>Sr No</div>
-          <div>Amount</div>
-          <div>Bank Name</div>
+          <div>balance</div>
+          <div>Cash Amount</div>
+        
+          <div>Bank Id</div>
           <div>Cheque Date</div>
           <div>Cheque No</div>
-          <div>Customer</div>
+          <div>Cheque Amount</div>
+          <div>Cr Amount</div>
+
+          <div>Customer Id</div>
+          <div>Customer Type</div>
           <div>Description</div>
-          <div>Expense Category</div>
-          <div>Payment Flow Type</div>
+          <div>Dr Amount</div>
+
+          <div>Entry Type</div>
           <div>Payment Type</div>
+
           <div>Action</div>
         </div>
         <div className={styles.tableBody}>
           {tableData.map((row, index) => (
             <div key={index} className={styles.tableRowData}>
+
               <div>{row.id}</div>
-              <div>{row.amount}</div>
-              <div>{row.bank_name}</div>
+              <div>{row.balance}</div>
+              <div>{row.cash_amount}</div>
+              
+              <div>{row.bank_id}</div>
               <div>{row.cheque_date}</div>
               <div>{row.cheque_no}</div>
+              <div>{row.cheque_amount}</div>
+              <div>{row.cr_amount}</div>
+
               <div>{row.customer_id}</div>
+              <div>{row.customer_type}</div>
               <div>{row.description}</div>
-              <div>{row.expense_category_id}</div>
-              <div>{row.payment_flow_type}</div>
+              <div>{row.dr_amount}</div>
+
+              <div>{row.entry_type}</div>
               <div>{row.payment_type}</div>
-              <div className={styles.iconContainer}>
+
+              <div className={styles.iconContainer} style={{marginLeft:"3rem"}}>
                 <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
                 <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
               </div>
