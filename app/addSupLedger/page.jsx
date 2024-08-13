@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import InputWithTitle from "@/components/generic/InputWithTitle";
 import Dropdown from "../../components/generic/dropdown";
 import styles from "../../styles/addPurchase.module.css";
-import { purchaseOut, suppliers, products } from "../../networkApi/Constants";
+import { supplierLedger, suppliers, products } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Tabs from "./tabs";
 
@@ -17,17 +17,17 @@ const SearchParamsWrapper = ({ children }) => {
   return children(searchParams);
 };
 
-const AddPurchase = () => {
+const AddSupplierLedger = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <SearchParamsWrapper>
-        {(searchParams) => <AddPurchaseContent searchParams={searchParams} />}
+        {(searchParams) => <AddSupplierContent searchParams={searchParams} />}
       </SearchParamsWrapper>
     </Suspense>
   );
 };
 
-const AddPurchaseContent = ({ searchParams }) => {
+const AddSupplierContent = ({ searchParams }) => {
   const api = new APICall();
 
   const [formData, setFormData] = useState({
@@ -162,9 +162,9 @@ const AddPurchaseContent = ({ searchParams }) => {
     try {
       let response;
       if (formData.id) {
-        response = await api.putDataWithToken(`${purchaseOut}/${formData.id}`, formData);
+        response = await api.putDataWithToken(`${supplierLedger}/${formData.id}`, formData);
       } else {
-        response = await api.postDataWithToken(purchaseOut, formData);
+        response = await api.postDataWithToken(supplierLedger, formData);
       }
       
       if (response.status === 200) {
@@ -378,4 +378,4 @@ const AddPurchaseContent = ({ searchParams }) => {
   );
 }
 
-export default AddPurchase;
+export default AddSupplierLedger;

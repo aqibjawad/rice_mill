@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import styles from "../../styles/dashboard.module.css";
-import AddLedgerEntry from "../addCustomer/page";
+import AddCustomer from "../../components/stock/addCustomer";
 
 import { Grid } from '@mui/material';
 
@@ -80,8 +80,8 @@ const Ledger = () => {
                 </div>
             </div>
 
-            {/* Use the AddLedgerEntry component */}
-            <AddLedgerEntry open={open} handleClose={handleClose} />
+            {/* Use the AddCustomer component */}
+            <AddCustomer open={open} handleClose={handleClose} />
         </div>
     )
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/product.module.css";
-import AddProduct from "../addProduct/page";
+import AddProduct from "../../components/stock/addProduct";
 
 import { Skeleton } from "@mui/material";
 import { products } from "../../networkApi/Constants";

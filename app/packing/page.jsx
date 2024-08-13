@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import styles from "../../styles/packing.module.css";
 import { Skeleton } from "@mui/material";
 
-import AddPacking from "../addPacking/page"; 
+import AddPacking from "../../components/stock/addPacking"; 
 
 import {packings} from "../../networkApi/Constants"
 

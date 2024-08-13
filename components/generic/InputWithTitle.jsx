@@ -3,21 +3,16 @@ import styles from "../../styles/generic/inputStyles.module.css";
 
 const InputWithTitle = ({
   title,
-  children,
   ...rest
 }) => {
   return (
     <div className="w-full ">
       <div className={styles.title}>{title}</div>
       <div className={styles.inputContainer}>
-        {children ? (
-          children
-        ) : (
-          <input
+      <input
             className={`w-full ${styles.inputField}`}
             {...rest}
           />
-        )}
       </div>
     </div>
   );

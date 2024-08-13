@@ -31,11 +31,11 @@ const Home = () => {
             </div>
 
             <div>
-              <InputWithTitle title={"User name or email address"} />
+              <InputWithTitle type={"text"} title={"User name or email address"} />
             </div>
 
             <div>
-              <InputWithTitle title={"Your password"} />
+              <InputWithTitle type={"text"} title={"Your password"} />
             </div>
 
             <div className={styles.signinBtn}>
