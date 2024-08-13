@@ -18,7 +18,7 @@ const Stock = () => {
                 <Grid container spacing={2}>
                     <Grid item lg={10} sm={12} xs={12} md={4}>
                         <div className={styles.leftSection}>
-                            Stock
+                            Purchase
                         </div>
                     </Grid>
                     <Grid item lg={2} sm={12} xs={12} md={8}>

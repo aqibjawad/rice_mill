@@ -23,17 +23,17 @@ const Page = () => {
                 <OutFlow />
             </Grid>
 
-            <Grid item lg={12} xs={12} md={6}>
+            <Grid item lg={6} xs={12} md={6}>
                 <Ledger />
             </Grid>
 
-            <Grid item lg={12} xs={12} sm={6} md={4}>
+            <Grid item lg={6} xs={12} sm={6} md={4}>
                 <Stock />
             </Grid>
 
-            <Grid lg={12} item xs={12} sm={6} md={12}>
+            {/* <Grid lg={12} item xs={12} sm={6} md={12}>
                 <Product />
-            </Grid>
+            </Grid> */}
         </Grid>
     );
 }
