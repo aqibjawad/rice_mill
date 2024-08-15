@@ -5,5 +5,11 @@ export const showErrorAlert = (msg) => {
     title: "Alert",
     text: msg,
     icon: "question",
+    willOpen: () => {
+      Swal.getPopup().style.zIndex = "2000";
+    },
+    customClass: {
+      popup: "custom-swal-popup",
+    },
   });
 };
