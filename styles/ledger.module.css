@@ -13,19 +13,6 @@
     padding: 14px 58px 14px 58px;
     gap: 10px;
     border-radius: 35px;
-    border: 1px;
-    background: #FFFFFF;
-    border: 1px solid #E3E3E3;
-    text-align: center;
-    line-height: 18.75px;
-}
-
-.editBtn {
-    width: 100%;
-    height: 47px;
-    padding: 14px 58px 14px 58px;
-    gap: 10px;
-    border-radius: 35px;
     background: #316AFF;
     color: white;
     font-family: "regular";
@@ -33,7 +20,19 @@
     font-weight: 500;
     line-height: 18.75px;
     text-align: center;
+}
 
+.editBtn { 
+    width: 100%;
+    height: 47px;
+    padding: 14px 58px 14px 58px;
+    gap: 10px;
+    border-radius: 35px;
+    border: 1px;
+    background: #FFFFFF;
+    border: 1px solid #E3E3E3;
+    text-align: center;
+    line-height: 18.75px;
 }
 
 .flexContainer {

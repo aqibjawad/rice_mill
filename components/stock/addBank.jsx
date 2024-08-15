@@ -6,8 +6,11 @@ import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import { banks as banksApi } from "../../networkApi/Constants";
 
+import APICall from "../../networkApi/APICall";
+
 const style = {
-    position: 'absolute',
+    
+    position: 'absolute', 
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
@@ -20,6 +23,9 @@ const style = {
 };
 
 export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null }) => {
+
+    const api = new APICall();
+
     const [formData, setFormData] = useState({ bank_name: '' });
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -39,12 +45,8 @@ export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null })
 
     const fetchData = async () => {
         try {
-            const response = await fetch(banksApi);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const result = await response.json();
-            const data = result.data;
+            const response = await getDataWithToken(banksApi);
+            const data = response.data;
             if (Array.isArray(data)) {
                 setTableData(data);
             } else {
@@ -80,7 +82,7 @@ export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null })
 
             const method = editData ? 'PUT' : 'POST';
 
-            const response = await fetch(url, {
+            const response = await postFormDataWithToken(url, {
                 method: method,
                 body: data
             });
@@ -122,7 +124,7 @@ export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null })
                     <Grid container spacing={2} className="mt-10">
                         <Grid item lg={6} xs={12} sm={12}>
                             <InputWithTitle
-                                title="Add Bank Name"
+                                title="Add Bank Name" 
                                 type="text"
                                 placeholder="Add Bank Name"
                                 name="bank_name"

@@ -10,6 +10,7 @@ import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
 
 import { suppliers } from "../../networkApi/Constants";
+import APICall from "../../networkApi/APICall";
 
 const style = {
   position: "absolute",
@@ -27,6 +28,7 @@ const style = {
 const top100Films = [{ label: "Self" }];
 
 const AddSupplier = ({ open, handleClose, editData = null }) => {
+  const api = new APICall();
 
   const [formData, setFormData] = useState({
     person_name: "",
@@ -42,7 +44,7 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
     if (editData) {
       setFormData({
         ...editData,
-        reference_id: "self" // Ensure reference_id is always "self"
+        reference_id: "self"
       });
     } else {
       setFormData({
@@ -70,7 +72,6 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
 
     const data = new FormData();
 
-    // Only include the specified fields
     const fieldsToInclude = [
       "person_name",
       "reference_id",
@@ -85,14 +86,15 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
       data.append(key, formData[key]);
     });
 
+    for (const [key, value] of data.entries()) {
+      console.log(key, value);
+    }
+
     try {
       const url = editData ? `${suppliers}/${editData.id}` : suppliers;
-      const method = "POST";
+      const method = editData ? "PUT" : "POST";
 
-      const response = await fetch(url, {
-        method: method,
-        body: data,
-      });
+      const response = await api.postFormDataWithToken(url, formData);
 
       if (response.ok) {
         console.log(
@@ -110,6 +112,7 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
       console.error("An error occurred", error);
     }
   };
+
 
   return (
     <Modal
@@ -213,14 +216,17 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
             onChange={handleInputChange}
           />
         </div>
-
         <div
           className="mt-5"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
           <div style={{ flex: 1, marginRight: "10px" }}>
             <div className={styles.saveBtn} onClick={handleSubmit}>
-              {editData ? "Update" : "Save"}
+              {loading ? (
+                <CircularProgress color="inherit" size={24} />
+              ) : (
+                (editData ? "Update" : "Save")
+              )}
             </div>
           </div>
           <div style={{ flex: 1, marginLeft: "10px" }}>
