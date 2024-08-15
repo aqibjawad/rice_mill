@@ -22,7 +22,10 @@ import APICall from "@/networkApi/APICall";
 const Page = () => {
   const api = new APICall();
   const [open, setOpen] = useState(false);
-  const [tableData, setTableData] = useState([]);
+  const [tableData, setTableData] = useState();
+
+  console.log(tableData);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
@@ -47,11 +50,8 @@ const Page = () => {
     setLoading(true);
     try {
       const response = await api.getDataWithToken(suppliers);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const result = await response.json();
-      const data = result.data;
+
+      const data = response.data;
 
       if (Array.isArray(data)) {
         setTableData(data);
@@ -144,9 +144,10 @@ const Page = () => {
                   <TableCell colSpan={8}>Error: {error}</TableCell>
                 </TableRow>
               ) : (
-                tableData.map((row) => (
+                tableData.map((row, index) => (
                   <TableRow key={row.id}>
-                    <TableCell>{row.id}</TableCell>
+                    {/* Use index + 1 to display the serial number */}
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.person_name}</TableCell>
                     <TableCell>{row.contact}</TableCell>
                     <TableCell>{row.address}</TableCell>
@@ -168,6 +169,7 @@ const Page = () => {
                 ))
               )}
             </TableBody>
+
           </Table>
         </TableContainer>
       </div>

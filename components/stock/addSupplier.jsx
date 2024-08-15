@@ -190,12 +190,11 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
             />
           </div>
 
-          <div className="mt-4" style={{ flex: 1, marginLeft: "10px" }}>
+          <div className="mt-5" style={{ flex: 1, marginLeft: "10px" }}>
             <Autocomplete
               disablePortal
               id="combo-box-demo"
               options={top100Films}
-              sx={{ width: 300 }}
               renderInput={(params) => (
                 <TextField {...params} label="Reference" />
               )}
