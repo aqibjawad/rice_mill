@@ -65,9 +65,9 @@ const AddPurchaseContent = ({ searchParams }) => {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const bardaanaList = [
-    { id: 1, name: "Jama" },
-    { id: 2, name: "Wapisi" },
-    { id: 3, name: "Ada Shuda" },
+    { id: 1, label: "Jama" },
+    { id: 2, label: "Wapisi" },
+    { id: 3, label: "Ada Shuda" },
   ];
 
   useEffect(() => {
@@ -149,11 +149,11 @@ const AddPurchaseContent = ({ searchParams }) => {
     }
   };
 
-  const handleBardaanaChange = (selectedOption) => {
-    if (selectedOption && selectedOption.name) {
+  const handleBardaanaChange = (event, selectedOption) => {
+    if (selectedOption && selectedOption.label) {
       setFormData((prevState) => ({
         ...prevState,
-        bardaana: selectedOption.name,
+        bardaana: selectedOption.label,
       }));
       setSelectedBardaana(selectedOption);
     }
@@ -207,7 +207,7 @@ const AddPurchaseContent = ({ searchParams }) => {
         confirmButtonText: "Okay",
       });
     } finally {
-      setLoadingSubmit(false); // Set loading to false after API call
+      setLoadingSubmit(false);
     }
   };
 
@@ -274,7 +274,7 @@ const AddPurchaseContent = ({ searchParams }) => {
             title="Select Bardaana"
             options={bardaanaList}
             onChange={handleBardaanaChange}
-            value={bardaanaList.find((b) => b.name === formData.bardaana)}
+            value={bardaanaList.find((b) => b.label === formData.bardaana) || null}
           />
         </Grid>
 
@@ -290,7 +290,7 @@ const AddPurchaseContent = ({ searchParams }) => {
           </Grid>
         )}
 
-        <Grid className="mt-10" item xs={12} sm={4}>
+<Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
             title={"Truck Number"}
             placeholder={"Enter Truck Number"}
@@ -411,11 +411,12 @@ const AddPurchaseContent = ({ searchParams }) => {
             onChange={handleInputChange}
           />
         </Grid>
+
       </Grid>
 
       <div className={styles.button_container}>
         <button
-          onClick={() => handleSubmit()}
+          onClick={handleSubmit}
           type="submit"
           className={styles.saveBtn}
           disabled={loadingSubmit}

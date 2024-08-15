@@ -82,23 +82,7 @@ export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null })
 
             const method = editData ? 'PUT' : 'POST';
 
-            const response = await postFormDataWithToken(url, {
-                method: method,
-                body: data
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                if (editData) {
-                    setTableData(tableData.map(item => item.id === editData.id ? result.data : item));
-                } else {
-                    setTableData([...tableData, result.data]);
-                }
-                console.log(editData ? 'Entry updated successfully' : 'Form submitted successfully');
-                onClose();
-            } else {
-                console.error(editData ? 'Entry update failed' : 'Form submission failed');
-            }
+            const response = await api.postFormDataWithToken(url, formData);
         } catch (error) {
             console.error('An error occurred', error);
         }

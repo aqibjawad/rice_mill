@@ -20,15 +20,14 @@ import Link from "next/link";
 import APICall from "@/networkApi/APICall";
 
 const Page = () => {
-  const api = new APICall();
-  const [open, setOpen] = useState(false);
-  const [tableData, setTableData] = useState();
 
-  console.log(tableData);
-
+  const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
+
+  const api = new APICall();
+  const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -157,8 +156,8 @@ const Page = () => {
                     <TableCell>
                       <div className={styles.iconContainer}>
                         <div style={{ color: "#316AFF", fontSize: "15px", marginTop: "1rem" }}>
-                          <Link href={`/supplierLedger?supplierId=${row.id}`}>
-                            View Ledger
+                          <Link href={`/supplier_ledger?sup_id=${row.id}`}>View Details
+
                           </Link>
                         </div>
                         <MdDelete onClick={() => handleDelete(row.id)} className={styles.deleteButton} />

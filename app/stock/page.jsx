@@ -74,13 +74,9 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await api.getDataWithToken(`${stocks}/${id}`, {
+      const response = await api.deleteDataWithToken(`${stocks}/${id}`, {
         method: 'DELETE',
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete stock item');
-      }
 
       setTableData(tableData.filter(item => item.id !== id));
 

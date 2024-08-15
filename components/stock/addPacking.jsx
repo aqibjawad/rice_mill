@@ -6,7 +6,10 @@ import { Modal, Box } from '@mui/material';
 import styles from "../../styles/ledger.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 
-import {packings} from "../../networkApi/Constants"
+import { packings } from "../../networkApi/Constants"
+import APICall from "../../networkApi/APICall";
+
+import Swal from 'sweetalert2';
 
 const style = {
     position: 'absolute',
@@ -21,6 +24,7 @@ const style = {
 };
 
 const AddPacking = ({ open, handleClose, editData = null }) => {
+    const api = new APICall();
 
     const [formData, setFormData] = useState({
         packing_size: '',
@@ -51,23 +55,33 @@ const AddPacking = ({ open, handleClose, editData = null }) => {
         }
 
         try {
-            const url = packings
-
-            const method = editData ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method: method,
-                body: data
-            });
-
-            if (response.ok) {
-                console.log(editData ? 'Entry updated successfully' : 'Form submitted successfully');
-                handleClose();
+            let response;
+            if (editData) {
+                // Edit existing packing
+                const url = `${packings}/${editData.id}`;
+                response = await api.updateFormDataWithToken(url, formData);
             } else {
-                console.error(editData ? 'Entry update failed' : 'Form submission failed');
+                // Add new packing
+                const url = packings;
+                response = await api.postFormDataWithToken(url, formData);
             }
+
+            handleClose();
+
+            Swal.fire({
+                title: 'Success!',
+                text: `Packing has been ${editData ? 'updated' : 'added'} successfully.`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
         } catch (error) {
             console.error('An error occurred', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred while processing your request.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     };
 

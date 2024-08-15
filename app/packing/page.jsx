@@ -17,6 +17,8 @@ import AddPacking from "../../components/stock/addPacking";
 import { packings } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 
+import Swal from 'sweetalert2';
+
 const Page = () => {
   const api = new APICall();
   const [open, setOpen] = useState(false);
@@ -55,17 +57,28 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await api.getDataWithToken(`${packings}/${id}`, {
-        method: "DELETE",
+      const response = await api.deleteDataWithToken(`${packings}/${id}`, {
+        method: 'DELETE',
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete packing");
-      }
+      setTableData(tableData.filter(item => item.id !== id));
 
-      setTableData((prevData) => prevData.filter((item) => item.id !== id));
+      Swal.fire({
+        title: 'Deleted!',
+        text: 'The stock item has been deleted successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
     } catch (error) {
-      console.error("Error deleting packing:", error);
+      console.error('Error deleting Stock:', error);
+
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to delete the stock item.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
 

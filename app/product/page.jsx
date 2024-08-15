@@ -49,22 +49,33 @@ const Page = () => {
         }
     };
 
+
     const handleDelete = async (id) => {
         try {
-            const response = await api.deleteDataWithToken(`${products}/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete product');
-            }
-
-            setTableData(tableData.filter(item => item.id !== id));
+          const response = await api.deleteDataWithToken(`${products}/${id}`, {
+            method: 'DELETE',
+          });
+    
+          setTableData(tableData.filter(item => item.id !== id));
+    
+          Swal.fire({
+            title: 'Deleted!',
+            text: 'The Product item has been deleted successfully.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+          });
+    
         } catch (error) {
-            console.error('Error deleting product:', error);
+          console.error('Error deleting Stock:', error);
+    
+          Swal.fire({
+            title: 'Error!',
+            text: 'Failed to delete the product item.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
         }
-    };
-
+      };
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingData(null);
@@ -95,7 +106,7 @@ const Page = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {loading ? (
+                            {loading ? ( 
                                 // Show skeleton or loading state here
                                 <TableRow>
                                     <TableCell colSpan={4}>

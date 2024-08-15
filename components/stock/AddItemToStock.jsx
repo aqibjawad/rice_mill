@@ -149,30 +149,19 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
     setError('');
 
     try {
-      let data;
-      if (editingData) {
-        data = {
-          product_id: selectedProductID,
-          packing_id: selectedPackingID,
-          product_description: description.trim(),
-          quantity: parseInt(quantity),
-          price: parseFloat(price)
-        };
-      } else {
-        data = {
-          "product_id[0]": selectedProductID[0],
-          "packing_id[0]": selectedPackingID[0],
-          "product_description[0]": description.trim(),
-          "quantity[0]": parseInt(quantity),
-          "price[0]": parseFloat(price)
-        };
-      }
+      const data = {
+        product_id: selectedProductID[0],
+        packing_id: selectedPackingID[0],
+        product_description: description.trim(),
+        quantity: parseInt(quantity),
+        price: parseFloat(price)
+      };
 
       let response;
       if (editingData) {
         response = await api.updateFormDataWithToken(`${stocks}/${editingData.id}`, data);
       } else {
-        response = await api.postDataWithToken(stocks, data);
+        response = await api.postFormDataWithToken(stocks, data);
       }
 
       if (response.status === 200 || response.status === 201) {
