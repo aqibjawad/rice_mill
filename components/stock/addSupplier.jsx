@@ -27,7 +27,7 @@ const style = {
 const top100Films = [{ label: "Self" }];
 
 const AddSupplier = ({ open, handleClose, editData = null }) => {
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const api = new APICall();
 
   const [formData, setFormData] = useState({
@@ -71,24 +71,24 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
     e.preventDefault();
 
     if (!formData.person_name.trim()) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'Please enter the supplier name.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-      });
-      return; 
-    }
+      alert("please enter supplier name")
+      return;
+    } else if (!formData.contact.trim()) {
+      alert("please enter supplier contact")
+      return;
+    }else if (!formData.contact.trim()) {
+      alert("please enter supplier contact")
+      return;
+    }else if (!formData.firm_name.trim()) {
+      alert("please enter supplier firm_name")
+      return;
+    }else if (!formData.opening_balance.trim()) {
+      alert("please enter supplier opening_balance")
+      return;
+    } else(
+      alert("please enter description")
+    )
 
-    if (!formData.contact.trim()) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'Please enter a contact number.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-      });
-      return; 
-    }
 
     const data = new FormData();
 
@@ -110,31 +110,15 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
 
     try {
       const url = editData ? `${suppliers}/${editData.id}` : suppliers;
-      const method = editData ? "PUT" : "POST";
 
       const response = await api.postFormDataWithToken(url, formData);
 
-      if (response.ok) {
-        handleClose();
-        Swal.fire({
-          title: 'Success!',
-          text: `Supplier has been ${editData ? 'updated' : 'added'} successfully.`,
-          icon: 'success',
-          confirmButtonText: 'OK',
-        });
-      } else {
-        console.error(
-          editData ? "Entry update failed" : "Form submission failed"
-        );
-      }
+      handleClose();
+      alert("data Added!")
+
     } catch (error) {
       console.error("An error occurred", error);
-      Swal.fire({
-        title: 'Error!',
-        text: 'An error occurred while processing your request.',
-        icon: 'error',
-        confirmButtonText: 'OK',
-      });
+      alert("An error occurred while processing your request.")
     } finally {
       setLoading(false);
     }
@@ -246,7 +230,14 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
           className="mt-5"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
+
           <div style={{ flex: 1, marginRight: "10px" }}>
+            <div className={styles.editBtn} onClick={handleClose}>
+              Cancel
+            </div>
+          </div>
+
+          <div style={{ flex: 1}}>
             <div className={styles.saveBtn} onClick={handleSubmit}>
               {loading ? (
                 <CircularProgress color="inherit" size={24} />
@@ -255,11 +246,7 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
               )}
             </div>
           </div>
-          <div style={{ flex: 1, marginLeft: "10px" }}>
-            <div className={styles.editBtn} onClick={handleClose}>
-              Cancel
-            </div>
-          </div>
+
         </div>
       </Box>
     </Modal>
