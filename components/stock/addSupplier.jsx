@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Box } from "@mui/material";
+import { Modal, Box, CircularProgress  } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 
@@ -30,7 +30,7 @@ const top100Films = [{ label: "Self" }];
 const AddSupplier = ({ open, handleClose, editData = null }) => {
 
   const [loading, setLoading] = useState(false); // Loader state
-  
+
   const api = new APICall();
 
   const [formData, setFormData] = useState({
