@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { Grid, Skeleton, CircularProgress } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import InputWithTitle from "@/components/generic/InputWithTitle";
-import Dropdown from "../../components/generic/dropdown";
+import DropDown from "../../components/generic/dropdown";
 import styles from "../../styles/addPurchase.module.css";
 import { purchaseOut, suppliers, products } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
@@ -12,6 +12,8 @@ import Tabs from "./tabs";
 import Swal from "sweetalert2";
 
 export const dynamic = "force-dynamic";
+
+import { useRouter } from 'next/navigation';
 
 const SearchParamsWrapper = ({ children }) => {
   const searchParams = useSearchParams();
@@ -29,6 +31,9 @@ const AddPurchase = () => {
 };
 
 const AddPurchaseContent = ({ searchParams }) => {
+
+  const router = useRouter();
+
   const api = new APICall();
 
   const [formData, setFormData] = useState({
@@ -51,6 +56,12 @@ const AddPurchaseContent = ({ searchParams }) => {
     bardaanaDeduction: "",
     saafiWeight: "",
     payment_type: "cash",
+  });
+
+  const [dropdownValues, setDropdownValues] = useState({
+    customer_id: null,
+    product_id: null,
+    bardaana: null,
   });
 
   const [productList, setProducts] = useState([]);
@@ -131,31 +142,25 @@ const AddPurchaseContent = ({ searchParams }) => {
     }));
   };
 
-  const handlePartyChange = (event, selectedOption) => {
-    if (selectedOption && selectedOption.id) {
-      setFormData((prevState) => ({
-        ...prevState,
-        customer_id: selectedOption.id.toString(),
-      }));
-    }
-  };
+  const handleDropdownChange = (name, selectedOption) => {
+    setDropdownValues(prev => ({
+      ...prev,
+      [name]: selectedOption
+    }));
 
-  const handleProductChange = (event, selectedOption) => {
-    if (selectedOption && selectedOption.id) {
-      setFormData((prevState) => ({
-        ...prevState,
-        product_id: selectedOption.id.toString(),
-      }));
-    }
-  };
-
-  const handleBardaanaChange = (event, selectedOption) => {
-    if (selectedOption && selectedOption.label) {
-      setFormData((prevState) => ({
-        ...prevState,
-        bardaana: selectedOption.label,
-      }));
-      setSelectedBardaana(selectedOption);
+    if (selectedOption) {
+      if (name === 'bardaana') {
+        setFormData(prev => ({
+          ...prev,
+          [name]: selectedOption.label
+        }));
+        setSelectedBardaana(selectedOption);
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          [name]: selectedOption.id.toString()
+        }));
+      }
     }
   };
 
@@ -180,24 +185,17 @@ const AddPurchaseContent = ({ searchParams }) => {
       } else {
         response = await api.postDataWithToken(purchaseOut, formData);
       }
+      Swal.fire({
+        title: "Success!",
+        text: "Data Added.",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.back(); 
+        }
+      })
 
-      if (response.status === 200) {
-        Swal.fire({
-          title: "Success!",
-          text: "Data has been added successfully.",
-          icon: "success",
-          confirmButtonText: "Okay",
-        }).then(() => {
-          window.location.href = "/purchase";
-        });
-      } else {
-        Swal.fire({
-          title: "Error!",
-          text: "Error submitting form",
-          icon: "error",
-          confirmButtonText: "Okay",
-        });
-      }
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
@@ -218,13 +216,12 @@ const AddPurchaseContent = ({ searchParams }) => {
           {loadingSuppliers ? (
             <Skeleton variant="rectangular" width="100%" height={56} />
           ) : (
-            <Dropdown
+            <DropDown
               title="Select Party"
               options={supplierList}
-              onChange={handlePartyChange}
-              value={supplierList.find(
-                (supplier) => supplier.id.toString() === formData.customer_id
-              )}
+              onChange={handleDropdownChange}
+              value={dropdownValues.customer_id}
+              name="customer_id"
             />
           )}
         </Grid>
@@ -248,13 +245,12 @@ const AddPurchaseContent = ({ searchParams }) => {
           {loadingProducts ? (
             <Skeleton variant="rectangular" width="100%" height={56} />
           ) : (
-            <Dropdown
+            <DropDown
               title="Select Product"
               options={productList}
-              onChange={handleProductChange}
-              value={productList.find(
-                (product) => product.id.toString() === formData.product_id
-              )}
+              onChange={handleDropdownChange}
+              value={dropdownValues.product_id}
+              name="product_id"
             />
           )}
         </Grid>
@@ -270,11 +266,12 @@ const AddPurchaseContent = ({ searchParams }) => {
         </Grid>
 
         <Grid className="mt-10" item xs={12} sm={4}>
-          <Dropdown
+          <DropDown
             title="Select Bardaana"
             options={bardaanaList}
-            onChange={handleBardaanaChange}
-            value={bardaanaList.find((b) => b.label === formData.bardaana) || null}
+            onChange={handleDropdownChange}
+            value={dropdownValues.bardaana}
+            name="bardaana"
           />
         </Grid>
 
@@ -290,7 +287,7 @@ const AddPurchaseContent = ({ searchParams }) => {
           </Grid>
         )}
 
-<Grid className="mt-10" item xs={12} sm={4}>
+        <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
             title={"Truck Number"}
             placeholder={"Enter Truck Number"}
