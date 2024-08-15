@@ -2,13 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, Box } from '@mui/material';
-
 import styles from "../../styles/ledger.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
-
-import { packings } from "../../networkApi/Constants"
+import { packings } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
-
 import Swal from 'sweetalert2';
 
 const style = {
@@ -49,6 +46,16 @@ const AddPacking = ({ open, handleClose, editData = null }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!formData.packing_size.trim()) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Please enter a packing weight.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
         const data = new FormData();
         for (const key in formData) {
             data.append(key, formData[key]);
@@ -60,7 +67,6 @@ const AddPacking = ({ open, handleClose, editData = null }) => {
                 const url = `${packings}/${editData.id}`;
                 response = await api.updateFormDataWithToken(url, formData);
             } else {
-                // Add new packing
                 const url = packings;
                 response = await api.postFormDataWithToken(url, formData);
             }

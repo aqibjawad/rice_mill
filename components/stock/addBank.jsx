@@ -9,8 +9,7 @@ import { banks as banksApi } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 
 const style = {
-    
-    position: 'absolute', 
+    position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
@@ -45,7 +44,7 @@ export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null })
 
     const fetchData = async () => {
         try {
-            const response = await getDataWithToken(banksApi);
+            const response = await api.getDataWithToken(banksApi);
             const data = response.data;
             if (Array.isArray(data)) {
                 setTableData(data);
@@ -70,6 +69,11 @@ export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null })
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!formData.bank_name.trim()) {
+            alert('Please enter a bank name.');
+            return;
+        }
+
         const data = new FormData();
         for (const key in formData) {
             data.append(key, formData[key]);
@@ -80,9 +84,8 @@ export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null })
                 ? `${banksApi}/${editData.id}`
                 : banksApi;
 
-            const method = editData ? 'PUT' : 'POST';
-
             const response = await api.postFormDataWithToken(url, formData);
+            alert('Bank saved successfully!');
         } catch (error) {
             console.error('An error occurred', error);
         }
@@ -108,7 +111,7 @@ export const AddBank = ({ open: isOpen, handleClose: onClose, editData = null })
                     <Grid container spacing={2} className="mt-10">
                         <Grid item lg={6} xs={12} sm={12}>
                             <InputWithTitle
-                                title="Add Bank Name" 
+                                title="Add Bank Name"
                                 type="text"
                                 placeholder="Add Bank Name"
                                 name="bank_name"

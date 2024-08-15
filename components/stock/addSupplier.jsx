@@ -1,16 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Box, CircularProgress  } from "@mui/material";
+import { Modal, Box, CircularProgress } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-
 import styles from "../../styles/ledger.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
-
 import { suppliers } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
+import Swal from 'sweetalert2';
 
 const style = {
   position: "absolute",
@@ -22,15 +21,13 @@ const style = {
   boxShadow: 24,
   borderRadius: 10,
   p: 4,
-  outline: "none"
+  outline: "none",
 };
 
 const top100Films = [{ label: "Self" }];
 
 const AddSupplier = ({ open, handleClose, editData = null }) => {
-
-  const [loading, setLoading] = useState(false); // Loader state
-
+  const [loading, setLoading] = useState(false); 
   const api = new APICall();
 
   const [formData, setFormData] = useState({
@@ -47,7 +44,7 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
     if (editData) {
       setFormData({
         ...editData,
-        reference_id: "self"
+        reference_id: "self",
       });
     } else {
       setFormData({
@@ -73,6 +70,26 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!formData.person_name.trim()) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please enter the supplier name.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      return; 
+    }
+
+    if (!formData.contact.trim()) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please enter a contact number.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      return; 
+    }
+
     const data = new FormData();
 
     const fieldsToInclude = [
@@ -82,16 +99,14 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
       "address",
       "firm_name",
       "opening_balance",
-      "description"
+      "description",
     ];
 
-    fieldsToInclude.forEach(key => {
+    fieldsToInclude.forEach((key) => {
       data.append(key, formData[key]);
     });
 
-    for (const [key, value] of data.entries()) {
-      console.log(key, value);
-    }
+    setLoading(true); // Start loader
 
     try {
       const url = editData ? `${suppliers}/${editData.id}` : suppliers;
@@ -101,6 +116,12 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
 
       if (response.ok) {
         handleClose();
+        Swal.fire({
+          title: 'Success!',
+          text: `Supplier has been ${editData ? 'updated' : 'added'} successfully.`,
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
       } else {
         console.error(
           editData ? "Entry update failed" : "Form submission failed"
@@ -108,9 +129,16 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
       }
     } catch (error) {
       console.error("An error occurred", error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'An error occurred while processing your request.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    } finally {
+      setLoading(false);
     }
   };
-
 
   return (
     <Modal
@@ -223,7 +251,7 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
               {loading ? (
                 <CircularProgress color="inherit" size={24} />
               ) : (
-                (editData ? "Update" : "Save")
+                editData ? "Update" : "Save"
               )}
             </div>
           </div>

@@ -1,4 +1,3 @@
-// AddProduct.jsx
 "use client";
 import React, { useState, useEffect } from "react";
 import { Modal, Box, CircularProgress } from "@mui/material";
@@ -7,8 +6,6 @@ import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
 import APICall from "@/networkApi/APICall";
 import { products } from "../../networkApi/Constants";
-import { showErrorAlert } from "@/networkApi/Helper";
-
 import Swal from 'sweetalert2';
 
 const style = {
@@ -36,11 +33,9 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
     if (editData) {
       setFormData(editData);
     } else {
-      // Reset form when adding new product
       setFormData({
         product_name: "",
         product_description: "",
-        product_type: "paddy",
       });
     }
   }, [editData]);
@@ -55,6 +50,26 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.product_name.trim()) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please enter a product name.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+
+    if (!formData.product_description.trim()) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Please enter a product description.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
 
     const data = new FormData();
     for (const key in formData) {
@@ -73,9 +88,13 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
         response = await api.postFormDataWithToken(url, formData);
       }
 
-      // Close modal after successful submission
       handleClose();
-
+      Swal.fire({
+        title: 'Success!',
+        text: `Product has been ${editData ? 'updated' : 'added'} successfully.`,
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
     } catch (error) {
       console.error('An error occurred', error);
       Swal.fire({
@@ -85,10 +104,9 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
         confirmButtonText: 'OK'
       });
     } finally {
-      setSendingData(false); // Hide loading spinner
+      setSendingData(false); 
     }
   };
-
 
   return (
     <Modal

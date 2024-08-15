@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, Box } from '@mui/material';
-
 import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
-
 import { expense } from "../../networkApi/Constants";
+import APICall from "../../networkApi/APICall";
 
 const style = {
     position: 'absolute',
@@ -21,6 +20,9 @@ const style = {
 };
 
 const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
+
+    const api = new APICall();
+    
     const [formData, setFormData] = useState({ expense_category: '' });
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -40,12 +42,8 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(expense); // Fetch initial bank data
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const result = await response.json();
-            const data = result.data;
+            const response = await api.getDataWithToken(expense);
+            const data = response.data;
             if (Array.isArray(data)) {
                 setTableData(data);
             } else {
@@ -69,6 +67,11 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!formData.expense_category.trim()) {
+            alert('Please enter an expense category.'); 
+            return; 
+        }
+
         const data = new FormData();
         for (const key in formData) {
             data.append(key, formData[key]);
@@ -76,30 +79,12 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
 
         try {
             const url = editData
-                ? `${expense}/${editData.id}` // URL for updating existing bank
-                : expense; // URL for adding new bank
+                ? `${expense}/${editData.id}` 
+                : expense; 
 
-            const method = editData ? 'PUT' : 'POST';
+            const response = await api.postFormDataWithToken(url, formData);
+            alert('Expense saved successfully!'); 
 
-            const response = await fetch(url, {
-                method: method,
-                body: data
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                if (editData) {
-                    // Update existing bank in the table data
-                    setTableData(tableData.map(item => item.id === editData.id ? result.data : item));
-                } else {
-                    // Add new bank to the table data
-                    setTableData([...tableData, result.data]);
-                }
-                console.log(editData ? 'Entry updated successfully' : 'Form submitted successfully');
-                handleCloseExpense(); // Close modal
-            } else {
-                console.error(editData ? 'Entry update failed' : 'Form submission failed');
-            }
         } catch (error) {
             console.error('An error occurred', error);
         }
