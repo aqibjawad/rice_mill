@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/sidebar.module.css";
 import Link from "next/link";
-import { FaHome, FaArrowRight, FaArrowLeft, FaBoxes, FaShoppingCart, FaBox, FaCreditCard, FaShoppingBag, FaTruck, FaUserTie } from 'react-icons/fa';
+import {
+  FaHome,
+  FaArrowRight,
+  FaArrowLeft,
+  FaBoxes,
+  FaShoppingCart,
+  FaBox,
+  FaCreditCard,
+  FaShoppingBag,
+  FaTruck,
+  FaUserTie,
+} from "react-icons/fa";
 
 const SideBar = () => {
   const [activeItem, setActiveItem] = useState("Dashboard");
@@ -13,8 +24,8 @@ const SideBar = () => {
       setIsMobile(window.innerWidth <= 768);
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const menuItems = [
@@ -34,23 +45,29 @@ const SideBar = () => {
 
   return (
     <>
-      <button className={styles.toggleButton} onClick={() => setIsOpen(!isOpen)}>
-        {isOpen ? '←' : '→'}
+      <button
+        className={styles.toggleButton}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {isOpen ? "←" : "→"}
       </button>
-      <div className={`${styles.sideBarComp} ${isOpen ? styles.open : ''}`}>
+      <div className={`${styles.sideBarComp} ${isOpen ? styles.open : ""}`}>
         <div className={styles.imgContainer}>
           <img className={styles.logo} src="/logo.png" alt="Logo" />
         </div>
         {menuItems.map((item, index) => (
           <Link key={index} href={item.href}>
             <div
-              className={`${styles.sideBarItem} ${activeItem === item.name ? styles.active : ""
-                }`}
+              className={`${styles.sideBarItem} ${
+                activeItem === item.name ? styles.active : ""
+              }`}
               onClick={() => setActiveItem(item.name)}
               style={index === 0 ? { marginTop: "5rem" } : {}}
             >
               <span className={styles.icon}>{item.icon}</span>
-              {(!isMobile || isOpen) && <span className={styles.itemName}>{item.name}</span>}
+              {(!isMobile || isOpen) && (
+                <span className={styles.itemName}>{item.name}</span>
+              )}
             </div>
           </Link>
         ))}

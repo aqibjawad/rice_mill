@@ -1,92 +1,96 @@
 .button_container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
 }
 
 .saveBtn {
-    width: 20%;
-    height: 47px;
-    padding: 14px 58px;
-    border-radius: 35px;
-    background: #316AFF;
-    color: white;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  width: 20%;
+  height: 47px;
+  padding: 14px 58px;
+  border-radius: 35px;
+  background: #316aff;
+  color: white;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18.75px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .tabContainer {
-    display: flex;
+  display: flex;
 }
 
 .tabButton {
-    width: 120px;
-    height: 50px;
-    border-radius: 30px;
-    background: #FEFEFE;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
+  width: 120px;
+  height: 50px;
+  border-radius: 30px;
+  background: #fefefe;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18.75px;
+  text-align: center;
 }
 
 .tabButton:hover {
-    background-color: #ddd;
+  background-color: #ddd;
 }
 
 .tabButton.active {
-    width: 120px;
-    height: 50px;
-    top: 1937px;
-    left: -4208px;
-    border-radius: 30px;
-    background: #316AFF;
-    color: white
+  width: 120px;
+  height: 50px;
+  top: 1937px;
+  left: -4208px;
+  border-radius: 30px;
+  background: #316aff;
+  color: white;
 }
 
 .tabContent {
-    padding: 20px;
-    border-top: none;
+  padding: 20px;
+  border-top: none;
 }
 
 .tabPaymentContainer {
-    display: flex;
+  display: flex;
 }
 
 .tabPaymentButton {
-    width: 120px;
-    height: 50px;
-    top: 1937px;
-    left: -4546px;
-    border-radius: 30px;
-    background: #FEFEFE;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    margin-right: 2rem;
-    margin-top: 1rem;
+  width: 120px;
+  height: 50px;
+  top: 1937px;
+  left: -4546px;
+  border-radius: 30px;
+  background: #fefefe;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18.75px;
+  text-align: center;
+  margin-right: 2rem;
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 .tabPaymentButton.active {
-    width: 120px;
-    height: 50px;
-    top: 1937px;
-    left: -4208px;
-    border-radius: 30px;
-    background: #316AFF;
-    color: white
+  width: 120px;
+  height: 50px;
+  top: 1937px;
+  left: -4208px;
+  border-radius: 30px;
+  background: #316aff;
+  color: white;
 }
 
 .tabPaymentContent {
-    padding: 20px 0;
+  padding: 20px 0;
 }

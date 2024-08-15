@@ -9,51 +9,50 @@ import Swal from "sweetalert2";
 import { showErrorAlert } from "../networkApi/Helper";
 import User from "@/networkApi/user";
 import { useRouter } from "next/navigation";
+
 const Home = () => {
   const router = useRouter();
   const [sendingData, setSendingData] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
-  const [userPassword, setUserPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleInputChange = (e: any) => {
+    console.log(e);
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
   const api = new APICall();
 
   const makeLoginCall = async () => {
     if (!sendingData) {
-      if (userEmail === "") {
+      if (formData.email === "") {
         showErrorAlert("Please enter your email");
-      } else if (userPassword === "") {
+      } else if (formData.password === "") {
         showErrorAlert("Please enter your password");
       } else {
         setSendingData(true);
-        const obj = {
-          email: userEmail,
-          password: userPassword,
-        };
 
-        try {
-          const response = await api.postFormData(login, obj);
-          console.log(response); 
-
-          setSendingData(false);
-          if (response.status === "success") {
-            const userData = {
-              user: response.admin,
-              access_token: response.token,
-            };
-            const user = new User(userData);
-            router.replace("/dashboard");
-          } else {
-            showErrorAlert("Could not login, Please contact Support");
-          }
-        } catch (error) {
-          console.error("Login error:", error);
-          setSendingData(false);
-          showErrorAlert("An error occurred, please try again.");
+        const response = await api.postFormData(login, formData);
+        setSendingData(false);
+        if (response.status === "success") {
+          const userData = {
+            user: response.admin,
+            access_token: response.token,
+          };
+          const user = new User(userData);
+          router.replace("/dashboard");
+        } else {
+          showErrorAlert("Could not login, Please contact Support");
         }
       }
     }
   };
-
 
   return (
     <div>
@@ -83,20 +82,22 @@ const Home = () => {
             <div>
               <InputWithTitle
                 type={"text"}
-                onChange={setUserEmail}
+                name="email"
+                onChange={handleInputChange}
                 placeholder="Enter your Email"
                 title={"User name or email address"}
-                value={userEmail}
+                value={formData.email}
               />
             </div>
 
             <div>
               <InputWithTitle
-                onChange={setUserPassword}
+                name="password"
+                onChange={handleInputChange}
                 placeholder="Please enter Password"
                 type={"password"}
                 title={"Your password"}
-                value={userPassword}
+                value={formData.password}
               />
             </div>
 

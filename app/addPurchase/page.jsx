@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { Grid, Skeleton, CircularProgress } from "@mui/material";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from "next/navigation";
 import InputWithTitle from "@/components/generic/InputWithTitle";
 import Dropdown from "../../components/generic/dropdown";
 import styles from "../../styles/addPurchase.module.css";
 import { purchaseOut, suppliers, products } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Tabs from "./tabs";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const SearchParamsWrapper = ({ children }) => {
   const searchParams = useSearchParams();
@@ -50,12 +50,12 @@ const AddPurchaseContent = ({ searchParams }) => {
     netWeight: "",
     bardaanaDeduction: "",
     saafiWeight: "",
-    payment_type: "cash"
+    payment_type: "cash",
   });
 
   const [productList, setProducts] = useState([]);
   const [supplierList, setSuppliers] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [selectedBardaana, setSelectedBardaana] = useState(null);
   const [activeTab, setActiveTab] = useState("cash");
 
@@ -65,26 +65,26 @@ const AddPurchaseContent = ({ searchParams }) => {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const bardaanaList = [
-    { id: 1, name: 'Jama' },
-    { id: 2, name: 'Wapisi' },
-    { id: 3, name: 'Ada Shuda' },
+    { id: 1, name: "Jama" },
+    { id: 2, name: "Wapisi" },
+    { id: 3, name: "Ada Shuda" },
   ];
 
   useEffect(() => {
     fetchSuppliers();
     fetchProducts();
 
-    const editData = searchParams.get('editData');
+    const editData = searchParams.get("editData");
     if (editData) {
       try {
         const decodedData = JSON.parse(decodeURIComponent(editData));
-        setFormData(prevState => ({
+        setFormData((prevState) => ({
           ...prevState,
-          ...decodedData
+          ...decodedData,
         }));
         setActiveTab(decodedData.payment_type || "cash");
       } catch (error) {
-        console.error('Error parsing edit data:', error);
+        console.error("Error parsing edit data:", error);
       }
     }
   }, [searchParams]);
@@ -124,40 +124,36 @@ const AddPurchaseContent = ({ searchParams }) => {
   };
 
   const handleInputChange = (e) => {
-    if (e && e.target) {
-      const { name, value } = e.target;
-      setFormData(prevState => ({
-        ...prevState,
-        [name]: value
-      }));
-    } else {
-      console.error('Event or target is undefined:', e);
-    }
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
   const handlePartyChange = (event, selectedOption) => {
     if (selectedOption && selectedOption.id) {
-      setFormData(prevState => ({
+      setFormData((prevState) => ({
         ...prevState,
-        customer_id: selectedOption.id.toString()
+        customer_id: selectedOption.id.toString(),
       }));
     }
   };
 
   const handleProductChange = (event, selectedOption) => {
     if (selectedOption && selectedOption.id) {
-      setFormData(prevState => ({
+      setFormData((prevState) => ({
         ...prevState,
-        product_id: selectedOption.id.toString()
+        product_id: selectedOption.id.toString(),
       }));
     }
   };
 
   const handleBardaanaChange = (selectedOption) => {
     if (selectedOption && selectedOption.name) {
-      setFormData(prevState => ({
+      setFormData((prevState) => ({
         ...prevState,
-        bardaana: selectedOption.name
+        bardaana: selectedOption.name,
       }));
       setSelectedBardaana(selectedOption);
     }
@@ -165,47 +161,50 @@ const AddPurchaseContent = ({ searchParams }) => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      payment_type: tab
+      payment_type: tab,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoadingSubmit(true); 
+    setLoadingSubmit(true);
     try {
       let response;
       if (formData.id) {
-        response = await api.putDataWithToken(`${purchaseOut}/${formData.id}`, formData);
+        response = await api.putDataWithToken(
+          `${purchaseOut}/${formData.id}`,
+          formData
+        );
       } else {
         response = await api.postDataWithToken(purchaseOut, formData);
       }
 
       if (response.status === 200) {
         Swal.fire({
-          title: 'Success!',
-          text: 'Data has been added successfully.',
-          icon: 'success',
-          confirmButtonText: 'Okay'
+          title: "Success!",
+          text: "Data has been added successfully.",
+          icon: "success",
+          confirmButtonText: "Okay",
         }).then(() => {
-          window.location.href = '/purchase';
+          window.location.href = "/purchase";
         });
       } else {
         Swal.fire({
-          title: 'Error!',
-          text: 'Error submitting form',
-          icon: 'error',
-          confirmButtonText: 'Okay'
+          title: "Error!",
+          text: "Error submitting form",
+          icon: "error",
+          confirmButtonText: "Okay",
         });
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       Swal.fire({
-        title: 'Error!',
-        text: 'Something went wrong.',
-        icon: 'error',
-        confirmButtonText: 'Okay'
+        title: "Error!",
+        text: "Something went wrong.",
+        icon: "error",
+        confirmButtonText: "Okay",
       });
     } finally {
       setLoadingSubmit(false); // Set loading to false after API call
@@ -213,7 +212,7 @@ const AddPurchaseContent = ({ searchParams }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form>
       <Grid container spacing={2}>
         <Grid className="mt-10" item xs={12} sm={4}>
           {loadingSuppliers ? (
@@ -223,7 +222,9 @@ const AddPurchaseContent = ({ searchParams }) => {
               title="Select Party"
               options={supplierList}
               onChange={handlePartyChange}
-              value={supplierList.find(supplier => supplier.id.toString() === formData.customer_id)}
+              value={supplierList.find(
+                (supplier) => supplier.id.toString() === formData.customer_id
+              )}
             />
           )}
         </Grid>
@@ -251,7 +252,9 @@ const AddPurchaseContent = ({ searchParams }) => {
               title="Select Product"
               options={productList}
               onChange={handleProductChange}
-              value={productList.find(product => product.id.toString() === formData.product_id)}
+              value={productList.find(
+                (product) => product.id.toString() === formData.product_id
+              )}
             />
           )}
         </Grid>
@@ -271,7 +274,7 @@ const AddPurchaseContent = ({ searchParams }) => {
             title="Select Bardaana"
             options={bardaanaList}
             onChange={handleBardaanaChange}
-            value={bardaanaList.find(b => b.name === formData.bardaana)}
+            value={bardaanaList.find((b) => b.name === formData.bardaana)}
           />
         </Grid>
 
@@ -411,16 +414,23 @@ const AddPurchaseContent = ({ searchParams }) => {
       </Grid>
 
       <div className={styles.button_container}>
-        <button type="submit" className={styles.saveBtn} disabled={loadingSubmit}>
+        <button
+          onClick={() => handleSubmit()}
+          type="submit"
+          className={styles.saveBtn}
+          disabled={loadingSubmit}
+        >
           {loadingSubmit ? (
             <CircularProgress color="inherit" size={24} />
+          ) : formData.id ? (
+            "Update"
           ) : (
-            formData.id ? 'Update' : 'Save'
+            "Save"
           )}
         </button>
       </div>
     </form>
   );
-}
+};
 
 export default AddPurchase;
