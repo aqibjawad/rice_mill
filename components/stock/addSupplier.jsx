@@ -28,6 +28,9 @@ const style = {
 const top100Films = [{ label: "Self" }];
 
 const AddSupplier = ({ open, handleClose, editData = null }) => {
+
+  const [loading, setLoading] = useState(false); // Loader state
+  
   const api = new APICall();
 
   const [formData, setFormData] = useState({
@@ -97,11 +100,6 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
       const response = await api.postFormDataWithToken(url, formData);
 
       if (response.ok) {
-        console.log(
-          editData
-            ? "Entry updated successfully"
-            : "Form submitted successfully"
-        );
         handleClose();
       } else {
         console.error(
