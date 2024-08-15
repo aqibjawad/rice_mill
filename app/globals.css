@@ -39,21 +39,21 @@
 
 @media (max-width: 768px) {
   .overlayText {
-      font-size: 20px;
-      top: 45%;
+    font-size: 20px;
+    top: 45%;
   }
 
   .text2 {
-      font-size: 20px;
-      top: 55%;
+    font-size: 20px;
+    top: 55%;
   }
 
   .logoCont {
-      position: absolute;
-      width: 158px;
-      height: 158px;
-      left: 50%;
-      transform: translateX(-50%);
+    position: absolute;
+    width: 158px;
+    height: 158px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 }
 
@@ -85,4 +85,7 @@
   .text-balance {
     text-wrap: balance;
   }
+}
+.custom-swal-popup {
+  z-index: 2000; /* Adjust this value as needed */
 }

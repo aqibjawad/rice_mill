@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Box } from "@mui/material";
+import { Modal, Box, CircularProgress } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 
 import styles from "../../styles/ledger.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
-
+import APICall from "@/networkApi/APICall";
 import { buyer } from "../../networkApi/Constants";
+import { showErrorAlert } from "@/networkApi/Helper";
 
 const style = {
   position: "absolute",
@@ -21,12 +22,14 @@ const style = {
   boxShadow: 24,
   borderRadius: 10,
   p: 4,
-  outline: "none"
+  outline: "none",
 };
 
 const top100Films = [{ label: "Self" }];
 
 const AddBuyer = ({ open, handleClose, editData = null }) => {
+  const api = new APICall();
+  const [sendingData, setSendingData] = useState(false);
   const [formData, setFormData] = useState({
     person_name: "",
     reference_id: "self",
@@ -41,7 +44,7 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
     if (editData) {
       setFormData({
         ...editData,
-        reference_id: "self" // Ensure reference_id is always "self"
+        reference_id: "self", // Ensure reference_id is always "self"
       });
     } else {
       setFormData({
@@ -67,46 +70,31 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const data = new FormData();
-
-    // Only include the specified fields
-    const fieldsToInclude = [
-      "person_name",
-      "reference_id",
-      "contact",
-      "address",
-      "firm_name",
-      "opening_balance",
-      "description"
-    ];
-
-    fieldsToInclude.forEach(key => {
-      data.append(key, formData[key]);
-    });
-
-    try {
-      const url = editData ? `${buyer}/${editData.id}` : buyer;
-      const method = "POST"; // Always use POST for both add and edit
-
-      const response = await fetch(url, {
-        method: method,
-        body: data,
-      });
-
-      if (response.ok) {
+    if (formData.person_name === "") {
+      alert("Please enter a name");
+    } else if (formData.contact === "") {
+      alert("Please enter a contact");
+    } else if (formData.address === "") {
+      alert("Please enter Addres");
+    } else if (formData.firm_name === "") {
+      alert("Please enter Firm Name");
+    } else if (formData.opening_balance === "") {
+      alert("Please enter Opening Balance");
+    } else {
+      try {
+        setSendingData(true);
+        const url = editData ? `${buyer}/${editData.id}` : buyer;
+        const response = await api.postDataWithToken(url, formData);
         console.log(
           editData
             ? "Entry updated successfully"
             : "Form submitted successfully"
         );
         handleClose();
-      } else {
-        console.error(
-          editData ? "Entry update failed" : "Form submission failed"
-        );
+        setSendingData(false);
+      } catch (error) {
+        console.error("An error occurred", error);
       }
-    } catch (error) {
-      console.error("An error occurred", error);
     }
   };
 
@@ -218,13 +206,19 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
           style={{ display: "flex", justifyContent: "space-between" }}
         >
           <div style={{ flex: 1, marginRight: "10px" }}>
-            <div className={styles.saveBtn} onClick={handleSubmit}>
-              {editData ? "Update" : "Save"}
+            <div className={styles.editBtn} onClick={handleClose}>
+              Cancel
             </div>
           </div>
           <div style={{ flex: 1, marginLeft: "10px" }}>
-            <div className={styles.editBtn} onClick={handleClose}>
-              Cancel
+            <div className={styles.saveBtn} onClick={handleSubmit}>
+              {sendingData ? (
+                <CircularProgress color="inherit" size={20} />
+              ) : editData ? (
+                "Update"
+              ) : (
+                "Save"
+              )}
             </div>
           </div>
         </div>
