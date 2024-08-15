@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "../../styles/purchase.module.css";
 import APICall from "../../networkApi/APICall";
-import { purchaseOut } from "@/networkApi/Constants";
+import { purchaseBook } from "@/networkApi/Constants";
 import Swal from 'sweetalert2';
 import {
   Table,
@@ -33,7 +33,7 @@ const Page = () => {
 
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(purchaseOut);
+      const response = await api.getDataWithToken(purchaseBook);
 
       const data = response.data;
 
@@ -56,7 +56,7 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await api.deleteDataWithToken(`${purchaseOut}/${id}`, {
+      const response = await api.deleteDataWithToken(`${purchaseBook}/${id}`, {
         method: 'DELETE',
       });
 
@@ -94,14 +94,25 @@ const Page = () => {
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Bank Name</TableCell>
-              <TableCell>Cheque Date</TableCell>
-              <TableCell>Cheque No</TableCell>
-              <TableCell>Customer</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Expense Category</TableCell>
-              <TableCell>Payment Flow Type</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Supplier ID</TableCell>
+              <TableCell>Product ID</TableCell>
+              <TableCell>Quantity</TableCell>
+              <TableCell>Packing Type</TableCell>
+              <TableCell>Bardaana Quantity</TableCell>
+              <TableCell>Truck Number</TableCell>
+              <TableCell>Freight</TableCell>
+              <TableCell>Price</TableCell>
+              <TableCell>Bank Tax</TableCell>
+              <TableCell>Cash Amount</TableCell>
+              <TableCell>Cheque Number</TableCell>
+              <TableCell>Remaining Amount</TableCell>
+              <TableCell>First Weight</TableCell>
+              <TableCell>Second Weight</TableCell>
+              <TableCell>Net Weight</TableCell>
+              <TableCell>Packing Weight</TableCell>
+              <TableCell>Bardaana Deduction</TableCell>
+              <TableCell>Final Weight</TableCell>
               <TableCell>Payment Type</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
@@ -111,17 +122,9 @@ const Page = () => {
               // Show skeletons while loading
               Array.from(new Array(5)).map((_, index) => (
                 <TableRow key={index}>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
-                  <TableCell><Skeleton /></TableCell>
+                  {Array.from(new Array(22)).map((_, cellIndex) => (
+                    <TableCell key={cellIndex}><Skeleton /></TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : (
@@ -129,14 +132,25 @@ const Page = () => {
               tableData.map((row, index) => (
                 <TableRow key={index}>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.amount}</TableCell>
-                  <TableCell>{row.bank_name}</TableCell>
-                  <TableCell>{row.cheque_date}</TableCell>
-                  <TableCell>{row.cheque_no}</TableCell>
-                  <TableCell>{row.customer_id}</TableCell>
-                  <TableCell>{row.description}</TableCell>
-                  <TableCell>{row.expense_category_id}</TableCell>
-                  <TableCell>{row.payment_flow_type}</TableCell>
+                  <TableCell>{row.date}</TableCell>
+                  <TableCell>{row.sup_id}</TableCell>
+                  <TableCell>{row.pro_id}</TableCell>
+                  <TableCell>{row.quantity}</TableCell>
+                  <TableCell>{row.packing_type}</TableCell>
+                  <TableCell>{row.bardaanaQuantity}</TableCell>
+                  <TableCell>{row.truckNumber}</TableCell>
+                  <TableCell>{row.freight}</TableCell>
+                  <TableCell>{row.price}</TableCell>
+                  <TableCell>{row.bankTax}</TableCell>
+                  <TableCell>{row.cash_amount}</TableCell>
+                  <TableCell>{row.chequeNumber}</TableCell>
+                  <TableCell>{row.remainingAmount}</TableCell>
+                  <TableCell>{row.first_weight}</TableCell>
+                  <TableCell>{row.second_weight}</TableCell>
+                  <TableCell>{row.net_weight}</TableCell>
+                  <TableCell>{row.packing_weight}</TableCell>
+                  <TableCell>{row.bardaanaDeduction}</TableCell>
+                  <TableCell>{row.final_weight}</TableCell>
                   <TableCell>{row.payment_type}</TableCell>
                   <TableCell>
                     <div className={styles.iconContainer}>

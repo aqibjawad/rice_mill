@@ -18,9 +18,11 @@ export const stocks = apiPrefix + "/product_stock";
 export const suppliers = apiPrefix + "/supplier";
 
 export const buyer = apiPrefix + "/buyer";
-
+ 
 export const purchaseOut = apiPrefix + "/payment_out";
 
 export const supplierLedger = apiPrefix + "/supplier_ledger";
 
 export const login = apiPrefix + "/login";
+
+export const purchaseBook = apiPrefix + "/purchase_book";

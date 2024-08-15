@@ -6,10 +6,11 @@ import { useSearchParams } from "next/navigation";
 import InputWithTitle from "@/components/generic/InputWithTitle";
 import DropDown from "../../components/generic/dropdown";
 import styles from "../../styles/addPurchase.module.css";
-import { purchaseOut, suppliers, products } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Tabs from "./tabs";
 import Swal from "sweetalert2";
+
+import { purchaseBook, suppliers, products } from "../../networkApi/Constants";
 
 export const dynamic = "force-dynamic";
 
@@ -37,31 +38,32 @@ const AddPurchaseContent = ({ searchParams }) => {
   const api = new APICall();
 
   const [formData, setFormData] = useState({
-    customer_id: "",
+    sup_id: "",
     date: "",
-    product_id: "",
+    pro_id: "",
     quantity: "",
-    bardaana: "",
+    packing_type: "",
     bardaanaQuantity: "",
     truckNumber: "",
     freight: "",
-    totalAmount: "",
+    price: "",
     bankTax: "",
-    amount: "",
+    cash_amount: "",
     chequeNumber: "",
     remainingAmount: "",
-    firstWeight: "",
-    secondWeight: "",
-    netWeight: "",
+    first_weight: "",
+    second_weight: "",
+    net_weight:"",
+    packing_weight: "",
     bardaanaDeduction: "",
-    saafiWeight: "",
+    final_weight: "",
     payment_type: "cash",
   });
 
   const [dropdownValues, setDropdownValues] = useState({
-    customer_id: null,
-    product_id: null,
-    bardaana: null,
+    sup_id: null,
+    pro_id: null,
+    packing_type: null,
   });
 
   const [productList, setProducts] = useState([]);
@@ -76,9 +78,9 @@ const AddPurchaseContent = ({ searchParams }) => {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const bardaanaList = [
-    { id: 1, label: "Jama" },
-    { id: 2, label: "Wapisi" },
-    { id: 3, label: "Ada Shuda" },
+    { id: 1, label: "add" },
+    { id: 2, label: "return" },
+    { id: 3, label: "paid" },
   ];
 
   useEffect(() => {
@@ -149,13 +151,13 @@ const AddPurchaseContent = ({ searchParams }) => {
     }));
 
     if (selectedOption) {
-      if (name === 'bardaana') {
+      if (name === 'packing_type') {
         setFormData(prev => ({
           ...prev,
           [name]: selectedOption.label
         }));
-        setSelectedBardaana(selectedOption);
-      } else {
+      } else if (name === 'sup_id' || name === 'pro_id') {
+        // For supplier and product, set the id
         setFormData(prev => ({
           ...prev,
           [name]: selectedOption.id.toString()
@@ -179,11 +181,11 @@ const AddPurchaseContent = ({ searchParams }) => {
       let response;
       if (formData.id) {
         response = await api.putDataWithToken(
-          `${purchaseOut}/${formData.id}`,
+          `${purchaseBook}/${formData.id}`,
           formData
         );
       } else {
-        response = await api.postDataWithToken(purchaseOut, formData);
+        response = await api.postDataWithToken(purchaseBook, formData);
       }
       Swal.fire({
         title: "Success!",
@@ -192,7 +194,7 @@ const AddPurchaseContent = ({ searchParams }) => {
         confirmButtonText: "OK",
       }).then((result) => {
         if (result.isConfirmed) {
-          router.back(); 
+          router.back();
         }
       })
 
@@ -220,8 +222,8 @@ const AddPurchaseContent = ({ searchParams }) => {
               title="Select Party"
               options={supplierList}
               onChange={handleDropdownChange}
-              value={dropdownValues.customer_id}
-              name="customer_id"
+              value={dropdownValues.sup_id}
+              name="sup_id"
             />
           )}
         </Grid>
@@ -249,8 +251,8 @@ const AddPurchaseContent = ({ searchParams }) => {
               title="Select Product"
               options={productList}
               onChange={handleDropdownChange}
-              value={dropdownValues.product_id}
-              name="product_id"
+              value={dropdownValues.pro_id}
+              name="pro_id"
             />
           )}
         </Grid>
@@ -270,8 +272,8 @@ const AddPurchaseContent = ({ searchParams }) => {
             title="Select Bardaana"
             options={bardaanaList}
             onChange={handleDropdownChange}
-            value={dropdownValues.bardaana}
-            name="bardaana"
+            value={dropdownValues.packing_type}
+            name="packing_type"
           />
         </Grid>
 
@@ -309,10 +311,20 @@ const AddPurchaseContent = ({ searchParams }) => {
 
         <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
+            title={"cash Amount"}
+            placeholder={"cash Amount"}
+            name="cash_amount"
+            value={formData.cash_amount}
+            onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid className="mt-10" item xs={12} sm={4}>
+          <InputWithTitle
             title={"Total Amount"}
             placeholder={"Total Amount"}
-            name="totalAmount"
-            value={formData.totalAmount}
+            name="price"
+            value={formData.price}
             onChange={handleInputChange}
           />
         </Grid>
@@ -363,8 +375,8 @@ const AddPurchaseContent = ({ searchParams }) => {
           <InputWithTitle
             title={"First Weight"}
             placeholder={"First Weight"}
-            name="firstWeight"
-            value={formData.firstWeight}
+            name="first_weight"
+            value={formData.first_weight}
             onChange={handleInputChange}
           />
         </Grid>
@@ -373,8 +385,8 @@ const AddPurchaseContent = ({ searchParams }) => {
           <InputWithTitle
             title={"Second Weight"}
             placeholder={"Second Weight"}
-            name="secondWeight"
-            value={formData.secondWeight}
+            name="second_weight"
+            value={formData.second_weight}
             onChange={handleInputChange}
           />
         </Grid>
@@ -383,8 +395,8 @@ const AddPurchaseContent = ({ searchParams }) => {
           <InputWithTitle
             title={"Net Weight"}
             placeholder={"Net Weight"}
-            name="netWeight"
-            value={formData.netWeight}
+            name="net_weight"
+            value={formData.net_weight}
             onChange={handleInputChange}
           />
         </Grid>
@@ -401,10 +413,20 @@ const AddPurchaseContent = ({ searchParams }) => {
 
         <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
+            title={"Final Weight"}
+            placeholder={"Final Weight"}
+            name="final_weight"
+            value={formData.final_weight}
+            onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid className="mt-10" item xs={12} sm={4}>
+          <InputWithTitle
             title={"Saafi Weight"}
             placeholder={"Saafi Weight"}
-            name="saafiWeight"
-            value={formData.saafiWeight}
+            name="packing_weight"
+            value={formData.packing_weight}
             onChange={handleInputChange}
           />
         </Grid>
