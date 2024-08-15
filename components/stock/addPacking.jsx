@@ -57,7 +57,6 @@ const AddPacking = ({ open, handleClose, editData = null }) => {
         try {
             let response;
             if (editData) {
-                // Edit existing packing
                 const url = `${packings}/${editData.id}`;
                 response = await api.updateFormDataWithToken(url, formData);
             } else {

@@ -9,6 +9,8 @@ import APICall from "@/networkApi/APICall";
 import { products } from "../../networkApi/Constants";
 import { showErrorAlert } from "@/networkApi/Helper";
 
+import Swal from 'sweetalert2';
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -52,26 +54,41 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
   };
 
   const handleSubmit = async (e) => {
-    if (formData.product_name === "") {
-      alert("Please select a product Name");
-    } else if (formData.product_description === "") {
-      alert("Please Write any Description");
-    } else {
-      try {
-        setSendingData(true);
-        const response = await api.postFormDataWithToken(products, formData);
-        setSendingData(false);
-        console.log(
-          editData
-            ? "Product updated successfully"
-            : "Product added successfully"
-        );
-        handleClose();
-      } catch (error) {
-        console.error("An error occurred", error);
+    e.preventDefault();
+
+    const data = new FormData();
+    for (const key in formData) {
+      data.append(key, formData[key]);
+    }
+
+    setSendingData(true);
+
+    try {
+      let response;
+      if (editData) {
+        const url = `${products}/${editData.id}`;
+        response = await api.updateFormDataWithToken(url, formData);
+      } else {
+        const url = products;
+        response = await api.postFormDataWithToken(url, formData);
       }
+
+      // Close modal after successful submission
+      handleClose();
+
+    } catch (error) {
+      console.error('An error occurred', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'An error occurred while processing your request.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    } finally {
+      setSendingData(false); // Hide loading spinner
     }
   };
+
 
   return (
     <Modal
