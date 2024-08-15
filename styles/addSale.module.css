@@ -1,0 +1,47 @@
+.saleHead {
+    font-family: "regular";
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 28.13px;
+    text-align: left;
+}
+
+.saleSec {
+    background: #E9E9E9;
+    width: 100%;
+    height: 720px;
+    top: 402px;
+    left: 276px;
+    border-radius: 12px;
+    margin-left: 1rem;
+    margin-top: 2rem;
+    padding: 20px;
+}
+
+.itemBill {
+    font-family: "regular";
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 18.75px;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.addItemBtn {
+    width: 100%;
+    height: 50px;
+    border-radius: 30px;
+    background: #2C46CE;
+    text-align: center;
+    font-family: "regular";
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 18.75px;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+    margin-left: 1rem;
+}

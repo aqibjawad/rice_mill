@@ -40,6 +40,7 @@ const SideBar = () => {
     { name: "Purchase", href: "/purchase", icon: <FaShoppingBag /> },
     { name: "Supplier", href: "/supplier", icon: <FaTruck /> },
     { name: "Buyer", href: "/Buyer", icon: <FaUserTie /> },
+    { name: "Sale", href: "/sale", icon: <FaUserTie /> },
     // { name: "Supplier Ledger", href: "/supplier_ledger", icon: <FaUserTie /> },
   ];
 
