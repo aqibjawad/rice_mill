@@ -94,7 +94,7 @@ const Home = () => {
               <InputWithTitle
                 onChange={setUserPassword}
                 placeholder="Please enter Password"
-                type={"text"}
+                type={"password"}
                 title={"Your password"}
                 value={userPassword}
               />

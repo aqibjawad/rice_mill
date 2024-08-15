@@ -35,11 +35,8 @@ const Page = () => {
     const fetchData = async () => {
         try {
             const response = await api.getDataWithToken(payment_Out);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const result = await response.json();
-            const data = result.data;
+
+            const data = response.data;
             if (Array.isArray(data)) {
                 setTableData(data);
             } else {

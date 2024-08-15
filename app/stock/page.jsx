@@ -58,11 +58,8 @@ const Page = () => {
         url += `?date=${formattedDate}`;
       }
       const response = await api.getDataWithToken(url);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const result = await response.json();
-      const data = result.data;
+
+      const data = response.data;
       if (Array.isArray(data)) {
         setTableData(data);
       } else {
@@ -105,7 +102,9 @@ const Page = () => {
       });
     }
   };
-  
+
+
+
   return (
     <div>
       <div className={styles.container}>

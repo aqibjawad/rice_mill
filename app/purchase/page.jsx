@@ -17,6 +17,8 @@ import {
 
 import Buttons from "../../components/buttons"
 
+import { MdDelete, MdEdit } from "react-icons/md";
+
 const Page = () => {
   const api = new APICall();
 
@@ -32,11 +34,9 @@ const Page = () => {
   const fetchData = async () => {
     try {
       const response = await api.getDataWithToken(purchaseOut);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const result = await response.json();
-      const data = result.data;
+
+      const data = response.data;
+
       if (Array.isArray(data)) {
         setTableData(data);
       } else {
@@ -56,7 +56,7 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await api.getDataWithToken(`${purchaseOut}/${id}`, {
+      const response = await api.deleteDataWithToken(`${purchaseOut}/${id}`, {
         method: 'DELETE',
       });
 
@@ -138,9 +138,11 @@ const Page = () => {
                   <TableCell>{row.expense_category_id}</TableCell>
                   <TableCell>{row.payment_flow_type}</TableCell>
                   <TableCell>{row.payment_type}</TableCell>
-                  <TableCell className={styles.iconContainer}>
-                    <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} alt="Delete" />
-                    <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} alt="Edit" />
+                  <TableCell>
+                    <div className={styles.iconContainer}>
+                      <MdDelete onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
+                      <MdEdit onClick={() => handleEdit(row)} className={styles.editButton} />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

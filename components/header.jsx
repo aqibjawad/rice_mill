@@ -2,6 +2,13 @@ import React from "react";
 import styles from "../styles/header.module.css";
 
 const Header = () => {
+
+  const logOut=()=>{
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  }
+
   return (
     <div className={styles.header}>
       <div className={styles.nameCont}>
@@ -11,7 +18,7 @@ const Header = () => {
 
       <div className={styles.companyName}>Ghulam Bari Rice Mill</div>
 
-      <div className={styles.logoutBtn}>Logout</div>
+      <div onClick={logOut} className={styles.logoutBtn}>Logout</div>
     </div>
   );
 };

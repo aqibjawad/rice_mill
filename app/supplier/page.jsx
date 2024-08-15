@@ -67,7 +67,7 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await api.getDataWithToken(`${suppliers}/${id}`, {
+      const response = await api.deleteDataWithToken(`${suppliers}/${id}`, {
         method: "DELETE",
       });
 

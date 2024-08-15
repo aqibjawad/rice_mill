@@ -44,6 +44,7 @@
     border-radius: 50px;
     text-align: center;
     padding: 10px;
+    cursor: pointer;
 }
 
 /* Tablet styles */

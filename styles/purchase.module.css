@@ -207,6 +207,7 @@
 }
 
 .deleteButton {
+    color: #ff4d4f;
     border: none;
     padding: 5px 10px;
     cursor: pointer;

@@ -20,20 +20,13 @@
     line-height: 18.75px;
 }
 
-.editBtn {
-    width: 100%;
-    height: 47px;
-    padding: 14px 58px 14px 58px;
-    gap: 10px;
-    border-radius: 35px;
-    background: #316AFF;
-    color: white;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
 
+.editButton {
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 50px;
+    height: 50px;
 }
 
 .flexContainer {
