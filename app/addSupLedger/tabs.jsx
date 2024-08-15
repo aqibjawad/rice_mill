@@ -4,12 +4,10 @@ import React from "react";
 import styles from "../../styles/addPurchase.module.css";
 
 const Tabs = ({ activeTab, setActiveTab }) => {
-    // Handle tab clicks and set the appropriate active tab
     const handleTabClick = (tab) => {
         setActiveTab(tab);
     };
 
-    // Ensure activeTab has a default value
     const currentTab = activeTab || "cash";
 
     return (

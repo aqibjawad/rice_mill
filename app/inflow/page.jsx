@@ -1,24 +1,26 @@
 "use client";
 
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
-
 import Link from "next/link";
-
 import { payment_In } from "../../networkApi/Constants";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Paper,
+  Skeleton
+} from '@mui/material';
+
+import Buttons from "../../components/buttons"
 
 const Page = () => {
-
     const [tableData, setTableData] = useState([]);
     const [error, setError] = useState(null);
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingData, setEditingData] = useState(null);
-
-    const handleEdit = (row) => {
-        setEditingData(row);
-        setIsModalOpen(true);
-    };
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchData();
@@ -39,73 +41,57 @@ const Page = () => {
             }
         } catch (error) {
             setError(error.message);
-        }
-    };
-
-    const handleDelete = async (id) => {
-        try {
-            const response = await fetch(packings.delete(id), {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete customer');
-            }
-
-            setTableData(tableData.filter(item => item.id !== id));
-        } catch (error) {
-            console.error('Error deleting customer:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div>
-            <div className={styles.container}>
-                <div className={styles.leftSection}>
-                    Amount Recieves
-                </div>
-                <div className={styles.rightSection}>
-                    <div className={styles.rightItemExp}>
-                        <Link href="/amountRecieves">
-                            Add
-                        </Link>
-                    </div>
-                    <div className={styles.rightItem}>
-                        date
-                    </div>
-                    <div className={styles.rightItem}>
-                        view all
-                    </div>
-                    <div className={styles.rightItemExp}>
-                        export
-                    </div>
-                </div>
-            </div>
+           <Buttons leftSectionText="Amount Recieves"  addButtonLink="/payments"/>
 
-            <div className={styles.tableSection}>
-                <div className={styles.tableHeader}>
-                    <div>Payment Type</div>
-                    <div>Person</div>
-                    <div>Description</div>
-                    <div>Amount</div>
-                    <div> Bank Id </div>
-                    <div>Cheuqe No</div>
-                    <div>cheque Date</div>
-                </div>
-                <div className={styles.tableBody}>
-                    {tableData.map((row) => (
-                        <div key={row.id} className={styles.tableRowData}>
-                            <div>{row.payment_type}</div>
-                            <div>{row.customer_id}</div>
-                            <div>{row.description}</div>
-                            <div>{row.amount}</div>
-                            <div>{row.bank_id}</div>
-                            <div>{row.cheque_no}</div>
-                            <div>{row.cheque_date}</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <TableContainer component={Paper}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Payment Type</TableCell>
+                            <TableCell>Person</TableCell>
+                            <TableCell>Description</TableCell>
+                            <TableCell>Amount</TableCell>
+                            <TableCell>Bank Id</TableCell>
+                            <TableCell>Cheque No</TableCell>
+                            <TableCell>Cheque Date</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {loading ? (
+                            // Skeleton rows while loading
+                            [...Array(5)].map((_, index) => (
+                                <TableRow key={index}>
+                                    {[...Array(7)].map((_, cellIndex) => (
+                                        <TableCell key={cellIndex}>
+                                            <Skeleton animation="wave" />
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        ) : (
+                            // Actual data rows
+                            tableData.map((row) => (
+                                <TableRow key={row.id}>
+                                    <TableCell>{row.payment_type}</TableCell>
+                                    <TableCell>{row.customer_id}</TableCell>
+                                    <TableCell>{row.description.slice(0,10)}...</TableCell>
+                                    <TableCell>{row.amount}</TableCell>
+                                    <TableCell>{row.bank_id}</TableCell>
+                                    <TableCell>{row.cheque_no}</TableCell>
+                                    <TableCell>{row.cheque_date}</TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </div>
     )
 }

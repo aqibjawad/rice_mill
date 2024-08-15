@@ -7,36 +7,24 @@ import MultilineInput from "../../components/generic/MultilineInput";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
-
 import AddExpense from "../../components/stock/addExpense";
-
-import { banks as banksApi } from "../../networkApi/Constants"; // Adjust import based on actual path
-
-import { expense as expenseApi } from "../../networkApi/Constants"; // Adjust import based on actual path
 import AddBank from "../../components/stock/addBank";
+
+import { banks as banksApi, expense as expenseApi } from "../../networkApi/Constants"; 
 
 const Expense = () => {
 
     const [tableData, setTableData] = useState([]);
-
     const [tableExpenseData, setTableExpenseData] = useState([]);
-
     const [open, setOpen] = useState(false);
     const [openExpense, setOpenExpense] = useState(false);
     const [activeTab, setActiveTab] = useState("tab1");
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-
     const handleOpenExpense = () => setOpenExpense(true);
     const handleCloseExpense = () => setOpenExpense(false);
-
-    const handleTabClick = (tab) => {
-        setActiveTab(tab);
-    };
-
-    // Sample data for top100Films, you might want to replace it with actual data
-
+    const handleTabClick = (tab) => setActiveTab(tab);
 
     useEffect(() => {
         fetchData();
@@ -52,7 +40,6 @@ const Expense = () => {
             const result = await response.json();
             const data = result.data;
             if (Array.isArray(data)) {
-                // Assuming each bank object has a 'name' property
                 const formattedData = data.map(bank => ({ label: bank.bank_name }));
                 setTableData(formattedData);
             } else {
@@ -72,8 +59,7 @@ const Expense = () => {
             const result = await response.json();
             const data = result.data;
             if (Array.isArray(data)) {
-                // Assuming each bank object has a 'name' property
-                const formattedData = data.map(expensees => ({ label: expensees.expense_category }));
+                const formattedData = data.map(expense => ({ label: expense.expense_category }));
                 setTableExpenseData(formattedData);
             } else {
                 throw new Error('Fetched data is not an array');
@@ -110,20 +96,16 @@ const Expense = () => {
 
             <div className='mt-10'>
                 <div className={styles.tabPaymentContainer}>
-                    <button className={`${styles.tabPaymentButton} ${activeTab === "tab1" ? styles.active : ""}`} onClick={() =>
-                        handleTabClick("tab1")}
-                    >
+                    <button className={`${styles.tabPaymentButton} ${activeTab === "tab1" ? styles.active : ""}`} onClick={() => handleTabClick("tab1")}>
                         Cash
                     </button>
-                    <button className={`${styles.tabPaymentButton} ${activeTab === "tab2" ? styles.active : ""}`} onClick={() =>
-                        handleTabClick("tab2")}
-                    >
+                    <button className={`${styles.tabPaymentButton} ${activeTab === "tab2" ? styles.active : ""}`} onClick={() => handleTabClick("tab2")}>
                         Cheque
                     </button>
                 </div>
                 <div className={styles.tabPaymentContent}>
                     {activeTab === "tab1" && (
-                        ""
+                        <div> {/* Placeholder for Cash tab content */} </div>
                     )}
                     {activeTab === "tab2" && (
                         <div>
@@ -175,11 +157,7 @@ const Expense = () => {
             </div>
 
             <AddBank open={open} handleClose={handleClose} />
-
-            <AddExpense
-                openExpense={openExpense}
-                handleCloseExpense={handleCloseExpense}
-            />
+            <AddExpense openExpense={openExpense} handleCloseExpense={handleCloseExpense} />
         </div>
     );
 };

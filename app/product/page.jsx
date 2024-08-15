@@ -2,15 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/product.module.css";
-import { Skeleton } from "@mui/material";
+import { Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import { products } from "../../networkApi/Constants";
+
+// Import icons from react-icons
+import { MdDelete, MdEdit } from "react-icons/md";
 
 import AddProduct from "../../components/stock/addProduct";
 
 const Page = () => {
-
     const [open, setOpen] = useState(false);
-
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     
@@ -94,40 +95,49 @@ const Page = () => {
             </div>
 
             <div className={styles.contentContainer}>
-                <div className={styles.tableSection}>
+                <TableContainer component={Paper} className={styles.tableSection}>
                     {loading ? (
-                        <>
-                            <Skeleton variant="rectangular" width="100%" height={40} />
-                            {[...Array(5)].map((_, index) => (
-                                <Skeleton key={index} variant="rectangular" width="100%" height={30} style={{ marginTop: '10px' }} />
-                            ))}
-                        </>
+                        <Skeleton variant="rectangular" width="100%" height={40} />
                     ) : error ? (
                         <div>Error: {error}</div>
                     ) : (
-                        <>
-                            <div className={styles.tableHeader}>
-                                <div>Sr.</div>
-                                <div> Product Name </div>
-                                <div>Product Description</div>
-                                <div>Action</div>
-                            </div>
-                            <div className={styles.tableBody}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Sr.</TableCell>
+                                    <TableCell>Product Name</TableCell>
+                                    <TableCell>Product Description</TableCell>
+                                    <TableCell>Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
                                 {tableData.map((row) => (
-                                    <div key={row.id} className={styles.tableRowData}>
-                                        <div>{row.id}</div>
-                                        <div>{row.product_name}</div>
-                                        <div>{row.product_description}</div>
-                                        <div className={styles.iconContainer}>
-                                            <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
-                                            <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
-                                        </div>
-                                    </div>
+                                    <TableRow key={row.id} className={styles.tableRowData}>
+                                        <TableCell>{row.id}</TableCell>
+                                        <TableCell>{row.product_name}</TableCell>
+                                        <TableCell>{row.product_description}</TableCell>
+                                        <TableCell className={styles.iconContainer}>
+                                            <MdDelete 
+                                                onClick={() => handleDelete(row.id)} 
+                                                className={styles.deleteButton} 
+                                                style={{ cursor: 'pointer', color: 'red' }} 
+                                                size={24} 
+                                                title="Delete"
+                                            />
+                                            <MdEdit 
+                                                onClick={() => handleEdit(row)} 
+                                                className={styles.editButton} 
+                                                style={{ cursor: 'pointer', color: 'blue', marginLeft: '10px' }} 
+                                                size={24} 
+                                                title="Edit"
+                                            />
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </div>
-                        </>
+                            </TableBody>
+                        </Table>
                     )}
-                </div>
+                </TableContainer>
             </div>
             <AddProduct open={open} handleClose={handleClose} />
         </div>

@@ -19,8 +19,8 @@ const SideBar = () => {
 
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: <FaHome /> },
-    { name: "In Flow", href: "/inflow", icon: <FaArrowRight /> },
-    { name: "Out Flow", href: "/outflow", icon: <FaArrowLeft /> },
+    { name: "Recieves", href: "/inflow", icon: <FaArrowRight /> },
+    { name: "Outflow", href: "/outflow", icon: <FaArrowLeft /> },
     // { name: "Customer", href: "/customer", icon: <FaUsers /> },
     { name: "Stock", href: "/stock", icon: <FaBoxes /> },
     { name: "Product", href: "/product", icon: <FaShoppingCart /> },

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { Grid } from "@mui/material";
+import { Grid, Skeleton, CircularProgress } from "@mui/material";
 import { useSearchParams } from 'next/navigation';
 import InputWithTitle from "@/components/generic/InputWithTitle";
 import Dropdown from "../../components/generic/dropdown";
@@ -9,6 +9,7 @@ import styles from "../../styles/addPurchase.module.css";
 import { purchaseOut, suppliers, products } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Tabs from "./tabs";
+import Swal from 'sweetalert2';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,6 +59,11 @@ const AddPurchaseContent = ({ searchParams }) => {
   const [selectedBardaana, setSelectedBardaana] = useState(null);
   const [activeTab, setActiveTab] = useState("cash");
 
+  // Loading states
+  const [loadingSuppliers, setLoadingSuppliers] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+
   const bardaanaList = [
     { id: 1, name: 'Jama' },
     { id: 2, name: 'Wapisi' },
@@ -95,6 +101,8 @@ const AddPurchaseContent = ({ searchParams }) => {
     } catch (error) {
       console.error("Error fetching suppliers:", error);
       setError("Failed to fetch suppliers. Please try again.");
+    } finally {
+      setLoadingSuppliers(false);
     }
   };
 
@@ -110,6 +118,8 @@ const AddPurchaseContent = ({ searchParams }) => {
     } catch (error) {
       console.error("Error fetching products:", error);
       setError("Failed to fetch products. Please try again.");
+    } finally {
+      setLoadingProducts(false);
     }
   };
 
@@ -127,7 +137,7 @@ const AddPurchaseContent = ({ searchParams }) => {
         ...prevState,
         customer_id: selectedOption.id.toString()
       }));
-    }   
+    }
   };
 
   const handleProductChange = (event, selectedOption) => {
@@ -159,6 +169,7 @@ const AddPurchaseContent = ({ searchParams }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoadingSubmit(true); // Set loading to true before API call
     try {
       let response;
       if (formData.id) {
@@ -166,16 +177,34 @@ const AddPurchaseContent = ({ searchParams }) => {
       } else {
         response = await api.postDataWithToken(purchaseOut, formData);
       }
-      
+
       if (response.status === 200) {
-        alert('Form submitted successfully');
-        window.location.href = '/purchase';
+        Swal.fire({
+          title: 'Success!',
+          text: 'Data has been added successfully.',
+          icon: 'success',
+          confirmButtonText: 'Okay'
+        }).then(() => {
+          window.location.href = '/purchase';
+        });
       } else {
-        alert('Error submitting form');
+        Swal.fire({
+          title: 'Error!',
+          text: 'Error submitting form',
+          icon: 'error',
+          confirmButtonText: 'Okay'
+        });
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error submitting form');
+      Swal.fire({
+        title: 'Error!',
+        text: 'Something went wrong.',
+        icon: 'error',
+        confirmButtonText: 'Okay'
+      });
+    } finally {
+      setLoadingSubmit(false); // Set loading to false after API call
     }
   };
 
@@ -183,12 +212,16 @@ const AddPurchaseContent = ({ searchParams }) => {
     <form onSubmit={handleSubmit}>
       <Grid container spacing={2}>
         <Grid className="mt-10" item xs={12} sm={4}>
-          <Dropdown
-            title="Select Party"
-            options={supplierList}
-            onChange={handlePartyChange}
-            value={supplierList.find(supplier => supplier.id.toString() === formData.customer_id)}
-          /> 
+          {loadingSuppliers ? (
+            <Skeleton variant="rectangular" width="100%" height={56} />
+          ) : (
+            <Dropdown
+              title="Select Party"
+              options={supplierList}
+              onChange={handlePartyChange}
+              value={supplierList.find(supplier => supplier.id.toString() === formData.customer_id)}
+            />
+          )}
         </Grid>
 
         <Grid className="mt-3" item xs={12} sm={5}>
@@ -207,12 +240,16 @@ const AddPurchaseContent = ({ searchParams }) => {
         </Grid>
 
         <Grid className="mt-10" item xs={12} sm={4}>
-          <Dropdown
-            title="Select Product"
-            options={productList}
-            onChange={handleProductChange}
-            value={productList.find(product => product.id.toString() === formData.product_id)}
-          />
+          {loadingProducts ? (
+            <Skeleton variant="rectangular" width="100%" height={56} />
+          ) : (
+            <Dropdown
+              title="Select Product"
+              options={productList}
+              onChange={handleProductChange}
+              value={productList.find(product => product.id.toString() === formData.product_id)}
+            />
+          )}
         </Grid>
 
         <Grid className="mt-5" item xs={12} sm={4}>
@@ -367,13 +404,17 @@ const AddPurchaseContent = ({ searchParams }) => {
             onChange={handleInputChange}
           />
         </Grid>
-
-        <div className={styles.button_container}>
-          <button type="submit" className={styles.saveBtn}>
-            {formData.id ? 'Update' : 'Save'}
-          </button>
-        </div>
       </Grid>
+
+      <div className={styles.button_container}>
+        <button type="submit" className={styles.saveBtn} disabled={loadingSubmit}>
+          {loadingSubmit ? (
+            <CircularProgress color="inherit" size={24} />
+          ) : (
+            formData.id ? 'Update' : 'Save'
+          )}
+        </button>
+      </div>
     </form>
   );
 }

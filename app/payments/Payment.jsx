@@ -6,17 +6,17 @@ import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
+import Skeleton from '@mui/material/Skeleton';
 import axios from 'axios';
+import Grid from '@mui/material/Grid';
 
-import { customers } from "../../networkApi/Constants"
-
-import { banks } from "../../networkApi/Constants"
-
-import { payment_Out } from "../../networkApi/Constants"
+import { suppliers, banks, payment_Out } from "../../networkApi/Constants";
 
 const Payment = () => {
     const [tableData, setTableData] = useState([]);
     const [tableBankData, setTableBankData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [bankLoading, setBankLoading] = useState(true);
 
     const [activeTab, setActiveTab] = useState("tab1");
     const [amount, setAmount] = useState('');
@@ -33,7 +33,7 @@ const Payment = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(customers);
+            const response = await fetch(suppliers);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -47,6 +47,8 @@ const Payment = () => {
             }
         } catch (error) {
             console.error(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -66,6 +68,8 @@ const Payment = () => {
             }
         } catch (error) {
             console.error(error.message);
+        } finally {
+            setBankLoading(false);
         }
     };
 
@@ -118,18 +122,21 @@ const Payment = () => {
 
     return (
         <div>
-            <div className='mt-10' style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div style={{ flex: 1, marginRight: '10px', marginTop: "1rem" }}>
-                    <Autocomplete
-                        disablePortal
-                        id="combo-box-demo"
-                        options={tableData}
-                        sx={{ width: 750 }}
-                        renderInput={(params) => <TextField {...params} label="Select Party" />}
-                        onChange={handleCustomerSelect}
-                    />
-                </div>
-                <div style={{ flex: 1, marginLeft: '10px' }}>
+            <Grid container spacing={2} className='mt-10'>
+                <Grid className="mt-5" item xs={12} md={6}>
+                    {loading ? (
+                        <Skeleton variant="rectangular" width="100%" height={56} />
+                    ) : (
+                        <Autocomplete
+                            disablePortal
+                            id="combo-box-demo"
+                            options={tableData}
+                            renderInput={(params) => <TextField {...params} label="Select Party" />}
+                            onChange={handleCustomerSelect}
+                        />
+                    )}
+                </Grid>
+                <Grid item xs={12} md={6}>
                     <InputWithTitle
                         title="Amount"
                         type="text"
@@ -138,8 +145,8 @@ const Payment = () => {
                         value={amount}
                         onChange={handleAmountChange}
                     />
-                </div>
-            </div>
+                </Grid>
+            </Grid>
 
             <div className='mt-10'>
                 <div className={styles.tabPaymentContainer}>
@@ -151,53 +158,49 @@ const Payment = () => {
                     </button>
                 </div>
                 <div className={styles.tabPaymentContent}>
-                    {activeTab === "tab1" && (
-                        ""
-                    )}
                     {activeTab === "tab2" && (
-                        <div>
-                            <div>
-                                <div className='mt-10' style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <div style={{ flex: 1, marginRight: '10px', marginTop: '1rem' }}>
-                                        <Autocomplete
-                                            disablePortal
-                                            id="combo-box-demo"
-                                            options={tableBankData}
-                                            sx={{ width: 500 }}
-                                            renderInput={(params) => <TextField {...params} label="Select Bank" />}
-                                            onChange={handleBankSelect}
-                                        />
-                                    </div>
-                                    <div style={{ flex: 1, marginRight: '10px' }}>
-                                        <InputWithTitle
-                                            title="Cheque Number"
-                                            type="text"
-                                            placeholder="Cheque Number"
-                                            name="cheque_number"
-                                            value={chequeNumber}
-                                            onChange={handleChequeNumberChange}
-                                        />
-                                    </div>
-                                    <div style={{ flex: 1, marginLeft: '10px' }}>
-                                        <InputWithTitle
-                                            title="Cheque Date"
-                                            type="text"
-                                            placeholder="Cheque Date"
-                                            name="cheque_date"
-                                            value={chequeDate}
-                                            onChange={handleChequeDateChange}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <Grid container spacing={2} className='mt-10'>
+                            <Grid item xs={12} md={4}>
+                                {bankLoading ? (
+                                    <Skeleton variant="rectangular" width="100%" height={56} />
+                                ) : (
+                                    <Autocomplete
+                                        disablePortal
+                                        id="combo-box-demo"
+                                        options={tableBankData}
+                                        renderInput={(params) => <TextField {...params} label="Select Bank" />}
+                                        onChange={handleBankSelect}
+                                    />
+                                )}
+                            </Grid>
+                            <Grid item xs={12} md={4}>
+                                <InputWithTitle
+                                    title="Cheque Number"
+                                    type="text"
+                                    placeholder="Cheque Number"
+                                    name="cheque_number"
+                                    value={chequeNumber}
+                                    onChange={handleChequeNumberChange}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={4}>
+                                <InputWithTitle
+                                    title="Cheque Date"
+                                    type="text"
+                                    placeholder="Cheque Date"
+                                    name="cheque_date"
+                                    value={chequeDate}
+                                    onChange={handleChequeDateChange}
+                                />
+                            </Grid>
+                        </Grid>
                     )}
                 </div>
             </div>
 
             <div>
                 <div className='mt-10'>
-                    <MultilineInput
+                    <MultilineInput  
                         title="Description"
                         placeholder="Description"
                         name="description"
@@ -209,7 +212,7 @@ const Payment = () => {
 
             <button className={styles.paymentInBtn} onClick={handleSubmit}>Submit Payment</button>
         </div>
-    )
+    );
 }
 
-export default Payment
+export default Payment;

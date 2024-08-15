@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "../../styles/dashboard.module.css"
 
-import { Grid } from '@mui/material';
+import Buttons from "../../components/buttons"
 
 const Inflow = () => {
     // Sample data for the table
@@ -15,48 +15,11 @@ const Inflow = () => {
         { id: 2, sr: 2, paymentType: 'Bank Transfer', person: 'Jane Smith', description: 'Utility Bill', amount: 750 },
 
         { id: 3, amount: "Total : 750" },
-        // Add more rows as needed
     ];
 
     return (
-        <div>
-            <div className={styles.container}>
-                <Grid container spacing={2}>
-                    <Grid item lg={9} sm={12} xs={12} md={4}>
-                        <div className={styles.leftSection}>
-                            Inflow
-                        </div>
-                    </Grid>
-                    <Grid item lg={2} sm={12} xs={12} md={8}>
-                        <div className={styles.rightSection}>
-
-                            <Grid container spacing={2}>
-                                <Grid item xs={6} sm={6} md={3}>
-                                    <div className={styles.rightItemExp}>
-                                        Add
-                                    </div>
-                                </Grid>
-                                <Grid item xs={6} sm={6} md={3}>
-                                    <div className={styles.rightItem}>
-                                        date
-                                    </div>
-                                </Grid>
-                                <Grid item xs={6} sm={6} md={3}>
-                                    <div className={styles.rightItem}>
-                                        view all
-                                    </div>
-                                </Grid>
-                                <Grid item xs={6} sm={6} md={3}>
-                                    <div className={styles.rightItemExp}>
-                                        export
-                                    </div>
-                                </Grid>
-                            </Grid>
-                        </div>
-
-                    </Grid>
-                </Grid>
-            </div>
+        <div>    
+            <Buttons leftSectionText="Inflow" />
 
             <div className={styles.tableSection}>
                 <div className={styles.tableHeader}>

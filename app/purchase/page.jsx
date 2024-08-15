@@ -6,16 +6,26 @@ import APICall from "../../networkApi/APICall";
 import { purchaseOut } from "@/networkApi/Constants";
 import Swal from 'sweetalert2';
 import Link from "next/link";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Skeleton,
+} from "@mui/material";
+
+import Buttons from "../../components/buttons"
 
 const Page = () => {
   const api = new APICall();
 
   const [openAddToStockModal, setOpenAddToStockModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editingData, setEditingData] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -79,52 +89,67 @@ const Page = () => {
 
   return (
     <div>
-      <div className={styles.container}>
-        <div className={styles.leftSection}>Purchase</div>
-        <div className={styles.rightSection}>
-          <div className={styles.rightItemExp}>
-            <Link href="/addPurchase">+ Add Purchase</Link>
-          </div>
-          <div className={styles.rightItem}>view all</div>
-          <div className={styles.rightItemExp}>export</div>
-        </div>
-      </div>
+      <Buttons leftSectionText="Purchase" addButtonLink="/addPurchase" />
 
-      <div className={styles.tableSection}>
-        <div className={styles.tableHeader}>
-          <div>Sr No</div>
-          <div>Amount</div>
-          <div>Bank Name</div>
-          <div>Cheque Date</div>
-          <div>Cheque No</div>
-          <div>Customer</div>
-          <div>Description</div>
-          <div>Expense Category</div>
-          <div>Payment Flow Type</div>
-          <div>Payment Type</div>
-          <div>Action</div>
-        </div>
-        <div className={styles.tableBody}>
-          {tableData.map((row, index) => (
-            <div key={index} className={styles.tableRowData}>
-              <div>{row.id}</div>
-              <div>{row.amount}</div>
-              <div>{row.bank_name}</div>
-              <div>{row.cheque_date}</div>
-              <div>{row.cheque_no}</div>
-              <div>{row.customer_id}</div>
-              <div>{row.description}</div>
-              <div>{row.expense_category_id}</div>
-              <div>{row.payment_flow_type}</div>
-              <div>{row.payment_type}</div>
-              <div className={styles.iconContainer}>
-                <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
-                <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <TableContainer component={Paper} className={styles.tableSection}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Sr No</TableCell>
+              <TableCell>Amount</TableCell>
+              <TableCell>Bank Name</TableCell>
+              <TableCell>Cheque Date</TableCell>
+              <TableCell>Cheque No</TableCell>
+              <TableCell>Customer</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Expense Category</TableCell>
+              <TableCell>Payment Flow Type</TableCell>
+              <TableCell>Payment Type</TableCell>
+              <TableCell>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              // Show skeletons while loading
+              Array.from(new Array(5)).map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                  <TableCell><Skeleton /></TableCell>
+                </TableRow>
+              ))
+            ) : (
+              // Display data
+              tableData.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.amount}</TableCell>
+                  <TableCell>{row.bank_name}</TableCell>
+                  <TableCell>{row.cheque_date}</TableCell>
+                  <TableCell>{row.cheque_no}</TableCell>
+                  <TableCell>{row.customer_id}</TableCell>
+                  <TableCell>{row.description}</TableCell>
+                  <TableCell>{row.expense_category_id}</TableCell>
+                  <TableCell>{row.payment_flow_type}</TableCell>
+                  <TableCell>{row.payment_type}</TableCell>
+                  <TableCell className={styles.iconContainer}>
+                    <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} alt="Delete" />
+                    <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} alt="Edit" />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 };

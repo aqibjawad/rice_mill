@@ -5,8 +5,22 @@ import AddItemToStock from "../../components/stock/AddItemToStock";
 import APICall from "../../networkApi/APICall";
 import { stocks } from "@/networkApi/Constants";
 import DatePicker from "react-datepicker";
-
 import Swal from 'sweetalert2';
+
+// MUI imports
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Skeleton,
+  Button,
+  IconButton
+} from '@mui/material';
+import { MdDelete, MdEdit, MdAdd } from 'react-icons/md';
 
 const Page = () => {
   const api = new APICall();
@@ -113,37 +127,60 @@ const Page = () => {
         </div>
       </div>
 
-      <div className={styles.tableSection}>
-        <div className={styles.tableHeader}>
-          <div>Sr No</div>
-          <div>Packing Size</div>
-          <div>Packing Unit</div>
-          <div>Price</div>
-          <div>Product Description</div>
-          <div>Product Name</div>
-          <div>Quantity</div>
-          <div>Amount</div>
-          <div>Actions</div>
-        </div>
-        <div className={styles.tableBody}>
-          {tableData.map((row, index) => (
-            <div key={index} className={styles.tableRowData}>
-              <div>{row.id}</div>
-              <div>{row.packing_size}</div>
-              <div>{row.packing_unit}</div>
-              <div>{row.price}</div>
-              <div>{row.product_description}</div>
-              <div>{row.product_name}</div>
-              <div>{row.quantity}</div>
-              <div>{row.total_amount}</div>
-              <div className={styles.iconContainer}>
-                <img src="/delete.png" onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
-                <img src="/edit.jpg" onClick={() => handleEdit(row)} className={styles.editButton} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="stock table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Sr No</TableCell>
+              <TableCell>Packing Size</TableCell>
+              <TableCell>Packing Unit</TableCell>
+              <TableCell>Price</TableCell>
+              <TableCell>Product Description</TableCell>
+              <TableCell>Product Name</TableCell>
+              <TableCell>Quantity</TableCell>
+              <TableCell>Amount</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              // Skeleton loader
+              [...Array(5)].map((_, index) => (
+                <TableRow key={index}>
+                  {[...Array(9)].map((_, cellIndex) => (
+                    <TableCell key={cellIndex}>
+                      <Skeleton animation="wave" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              // Actual data
+              tableData.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.packing_size}</TableCell>
+                  <TableCell>{row.packing_unit}</TableCell>
+                  <TableCell>{row.price}</TableCell>
+                  <TableCell>{row.product_description}</TableCell>
+                  <TableCell>{row.product_name}</TableCell>
+                  <TableCell>{row.quantity}</TableCell>
+                  <TableCell>{row.total_amount}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleDelete(row.id)} color="error">
+                      <MdDelete />
+                    </IconButton>
+                    <IconButton onClick={() => handleEdit(row)} color="primary">
+                      <MdEdit />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
       <AddItemToStock
         open={openAddToStockModal}
         handleClose={closeStockModal}
