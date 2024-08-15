@@ -148,7 +148,7 @@ const AddSupplierContent = ({ searchParams }) => {
     try {
       let response;
       if (formData.id) {
-        response = await api.putDataWithToken(`${supplierLedger}/${formData.id}`, formData);
+        response = await api.updateFormDataWithToken(`${supplierLedger}/${formData.id}`, formData);
       } else {
         response = await api.postDataWithToken(supplierLedger, formData);
       }

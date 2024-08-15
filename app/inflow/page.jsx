@@ -2,22 +2,27 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
-import Link from "next/link";
 import { payment_In } from "../../networkApi/Constants";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Paper,
-  Skeleton
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    Skeleton
 } from '@mui/material';
+
+import APICall from "../../networkApi/APICall";
 
 import Buttons from "../../components/buttons"
 
 const Page = () => {
+
+    const api = new APICall();
+
+
     const [tableData, setTableData] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -28,7 +33,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(payment_In);
+            const response = await api.getDataWithToken(payment_In);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -48,7 +53,7 @@ const Page = () => {
 
     return (
         <div>
-           <Buttons leftSectionText="Amount Recieves"  addButtonLink="/payments"/>
+            <Buttons leftSectionText="Amount Recieves" addButtonLink="/payments" />
 
             <TableContainer component={Paper}>
                 <Table>
@@ -81,7 +86,7 @@ const Page = () => {
                                 <TableRow key={row.id}>
                                     <TableCell>{row.payment_type}</TableCell>
                                     <TableCell>{row.customer_id}</TableCell>
-                                    <TableCell>{row.description.slice(0,10)}...</TableCell>
+                                    <TableCell>{row.description.slice(0, 10)}...</TableCell>
                                     <TableCell>{row.amount}</TableCell>
                                     <TableCell>{row.bank_id}</TableCell>
                                     <TableCell>{row.cheque_no}</TableCell>

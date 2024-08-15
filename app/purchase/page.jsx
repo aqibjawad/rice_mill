@@ -1,11 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import styles from "../../styles/purchase.module.css";
-import AddItemToStock from "../../components/stock/AddItemToStock";
 import APICall from "../../networkApi/APICall";
 import { purchaseOut } from "@/networkApi/Constants";
 import Swal from 'sweetalert2';
-import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -33,7 +31,7 @@ const Page = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(purchaseOut);
+      const response = await api.getDataWithToken(purchaseOut);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -58,7 +56,7 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`${purchaseOut}/${id}`, {
+      const response = await api.getDataWithToken(`${purchaseOut}/${id}`, {
         method: 'DELETE',
       });
 

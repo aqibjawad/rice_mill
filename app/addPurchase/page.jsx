@@ -124,11 +124,15 @@ const AddPurchaseContent = ({ searchParams }) => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    if (e && e.target) {
+      const { name, value } = e.target;
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    } else {
+      console.error('Event or target is undefined:', e);
+    }
   };
 
   const handlePartyChange = (event, selectedOption) => {
@@ -169,7 +173,7 @@ const AddPurchaseContent = ({ searchParams }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoadingSubmit(true); // Set loading to true before API call
+    setLoadingSubmit(true); 
     try {
       let response;
       if (formData.id) {

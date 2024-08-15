@@ -9,7 +9,12 @@ import { suppliers } from "../../networkApi/Constants"
 import Swal from 'sweetalert2';
 import Link from "next/link";
 
+import APICall from "../../networkApi/APICall";
+
 const Page = () => {
+
+    const api = new APICall();
+    
     const [open, setOpen] = useState(false);
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -34,7 +39,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(suppliers);
+            const response = await api.getDataWithToken(suppliers);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -54,7 +59,7 @@ const Page = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`${suppliers}/${id}`, {
+            const response = await api.getDataWithToken(`${suppliers}/${id}`, {
                 method: 'DELETE',
             });
 
@@ -144,7 +149,7 @@ const Page = () => {
                                         <TableCell>{row.firm_name}</TableCell>
                                         <TableCell>{row.customer_type}</TableCell>
                                         <TableCell>{row.description}</TableCell>
-                                        <TableCell>
+                                        <TableCell> 
                                             <div className={styles.iconContainer}>
                                                 <div style={{color:"#316AFF", fontSize:"15px", marginTop:"1rem"}}>
                                                     <Link href={`/supplierLedger?supplierId=${row.id}`}>

@@ -7,9 +7,13 @@ import { Skeleton } from "@mui/material";
 import AddBuyer from "../../components/stock/addBuyer"
 import { buyer } from "../../networkApi/Constants"
 
+import APICall from "@/networkApi/APICall";
+
 import Swal from 'sweetalert2';
 
 const Page = () => {
+
+  const api = new APICall();
     
     const [open, setOpen] = useState(false);
     const [tableData, setTableData] = useState([]);
@@ -21,7 +25,7 @@ const Page = () => {
     const handleClose = () => {
         setOpen(false);
         setEditingData(null);
-        fetchData();
+        fetchData(); 
     };
 
     const handleEdit = (row) => {
@@ -35,7 +39,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(buyer);
+            const response = await api.getDataWithToken(buyer);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -55,7 +59,7 @@ const Page = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`${buyer}/${id}`, {
+            const response = await api.getDataWithToken(`${buyer}/${id}`, {
                 method: 'DELETE',
             });
 

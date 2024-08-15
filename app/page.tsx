@@ -30,21 +30,30 @@ const Home = () => {
           password: userPassword,
         };
 
-        const response = await api.postFormData(login, obj);
-        setSendingData(false);
-        if (response.status === "success") {
-          const userData = {
-            user: response.admin,
-            access_token: response.token,
-          };
-          const user = new User(userData);
-          router.replace("/dashboard");
-        } else {
-          showErrorAlert("Could not login, Please contact Support");
+        try {
+          const response = await api.postFormData(login, obj);
+          console.log(response); 
+
+          setSendingData(false);
+          if (response.status === "success") {
+            const userData = {
+              user: response.admin,
+              access_token: response.token,
+            };
+            const user = new User(userData);
+            router.replace("/dashboard");
+          } else {
+            showErrorAlert("Could not login, Please contact Support");
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          setSendingData(false);
+          showErrorAlert("An error occurred, please try again.");
         }
       }
     }
   };
+
 
   return (
     <div>

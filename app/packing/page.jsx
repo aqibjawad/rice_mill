@@ -8,7 +8,11 @@ import AddPacking from "../../components/stock/addPacking";
 
 import {packings} from "../../networkApi/Constants"
 
+import APICall from "../../networkApi/APICall";
+
 const Page = () => {
+
+    const api = new APICall();
 
     const [open, setOpen] = useState(false);
 
@@ -33,7 +37,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(packings);
+            const response = await api.getDataWithToken(packings);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -53,7 +57,7 @@ const Page = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(packings.delete(id), {
+            const response = await api.getDataWithToken(`${packings}/${id}`, {
                 method: 'DELETE',
             });
 

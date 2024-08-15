@@ -10,7 +10,12 @@ import { MdDelete, MdEdit } from "react-icons/md";
 
 import AddProduct from "../../components/stock/addProduct";
 
+import APICall from "../../networkApi/APICall";
+
 const Page = () => {
+
+    const api = new APICall();
+
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -32,7 +37,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(products);
+            const response = await api.getDataWithToken(products);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -52,7 +57,7 @@ const Page = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(products.delete(id), {
+            const response = await api.getDataWithToken(`${products}/${id}`, {
                 method: 'DELETE',
             });
 
@@ -71,7 +76,7 @@ const Page = () => {
         setEditingData(null);
         fetchData();
     };
-
+ 
     return (
         <div className={styles.pageContainer}>
             <div className={styles.container}>

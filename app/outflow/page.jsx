@@ -17,7 +17,13 @@ import {
 
 import Buttons from "../../components/buttons"
 
+import APICall from "../../networkApi/APICall";
+
 const Page = () => {
+
+  const api = new APICall();
+
+
     const [tableData, setTableData] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -28,7 +34,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(payment_Out);
+            const response = await api.getDataWithToken(payment_Out);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

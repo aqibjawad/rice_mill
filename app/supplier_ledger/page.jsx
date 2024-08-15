@@ -24,7 +24,7 @@ const Page = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(supplierLedger);
+      const response = await api.getDataWithToken(supplierLedger);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -49,7 +49,7 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`${supplierLedger}/${id}`, {
+      const response = await api.getDataWithToken(`${supplierLedger}/${id}`, {
         method: 'DELETE',
       });
 

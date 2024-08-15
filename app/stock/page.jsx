@@ -57,7 +57,7 @@ const Page = () => {
         const formattedDate = selectedDate.toISOString().split('T')[0];
         url += `?date=${formattedDate}`;
       }
-      const response = await fetch(url);
+      const response = await api.getDataWithToken(url);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -77,7 +77,7 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`${stocks}/${id}`, {
+      const response = await api.getDataWithToken(`${stocks}/${id}`, {
         method: 'DELETE',
       });
 
@@ -105,11 +105,7 @@ const Page = () => {
       });
     }
   };
-
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  };
-
+  
   return (
     <div>
       <div className={styles.container}>
