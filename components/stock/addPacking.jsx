@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Box } from '@mui/material';
+import { Modal, Box, CircularProgress } from '@mui/material';
 import styles from "../../styles/ledger.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import { packings } from "../../networkApi/Constants";
@@ -22,6 +22,9 @@ const style = {
 
 const AddPacking = ({ open, handleClose, editData = null }) => {
     const api = new APICall();
+
+    const [sendingData, setSendingData] = useState(false);
+
 
     const [formData, setFormData] = useState({
         packing_size: '',
@@ -60,6 +63,8 @@ const AddPacking = ({ open, handleClose, editData = null }) => {
         for (const key in formData) {
             data.append(key, formData[key]);
         }
+
+        setSendingData(true);
 
         try {
             let response;
@@ -116,16 +121,24 @@ const AddPacking = ({ open, handleClose, editData = null }) => {
                 </div>
 
                 <div className='mt-5' style={{ display: 'flex', justifyContent: 'space-between' }}>
+
                     <div style={{ flex: 1, marginRight: '10px' }}>
-                        <div className={styles.saveBtn} onClick={handleSubmit}>
-                            {editData ? 'Update' : 'Save'}
-                        </div>
-                    </div>
-                    <div style={{ flex: 1, marginLeft: '10px' }}>
                         <div className={styles.editBtn} onClick={handleClose}>
                             Cancel
                         </div>
                     </div>
+                    <div style={{ flex: 1, marginRight: '10px' }}>
+                        <div className={styles.saveBtn} onClick={handleSubmit}>
+                            {sendingData ? (
+                                <CircularProgress color="inherit" size={20} />
+                            ) : editData ? (
+                                "Update"
+                            ) : (
+                                "Save"
+                            )}
+                        </div>
+                    </div>
+
                 </div>
             </Box>
         </Modal>

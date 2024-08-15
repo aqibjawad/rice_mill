@@ -44,7 +44,7 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
     if (editData) {
       setFormData({
         ...editData,
-        reference_id: "self", // Ensure reference_id is always "self"
+        reference_id: "self",
       });
     } else {
       setFormData({
@@ -70,16 +70,17 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validations
     if (formData.person_name === "") {
       alert("Please enter a name");
     } else if (formData.contact === "") {
       alert("Please enter a contact");
     } else if (formData.address === "") {
-      alert("Please enter Addres");
+      alert("Please enter an address");
     } else if (formData.firm_name === "") {
-      alert("Please enter Firm Name");
+      alert("Please enter a firm name");
     } else if (formData.opening_balance === "") {
-      alert("Please enter Opening Balance");
+      alert("Please enter an opening balance");
     } else {
       try {
         setSendingData(true);
@@ -94,6 +95,8 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
         setSendingData(false);
       } catch (error) {
         console.error("An error occurred", error);
+        showErrorAlert(error); // Show error alert for better user experience
+        setSendingData(false); // Ensure sendingData is reset
       }
     }
   };
