@@ -125,11 +125,9 @@ const Page = () => {
               <TableCell>Sr No</TableCell>
               <TableCell>Packing Size</TableCell>
               <TableCell>Packing Unit</TableCell>
-              <TableCell>Price</TableCell>
               <TableCell>Product Description</TableCell>
               <TableCell>Product Name</TableCell>
               <TableCell>Quantity</TableCell>
-              <TableCell>Amount</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -152,11 +150,9 @@ const Page = () => {
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{row.packing_size}</TableCell>
                   <TableCell>{row.packing_unit}</TableCell>
-                  <TableCell>{row.price}</TableCell>
                   <TableCell>{row.product_description}</TableCell>
                   <TableCell>{row.product_name}</TableCell>
                   <TableCell>{row.quantity}</TableCell>
-                  <TableCell>{row.total_amount}</TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleDelete(row.id)} color="error">
                       <MdDelete />

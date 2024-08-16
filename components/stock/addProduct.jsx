@@ -6,7 +6,7 @@ import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
 import APICall from "@/networkApi/APICall";
 import { products } from "../../networkApi/Constants";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 const style = {
   position: "absolute",
@@ -27,6 +27,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
   const [formData, setFormData] = useState({
     product_name: "",
     product_description: "",
+    product_type: "other",
   });
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
       setFormData({
         product_name: "",
         product_description: "",
+        product_type: "other",
       });
     }
   }, [editData]);
@@ -53,20 +55,20 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
 
     if (!formData.product_name.trim()) {
       Swal.fire({
-        title: 'Error!',
-        text: 'Please enter a product name.',
-        icon: 'error',
-        confirmButtonText: 'OK'
+        title: "Error!",
+        text: "Please enter a product name.",
+        icon: "error",
+        confirmButtonText: "OK",
       });
       return;
     }
 
     if (!formData.product_description.trim()) {
       Swal.fire({
-        title: 'Error!',
-        text: 'Please enter a product description.',
-        icon: 'error',
-        confirmButtonText: 'OK'
+        title: "Error!",
+        text: "Please enter a product description.",
+        icon: "error",
+        confirmButtonText: "OK",
       });
       return;
     }
@@ -90,21 +92,23 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
 
       handleClose();
       Swal.fire({
-        title: 'Success!',
-        text: `Product has been ${editData ? 'updated' : 'added'} successfully.`,
-        icon: 'success',
-        confirmButtonText: 'OK'
+        title: "Success!",
+        text: `Product has been ${
+          editData ? "updated" : "added"
+        } successfully.`,
+        icon: "success",
+        confirmButtonText: "OK",
       });
     } catch (error) {
-      console.error('An error occurred', error);
+      console.error("An error occurred", error);
       Swal.fire({
-        title: 'Error!',
-        text: 'An error occurred while processing your request.',
-        icon: 'error',
-        confirmButtonText: 'OK'
+        title: "Error!",
+        text: "An error occurred while processing your request.",
+        icon: "error",
+        confirmButtonText: "OK",
       });
     } finally {
-      setSendingData(false); 
+      setSendingData(false);
     }
   };
 

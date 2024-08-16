@@ -12,9 +12,12 @@ import MultilineInput from "@/components/generic/MultilineInput";
 import styles from "../../styles/addPurchase.module.css";
 import { supplierLedger, suppliers, banks } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
-import Tabs from "./tabs";
+import Tabs from "./tabs"; 
 
 export const dynamic = 'force-dynamic';
+
+import { useRouter } from "next/navigation"; 
+import withAuth from "@/utils/withAuth";
 
 const SearchParamsWrapper = ({ children }) => {
   const searchParams = useSearchParams();
@@ -32,9 +35,12 @@ const AddSupplierLedger = () => {
 };
 
 const AddSupplierContent = ({ searchParams }) => {
+
+  const router = useRouter();
+
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-  const [loadingSuppliers, setLoadingSuppliers] = useState(true); // Loading state for suppliers
-  const [loadingBanks, setLoadingBanks] = useState(true); // Loading state for banks
+  const [loadingSuppliers, setLoadingSuppliers] = useState(true); 
+  const [loadingBanks, setLoadingBanks] = useState(true); 
 
   const api = new APICall();
 
@@ -281,4 +287,4 @@ const AddSupplierContent = ({ searchParams }) => {
   );
 }
 
-export default AddSupplierLedger;
+export default withAuth(AddSupplierLedger);

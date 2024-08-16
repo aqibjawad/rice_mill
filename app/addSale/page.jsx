@@ -7,29 +7,38 @@ import DropDown from "@/components/generic/dropdown";
 import InputWithTitle from "@/components/generic/InputWithTitle";
 import TableSale from "./tableSale";
 import { Skeleton, CircularProgress } from "@mui/material";
-import { buyer, products, packings, saleBook } from "../../networkApi/Constants";
+import {
+  buyer,
+  products,
+  packings,
+  saleBook,
+} from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
-import withAuth from '@/utils/withAuth'; // Adjust the path as necessary
-import Swal from 'sweetalert2'; // Make sure to import Swal if you're using it
-import { useRouter } from 'next/navigation'; // Import useRouter
+import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
+import withAuth from "@/utils/withAuth";
+import User from "@/networkApi/user";
 
 const Page = () => {
   const api = new APICall();
-  
- const router = useRouter();
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
+    id: "",
     buyer_id: "",
+    pro_id: "",
+    packing_id: "",
     quantity: "",
     price: "",
     truck_no: "",
-    date: "",
-    payment_type: "",
+    product_description: "",
   });
 
   const [productList, setProducts] = useState([]);
   const [supplierList, setSuppliers] = useState([]);
   const [packingList, setPacking] = useState([]);
+  const [refList, setRef] = useState({ id: "", next_ref_no: "" });
+
   const [error, setError] = useState("");
 
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
@@ -41,14 +50,71 @@ const Page = () => {
   const [dropdownValues, setDropdownValues] = useState({
     buyer_id: null,
     pro_id: null,
-    packing_type: null,
+    packing_id: null,
   });
 
   useEffect(() => {
     fetchSuppliers();
     fetchProducts();
     fetchPackings();
+    fetchRef();
+    
   }, []);
+
+
+  const sendTempData = () =>{
+
+
+    const myHeaders = new Headers();
+myHeaders.append("Authorization", "Bearer 17|HzKGD0b6uqi47lXMd9SAc4zoK1M6eg6XDP77vIgPcbc2b36d");
+
+const formdata = new FormData();
+formdata.append("id", "1");
+formdata.append("pro_id", "18");
+formdata.append("packing_id", "7");
+formdata.append("price", "2100");
+formdata.append("quantity", "13");
+formdata.append("product_description", "");
+formdata.append("buyer_id", "1");
+formdata.append("truck_no", "");
+
+const requestOptions = {
+  method: "POST",
+  headers: myHeaders,
+  body: formdata,
+  redirect: "follow"
+};
+
+fetch("https://backend-ghulambari.worldcitizenconsultants.com/api/sale_book/add_item", requestOptions)
+  .then((response) => {
+      console.log("oiwqufe;oi",response);
+      
+
+  })
+  .then((result) => console.log(result))
+  .catch((error) => console.error(error));
+  }
+
+  const fetchRef = async () => {
+    try {
+      const response = await api.getDataWithToken(
+        `${saleBook}/get_next_ref_no`
+      );
+
+      setRef({
+        id: response.next_id,
+        next_ref_no: response.next_ref_no || "",
+      });
+
+      setFormData((prevState) => ({
+        ...prevState,
+        id: response.next_id,
+      }));
+    } catch (error) {
+      console.error("Error fetching reference number:", error);
+      setError("Failed to fetch reference number. Please try again.");
+    }
+  };
 
   const fetchSuppliers = async () => {
     try {
@@ -115,29 +181,18 @@ const Page = () => {
       [name]: selectedOption,
     }));
 
-    if (selectedOption) {
-      if (name === "buyer_id" || name === "pro_id") {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: selectedOption.id.toString(),
-        }));
-      }
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: selectedOption ? selectedOption.id : "",
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoadingSubmit(true);
+
     try {
-      let response;
-      if (formData.id) {
-        response = await api.putDataWithToken(
-          `${saleBook}/${formData.id}`,
-          formData
-        );
-      } else {
-        response = await api.postDataWithToken(saleBook, formData);
-      }
+      response = await api.postFormDataWithToken(`${saleBook}/add_item`, formData);
       Swal.fire({
         title: "Success!",
         text: "Data Added.",
@@ -166,6 +221,7 @@ const Page = () => {
       <Grid item lg={6} xs={12} md={6} sm={12}>
         <div className={styles.saleHead}>Add Sale</div>
         <Grid className="mt-10" container spacing={2}>
+
           <Grid item xs={12} sm={12}>
             {loadingSuppliers ? (
               <Skeleton variant="rectangular" width="100%" height={56} />
@@ -173,15 +229,16 @@ const Page = () => {
               <DropDown
                 title="Select Party"
                 options={supplierList}
-                onChange={(selectedOption) => handleDropdownChange("sup_id", selectedOption)}
-                value={dropdownValues.sup_id}
-                name="sup_id"
+                onChange={handleDropdownChange}
+                value={dropdownValues.buyer_id}
+                name="buyer_id"
               />
             )}
           </Grid>
+
           <Grid item lg={6} xs={6}>
-            <InputWithTitle 
-              title={"Enter Truck Number"} 
+            <InputWithTitle
+              title={"Enter Truck Number"}
               name="truck_no"
               value={formData.truck_no}
               onChange={handleInputChange}
@@ -189,11 +246,12 @@ const Page = () => {
           </Grid>
 
           <Grid item lg={6} xs={6}>
-            <InputWithTitle 
-              title={"Bill Reference No"} 
-              name="bill_ref"
-              value={formData.bill_ref}
-              onChange={handleInputChange}
+            <InputWithTitle
+              title={"Bill Reference No"}
+              defaultValue={`${refList.next_ref_no}`}
+              value={formData.id}
+              name="id"
+              readOnly={true}
             />
           </Grid>
 
@@ -208,7 +266,7 @@ const Page = () => {
                   <DropDown
                     title="Select Product"
                     options={productList}
-                    onChange={(selectedOption) => handleDropdownChange("pro_id", selectedOption)}
+                    onChange={handleDropdownChange}
                     value={dropdownValues.pro_id}
                     name="pro_id"
                   />
@@ -222,16 +280,16 @@ const Page = () => {
                   <DropDown
                     title="Select Packings"
                     options={packingList}
-                    onChange={(selectedOption) => handleDropdownChange("packing_type", selectedOption)}
-                    value={dropdownValues.packing_type}
-                    name="packing_type"
+                    onChange={handleDropdownChange}
+                    value={dropdownValues.packing_id}
+                    name="packing_id"
                   />
                 )}
               </Grid>
 
               <Grid className="mt-5" item xs={12}>
-                <InputWithTitle 
-                  title={"Enter Unit Price"} 
+                <InputWithTitle
+                  title={"Enter Unit Price"}
                   name="price"
                   value={formData.price}
                   onChange={handleInputChange}
@@ -239,8 +297,8 @@ const Page = () => {
               </Grid>
 
               <Grid className="mt-5" item xs={12}>
-                <InputWithTitle 
-                  title={"Enter Quantity"} 
+                <InputWithTitle
+                  title={"Enter quantity"}
                   name="quantity"
                   value={formData.quantity}
                   onChange={handleInputChange}
@@ -248,14 +306,18 @@ const Page = () => {
               </Grid>
 
               <Grid className="mt-5" item xs={12}>
-                <InputWithTitle 
-                  title={"Enter Description"} 
-                  name="description"
-                  value={formData.description}
+                <InputWithTitle
+                  title={"Enter Description"}
+                  name="product_description"
+                  value={formData.product_description}
                   onChange={handleInputChange}
                 />
               </Grid>
-              <button type="submit" className={styles.addItemBtn} onClick={handleSubmit}>
+              <button
+                type="submit"
+                className={styles.addItemBtn}
+                onClick={handleSubmit}
+              >
                 {loadingSubmit ? (
                   <CircularProgress color="inherit" size={24} />
                 ) : formData.id ? (

@@ -53,21 +53,29 @@ class APICall {
     );
   }
 
-  async postFormDataWithToken(url, data) {
-    const formData = new FormData();
-    Object.keys(data).forEach((key) => {
-      formData.append(key, data[key]);
-    });
+async postFormDataWithToken(url, data) {
+  const formData = new FormData();
+  
+  // Ensure all values are strings
+  Object.keys(data).forEach((key) => {
+    formData.append(key, String(data[key] || '')); // Use empty string for null or undefined
+  });
 
-    return this.handleRequest(() =>
-      axios.post(url, formData, {
-        headers: {
-          ...this.getTokenHeaders(),
-          "Content-Type": "multipart/form-data",
-        },
-      })
-    );
-  }
+  console.log("Posting data to:", url);
+  console.log("Request headers:", {
+    ...this.getTokenHeaders(),
+    "Content-Type": "multipart/form-data",
+  });
+
+  return this.handleRequest(() =>
+    axios.post(url, formData, {
+      headers: {
+        ...this.getTokenHeaders(),
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  );
+}
 
   async getDataWithToken(url) {
     return this.handleRequest(() =>
