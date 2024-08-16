@@ -5,7 +5,6 @@ import Grid from "@mui/material/Grid";
 import styles from "../../styles/addSale.module.css";
 import DropDown from "@/components/generic/dropdown";
 import InputWithTitle from "@/components/generic/InputWithTitle";
-import TableSale from "./tableSale";
 import { Skeleton, CircularProgress } from "@mui/material";
 import {
   buyer,
@@ -17,7 +16,15 @@ import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import withAuth from "@/utils/withAuth";
-import User from "@/networkApi/user";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 
 const Page = () => {
   const api = new APICall();
@@ -38,6 +45,10 @@ const Page = () => {
   const [supplierList, setSuppliers] = useState([]);
   const [packingList, setPacking] = useState([]);
   const [refList, setRef] = useState({ id: "", next_ref_no: "" });
+  const [items, setItems] = useState([]);
+
+  console.log(items);
+  
 
   const [error, setError] = useState("");
 
@@ -58,42 +69,7 @@ const Page = () => {
     fetchProducts();
     fetchPackings();
     fetchRef();
-    
   }, []);
-
-
-  const sendTempData = () =>{
-
-
-    const myHeaders = new Headers();
-myHeaders.append("Authorization", "Bearer 17|HzKGD0b6uqi47lXMd9SAc4zoK1M6eg6XDP77vIgPcbc2b36d");
-
-const formdata = new FormData();
-formdata.append("id", "1");
-formdata.append("pro_id", "18");
-formdata.append("packing_id", "7");
-formdata.append("price", "2100");
-formdata.append("quantity", "13");
-formdata.append("product_description", "");
-formdata.append("buyer_id", "1");
-formdata.append("truck_no", "");
-
-const requestOptions = {
-  method: "POST",
-  headers: myHeaders,
-  body: formdata,
-  redirect: "follow"
-};
-
-fetch("https://backend-ghulambari.worldcitizenconsultants.com/api/sale_book/add_item", requestOptions)
-  .then((response) => {
-      console.log("oiwqufe;oi",response);
-      
-
-  })
-  .then((result) => console.log(result))
-  .catch((error) => console.error(error));
-  }
 
   const fetchRef = async () => {
     try {
@@ -192,16 +168,39 @@ fetch("https://backend-ghulambari.worldcitizenconsultants.com/api/sale_book/add_
     setLoadingSubmit(true);
 
     try {
-      response = await api.postFormDataWithToken(`${saleBook}/add_item`, formData);
+      const response = await api.postFormDataWithToken(
+        `${saleBook}/add_item`,
+        formData
+      );
+      
+
+      if (response.details && Array.isArray(response.details)) {
+        setItems(response.details);
+      }
+
       Swal.fire({
         title: "Success!",
         text: "Data Added.",
         icon: "success",
         confirmButtonText: "OK",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          router.back();
-        }
+      });
+
+      // Clear form after successful submission
+      setFormData({
+        id: "",
+        buyer_id: "",
+        pro_id: "",
+        packing_id: "",
+        quantity: "",
+        price: "",
+        truck_no: "",
+        product_description: "",
+      });
+
+      setDropdownValues({
+        buyer_id: null,
+        pro_id: null,
+        packing_id: null,
       });
     } catch (error) {
       console.error("Error:", error);
@@ -221,7 +220,6 @@ fetch("https://backend-ghulambari.worldcitizenconsultants.com/api/sale_book/add_
       <Grid item lg={6} xs={12} md={6} sm={12}>
         <div className={styles.saleHead}>Add Sale</div>
         <Grid className="mt-10" container spacing={2}>
-
           <Grid item xs={12} sm={12}>
             {loadingSuppliers ? (
               <Skeleton variant="rectangular" width="100%" height={56} />
@@ -330,8 +328,50 @@ fetch("https://backend-ghulambari.worldcitizenconsultants.com/api/sale_book/add_
           </div>
         </Grid>
       </Grid>
+
       <Grid item lg={6} xs={12}>
-        <TableSale />
+        <TableContainer component={Paper} style={{ marginTop: "20px" }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Product</TableCell>
+                <TableCell>Packing</TableCell>
+                <TableCell>Quantity</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {items.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.product_name}</TableCell>
+                  <TableCell>{`${item.packing_size} ${item.packing_unit}`}</TableCell>
+                  <TableCell>{item.quantity}</TableCell>
+                  <TableCell>{item.price}</TableCell>
+                  <TableCell>{item.total_amount}</TableCell>
+                  <TableCell>
+                    {/* Add action buttons here if needed */}
+                  </TableCell>
+                </TableRow>
+              ))}
+
+              <TableRow>
+                <TableCell colSpan={4}></TableCell>
+                <TableCell style={{ fontSize: "20px" }}>
+                  Total:{" "}
+                  {items
+                    .reduce(
+                      (total, item) => total + parseFloat(item.total_amount),
+                      0
+                    )
+                    .toFixed(2)}
+                </TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Grid>
     </Grid>
   );
