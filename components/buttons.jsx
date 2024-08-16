@@ -15,20 +15,25 @@ const Buttons = ({ leftSectionText, addButtonLink }) => {
       <Grid item lg={4} sm={12} xs={12} md={8}>
         <div className={styles.rightSection}>
           <Grid container spacing={2}>
-            <Grid item xs={6} sm={6} md={3}>
+
+            <Grid lg={3} item xs={6} sm={6} md={3}>
               <Link href={addButtonLink}>
                 <div className={styles.rightItemExp}>Add</div>
               </Link>
             </Grid>
-            <Grid item xs={6} sm={6} md={3}>
+
+            <Grid lg={3} item xs={6} sm={6} md={3}>
               <div className={styles.rightItem}>date</div>
             </Grid>
-            <Grid item xs={6} sm={6} md={3}>
-              <div className={styles.rightItem}>view all</div>
+
+            <Grid item lg={3} xs={6} sm={6} md={3}>
+              <div className={styles.rightItem}>view</div>
             </Grid>
-            <Grid item xs={6} sm={6} md={3}>
+
+            <Grid item lg={3} xs={6} sm={6} md={3}>
               <div className={styles.rightItemExp}>export</div>
             </Grid>
+
           </Grid>
         </div>
       </Grid>

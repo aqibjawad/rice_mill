@@ -100,6 +100,14 @@ class APICall {
   async postDataWithToken(url, data) {
     return this.postFormDataWithToken(url, data);
   }
+
+  async putDataWithToken(url, data) {
+    return this.handleRequest(() =>
+      axios.put(url, data, {
+        headers: this.getTokenHeaders(),
+      })
+    );
+  }
 }
 
 export default APICall;

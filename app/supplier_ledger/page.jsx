@@ -12,7 +12,7 @@ import {
     TableRow,
     Paper,
 } from "@mui/material";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete, MdEdit, MdOutlineDelete } from "react-icons/md";
 import AddSupplier from "../../components/stock/addSupplier";
 
 
@@ -46,7 +46,7 @@ const Page = () => {
 
     const fetchData = async () => {
         try {
-            const response = await api.getDataWithToken(`${supplierLedger}/? sup_id=${id}`);
+            const response = await api.getDataWithToken(`${supplierLedger}/?sup_id=${id}`);
 
             const result = await response.json();
             const data = result.data;

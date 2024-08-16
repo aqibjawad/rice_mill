@@ -26,3 +26,5 @@ export const supplierLedger = apiPrefix + "/supplier_ledger";
 export const login = apiPrefix + "/login";
 
 export const purchaseBook = apiPrefix + "/purchase_book";
+
+export const saleBook = apiPrefix + "/sale_book";

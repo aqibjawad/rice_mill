@@ -23,15 +23,13 @@ const SearchParamsWrapper = ({ children }) => {
 
 const AddPurchase = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <SearchParamsWrapper>
-        {(searchParams) => <AddPurchaseContent searchParams={searchParams} />}
-      </SearchParamsWrapper>
-    </Suspense>
+    
+    <AddPurchaseContent/>
+    
   );
 };
 
-const AddPurchaseContent = ({ searchParams }) => {
+const AddPurchaseContent = () => {
 
   const router = useRouter();
 
@@ -87,20 +85,20 @@ const AddPurchaseContent = ({ searchParams }) => {
     fetchSuppliers();
     fetchProducts();
 
-    const editData = searchParams.get("editData");
-    if (editData) {
-      try {
-        const decodedData = JSON.parse(decodeURIComponent(editData));
-        setFormData((prevState) => ({
-          ...prevState,
-          ...decodedData,
-        }));
-        setActiveTab(decodedData.payment_type || "cash");
-      } catch (error) {
-        console.error("Error parsing edit data:", error);
-      }
-    }
-  }, [searchParams]);
+    // const editData = searchParams.get("editData");
+    // if (editData) {
+    //   try {
+    //     const decodedData = JSON.parse(decodeURIComponent(editData));
+    //     setFormData((prevState) => ({
+    //       ...prevState,
+    //       ...decodedData,
+    //     }));
+    //     setActiveTab(decodedData.payment_type || "cash");
+    //   } catch (error) {
+    //     console.error("Error parsing edit data:", error);
+    //   }
+    // }
+  }, []);
 
   const fetchSuppliers = async () => {
     try {
@@ -157,7 +155,6 @@ const AddPurchaseContent = ({ searchParams }) => {
           [name]: selectedOption.label
         }));
       } else if (name === 'sup_id' || name === 'pro_id') {
-        // For supplier and product, set the id
         setFormData(prev => ({
           ...prev,
           [name]: selectedOption.id.toString()

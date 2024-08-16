@@ -68,7 +68,7 @@ const Inflow = () => {
 
   return (
     <div>
-      {/* <Buttons leftSectionText="Inflow" /> */}
+      <Buttons leftSectionText="Inflow" addButtonLink="/" />
 
       <div className={styles.tableSection}>
         <div className={styles.tableHeader}>
