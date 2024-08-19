@@ -21,7 +21,7 @@ const SideBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => { 
+  useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -30,9 +30,11 @@ const SideBar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-
-
-
+  const logOut = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
 
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: <FaHome /> },
@@ -61,17 +63,17 @@ const SideBar = () => {
           <img className={styles.logo} src="/logo.png" alt="Logo" />
         </div>
         {menuItems.map((item, index) => (
-
           <div
             onClick={() => {
               setActiveItem(item.name);
               router.push(item.href);
             }}
-            key={index}>
+            key={index}
+          >
             <div
-              className={`${styles.sideBarItem} ${activeItem === item.name ? styles.active : ""
-                }`}
-
+              className={`${styles.sideBarItem} ${
+                activeItem === item.name ? styles.active : ""
+              }`}
               style={index === 0 ? { marginTop: "5rem" } : {}}
             >
               <span className={styles.icon}>{item.icon}</span>
@@ -83,19 +85,19 @@ const SideBar = () => {
         ))}
 
         <div>
-          <div className={styles.profileHead}> 
-            Profile
-          </div>
+          <div className={styles.profileHead}>Profile</div>
           <div className={styles.picCont}>
             <img className={styles.userPic} src="/userPic.png" />
           </div>
 
-          <div className={styles.userName}>
-            Sarah Webb
-          </div>
+          <div className={styles.userName}>Sarah Webb</div>
 
-          <div className={styles.userEmail}>
-            sarahweb456@gmail.com
+          <div className={styles.userEmail}>sarahweb456@gmail.com</div>
+
+          <div className={styles.logoutCont}>
+            <div onClick={logOut} className={styles.logoutBtn}>
+              Logout
+            </div>
           </div>
         </div>
       </div>

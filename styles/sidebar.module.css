@@ -60,7 +60,7 @@
   top: 1rem;
   left: 1rem;
   z-index: 1000;
-  background: #316aff;
+  background: #0e7669;
   color: white;
   border: none;
   border-radius: 50%;
@@ -97,7 +97,7 @@
   font-weight: 400;
   line-height: 28.24px;
   text-align: center;
-  color: #9B9B9B
+  color: #9b9b9b;
 }
 
 .userName {
@@ -106,6 +106,22 @@
   font-weight: 400;
   line-height: 42.36px;
   text-align: center;
+}
+
+.logoutCont{
+  display: flex;
+  justify-content: center;
+}
+
+.logoutBtn {
+  background-color: #0e7669;
+  color: white;
+  width: 120px;
+  border-radius: 50px;
+  text-align: center;
+  padding: 10px;
+  cursor: pointer;
+  margin-bottom: 2rem;
 }
 
 @media (max-width: 768px) {
