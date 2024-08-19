@@ -1,28 +1,45 @@
 .leftSection {
-    font-family: "regular";
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 36px;
-    margin-bottom: 2rem;
+  font-family: "regular";
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 43.57px;
+  text-align: left;
+  color: #50575f;
+  margin-bottom: 2rem;
 }
 
 .rightSection {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
-.rightItem,
+.rightItem {
+  width: 100px;
+  height: 35px;
+  border-radius: 13px;
+  background: #e6e6e6;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 29.05px;
+  text-align: center;
+  display: flex;
+  justify-content: center; /* Horizontally center text */
+  align-items: center; /* Vertically center text */
+}
+
 .rightItemExp {
-    width: auto;
-    height: auto;
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid #E3E3E3;
-    margin: 5px;
-    font-family: "regular";
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 14.06px;
-    text-align: center;
-    white-space: nowrap;
+  width: 100px;
+  height: 35px;
+  border-radius: 13px;
+  background: #07274B;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 29.05px;
+  text-align: center;
+  display: flex;
+  justify-content: center; /* Horizontally center text */
+  align-items: center; /* Vertically center text */
+  color: white;
 }

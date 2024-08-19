@@ -9,7 +9,7 @@ import Link from "next/link";
 const Buttons = ({ leftSectionText, addButtonLink }) => {
   return (
     <Grid container spacing={2}>
-      <Grid item lg={8} sm={12} xs={12} md={4}>
+      <Grid item lg={8} sm={12} xs={12} md={4}> 
         <div className={styles.leftSection}>{leftSectionText}</div>
       </Grid>
       <Grid item lg={4} sm={12} xs={12} md={8}>
@@ -18,7 +18,7 @@ const Buttons = ({ leftSectionText, addButtonLink }) => {
 
             <Grid lg={3} item xs={6} sm={6} md={3}>
               <Link href={addButtonLink}>
-                <div className={styles.rightItemExp}>Add</div>
+                <div className={styles.rightItem}>Add</div>
               </Link>
             </Grid>
 
