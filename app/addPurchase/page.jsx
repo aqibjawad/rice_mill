@@ -14,7 +14,7 @@ import { purchaseBook, suppliers, products } from "../../networkApi/Constants";
 
 export const dynamic = "force-dynamic";
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 const SearchParamsWrapper = ({ children }) => {
   const searchParams = useSearchParams();
@@ -22,15 +22,10 @@ const SearchParamsWrapper = ({ children }) => {
 };
 
 const AddPurchase = () => {
-  return (
-    
-    <AddPurchaseContent/>
-    
-  );
+  return <AddPurchaseContent />;
 };
 
 const AddPurchaseContent = () => {
-
   const router = useRouter();
 
   const api = new APICall();
@@ -51,7 +46,7 @@ const AddPurchaseContent = () => {
     remainingAmount: "",
     first_weight: "",
     second_weight: "",
-    net_weight:"",
+    net_weight: "",
     packing_weight: "",
     bardaanaDeduction: "",
     final_weight: "",
@@ -119,18 +114,24 @@ const AddPurchaseContent = () => {
 
   const fetchProducts = async () => {
     try {
+      setLoadingProducts(true); // Set loading state to true at the beginning of the fetch
+
       const response = await api.getDataWithToken(products);
-      const list = response.data.map((item, index) => ({
-        label: `${item.product_name}`,
-        index: index,
-        id: item.id,
-      }));
-      setProducts(list);
+      // Assuming response.data is an array of product objects
+      const filteredProducts = response.data
+        .filter((item) => item.product_type === "paddy")
+        .map((item, index) => ({
+          label: `${item.product_name}`,
+          index: index,
+          id: item.id,
+        }));
+
+      setProducts(filteredProducts); // Set filtered products in the state
     } catch (error) {
       console.error("Error fetching products:", error);
       setError("Failed to fetch products. Please try again.");
     } finally {
-      setLoadingProducts(false);
+      setLoadingProducts(false); // Set loading state to false once the fetch is complete
     }
   };
 
@@ -143,21 +144,21 @@ const AddPurchaseContent = () => {
   };
 
   const handleDropdownChange = (name, selectedOption) => {
-    setDropdownValues(prev => ({
+    setDropdownValues((prev) => ({
       ...prev,
-      [name]: selectedOption
+      [name]: selectedOption,
     }));
 
     if (selectedOption) {
-      if (name === 'packing_type') {
-        setFormData(prev => ({
+      if (name === "packing_type") {
+        setFormData((prev) => ({
           ...prev,
-          [name]: selectedOption.label
+          [name]: selectedOption.label,
         }));
-      } else if (name === 'sup_id' || name === 'pro_id') {
-        setFormData(prev => ({
+      } else if (name === "sup_id" || name === "pro_id") {
+        setFormData((prev) => ({
           ...prev,
-          [name]: selectedOption.id.toString()
+          [name]: selectedOption.id.toString(),
         }));
       }
     }
@@ -193,8 +194,7 @@ const AddPurchaseContent = () => {
         if (result.isConfirmed) {
           router.back();
         }
-      })
-
+      });
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
@@ -427,7 +427,6 @@ const AddPurchaseContent = () => {
             onChange={handleInputChange}
           />
         </Grid>
-
       </Grid>
 
       <div className={styles.button_container}>
