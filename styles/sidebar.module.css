@@ -4,7 +4,7 @@
   border-radius: 30px 30px;
   border: 1px;
   border-right: 1px solid #e3e3e3;
-  transition: width 0.3s;
+  transition: width 0.3s, transform 0.3s;
 }
 
 .sideBarItem {
@@ -108,7 +108,7 @@
   text-align: center;
 }
 
-.logoutCont{
+.logoutCont {
   display: flex;
   justify-content: center;
 }
@@ -129,50 +129,49 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 80px;
+    width: 243px;
     height: 100%;
     background-color: #fff;
     border-radius: 0;
     border-right: none;
     overflow-x: hidden;
     z-index: 2;
-  }
-
-  .sideBarItem.active {
-    background: #316aff;
-    color: white;
+    transform: translateX(-100%);
   }
 
   .sideBarComp.open {
-    width: 243px;
+    transform: translateX(0);
   }
 
-  .toggleButton {
+  .mobileMenuButton {
     display: block;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1001;
+    background: transparent;
+    border: none;
+    cursor: pointer;
   }
 
-  .sideBarItem {
-    justify-content: center;
-    margin-left: 0;
-    margin-right: 0;
-    width: 100%;
+  .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    transition: all 0.3s ease-in-out;
+    background-color: #0e7669;
   }
 
-  .icon {
-    margin-right: 0;
+  .open .bar:nth-child(2) {
+    opacity: 0;
   }
 
-  .itemName {
-    display: none;
+  .open .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
   }
 
-  .sideBarComp.open .itemName {
-    display: inline;
-  }
-
-  .logo {
-    width: 40px;
-    height: auto;
-    margin-top: 5rem;
+  .open .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
   }
 }

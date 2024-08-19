@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/sidebar.module.css";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import MobileMenuButton from "./MobileMenuButton";
 import {
   FaHome,
   FaArrowRight,
@@ -52,12 +52,9 @@ const SideBar = () => {
 
   return (
     <>
-      <button
-        className={styles.toggleButton}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? "←" : "→"}
-      </button>
+      {isMobile && (
+        <MobileMenuButton isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
+      )}
       <div className={`${styles.sideBarComp} ${isOpen ? styles.open : ""}`}>
         <div className={styles.imgContainer}>
           <img className={styles.logo} src="/logo.png" alt="Logo" />
@@ -77,9 +74,7 @@ const SideBar = () => {
               style={index === 0 ? { marginTop: "5rem" } : {}}
             >
               <span className={styles.icon}>{item.icon}</span>
-              {(!isMobile || isOpen) && (
-                <span className={styles.itemName}>{item.name}</span>
-              )}
+              <span className={styles.itemName}>{item.name}</span>
             </div>
           </div>
         ))}

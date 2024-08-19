@@ -5,7 +5,7 @@ const nextPWA = require('next-pwa');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // output: "export",
+    output: "export",
     // distDir: "oust",
     trailingSlash: true,
     images: {

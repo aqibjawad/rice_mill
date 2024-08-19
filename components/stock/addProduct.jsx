@@ -7,6 +7,7 @@ import MultilineInput from "../../components/generic/MultilineInput";
 import APICall from "@/networkApi/APICall";
 import { products } from "../../networkApi/Constants";
 import Swal from "sweetalert2";
+import DropDown from "../generic/dropdown";
 
 const style = {
   position: "absolute",
@@ -27,7 +28,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
   const [formData, setFormData] = useState({
     product_name: "",
     product_description: "",
-    product_type: "other",
+    product_type: "",
   });
 
   useEffect(() => {
@@ -37,7 +38,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
       setFormData({
         product_name: "",
         product_description: "",
-        product_type: "other",
+        product_type: "",
       });
     }
   }, [editData]);
@@ -47,6 +48,13 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
+    }));
+  };
+
+  const handleDropDownChange = (name, selectedOption) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: selectedOption ? selectedOption.value : "",
     }));
   };
 
@@ -112,6 +120,11 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
     }
   };
 
+  const typeList = [
+    { label: "Sale", value: "other" },
+    { label: "Purchase", value: "paddy" },
+  ];
+
   return (
     <Modal
       open={open}
@@ -144,6 +157,16 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
             value={formData.product_description}
             onChange={handleInputChange}
             required={true}
+          />
+        </div>
+
+        <div className="mt-10">
+          <DropDown
+            title="Select Product Type"
+            options={typeList}
+            name="product_type"
+            value={formData.product_type}
+            onChange={handleDropDownChange}
           />
         </div>
 
