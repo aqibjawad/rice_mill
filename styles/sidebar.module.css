@@ -1,124 +1,162 @@
 .sideBarComp {
-    width: 243px;
-    height: 100vh;
-    border-radius: 30px 30px;
-    border: 1px;
-    border-right: 1px solid #E3E3E3;
-    transition: width 0.3s;
+  width: 243px;
+  height: 100%;
+  border-radius: 30px 30px;
+  border: 1px;
+  border-right: 1px solid #e3e3e3;
+  transition: width 0.3s;
 }
 
 .sideBarItem {
-    display: flex;
-    align-items: center;
-    width: auto;
-    height: 45px;
-    padding: 12px 15px;
-    border-radius: 8px;
-    background: white;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 18.75px;
-    color: black;
-    margin-top: 1rem;
-    margin-left: 20px;
-    margin-right: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 233px;
+  height: 68px;
+  top: 335px;
+  left: 18px;
+  border-radius: 12px;
+  border: 2px;
+  border: 2px solid #ffffff;
+  box-shadow: 0px 4px 6px 0px #00000040;
+  margin-bottom: 1rem;
+  cursor: pointer;
 }
 
 .sideBarItem:hover {
-    background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
 
 .sideBarItem.active {
-    background: #316AFF;
-    color: white;
+  width: 233px;
+  height: 68px;
+  top: 613px;
+  left: 17px;
+  border-radius: 12px;
+  background: #0e7669;
+  color: white;
 }
 
 .icon {
-    margin-right: 10px;
-    font-size: 20px;
+  margin-right: 10px;
+  font-size: 20px;
 }
 
 .imgContainer {
-    display: flex;
-    justify-content: center;
-    width: 100%;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .logo {
-    max-width: 100%;
-    height: auto;
-    margin-top: 2rem;
+  max-width: 100%;
+  height: auto;
+  margin-top: 2rem;
 }
 
 .toggleButton {
-    display: none;
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: 1000;
-    background: #316AFF;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    cursor: pointer;
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+  background: #316aff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.profileHead {
+  font-family: "regular";
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 42.36px;
+  text-align: center;
+  margin-top: 5rem;
+}
+
+.picCont {
+  display: flex;
+  justify-content: center;
+}
+
+.userPic {
+  width: 144px;
+  height: 144px;
+  top: 2472px;
+  left: 61px;
+}
+
+.userEmail {
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 28.24px;
+  text-align: center;
+  color: #9B9B9B
+}
+
+.userName {
+  font-family: "regular";
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 42.36px;
+  text-align: center;
 }
 
 @media (max-width: 768px) {
-    .sideBarComp {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 80px;
-        height: 100%;
-        background-color: #fff;
-        border-radius: 0;
-        border-right: none;
-        overflow-x: hidden;
-        z-index: 2;
-    }
+  .sideBarComp {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 100%;
+    background-color: #fff;
+    border-radius: 0;
+    border-right: none;
+    overflow-x: hidden;
+    z-index: 2;
+  }
 
-    .sideBarItem.active {
-        background: #316AFF;
-        color: white;
-    }
+  .sideBarItem.active {
+    background: #316aff;
+    color: white;
+  }
 
-    .sideBarComp.open {
-        width: 243px;
-    }
+  .sideBarComp.open {
+    width: 243px;
+  }
 
-    .toggleButton {
-        display: block;
-    }
+  .toggleButton {
+    display: block;
+  }
 
-    .sideBarItem {
-        justify-content: center;
-        margin-left: 0;
-        margin-right: 0;
-        width: 100%;
-    }
+  .sideBarItem {
+    justify-content: center;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+  }
 
-    .icon {
-        margin-right: 0;
-    }
+  .icon {
+    margin-right: 0;
+  }
 
+  .itemName {
+    display: none;
+  }
 
-    .itemName {
-        display: none;
-    }
+  .sideBarComp.open .itemName {
+    display: inline;
+  }
 
-    .sideBarComp.open .itemName {
-        display: inline;
-    }
-
-    .logo {
-        width: 40px;
-        height: auto;
-        margin-top: 5rem;
-    }
+  .logo {
+    width: 40px;
+    height: auto;
+    margin-top: 5rem;
+  }
 }

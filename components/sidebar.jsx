@@ -21,7 +21,7 @@ const SideBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
+  useEffect(() => { 
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -81,6 +81,23 @@ const SideBar = () => {
             </div>
           </div>
         ))}
+
+        <div>
+          <div className={styles.profileHead}> 
+            Profile
+          </div>
+          <div className={styles.picCont}>
+            <img className={styles.userPic} src="/userPic.png" />
+          </div>
+
+          <div className={styles.userName}>
+            Sarah Webb
+          </div>
+
+          <div className={styles.userEmail}>
+            sarahweb456@gmail.com
+          </div>
+        </div>
       </div>
     </>
   );

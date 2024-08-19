@@ -17,11 +17,11 @@ export default function RootLayoutClient({ children }) {
       )}
 
       <div className={`main-content`}>
-        {!isHomePage && (
+        {/* {!isHomePage && (
           <div className="header-component">
             <Header />
           </div>
-        )}
+        )} */}
         <main className={`main-content-child ${isHomePage ? 'full-width' : ''}`}>
           {children}
         </main>
