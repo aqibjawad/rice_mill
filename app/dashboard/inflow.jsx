@@ -1,95 +1,44 @@
 import React from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import Buttons from "../../components/buttons";
 import styles from "../../styles/dashboard.module.css";
 
-import Buttons from "../../components/buttons";
-
 const Inflow = () => {
-  // Sample data for the table
-  const tableData = [
-    {
-      id: 1,
-      sr: 1,
-      paymentType: "Cash",
-      person: "John Doe",
-      description: "Office Supplies",
-      amount: 500,
-    },
-    {
-      id: 2,
-      sr: 2,
-      paymentType: "Bank Transfer",
-      person: "Jane Smith",
-      description: "Utility Bill",
-      amount: 750,
-    },
-    {
-      id: 2,
-      sr: 2,
-      paymentType: "Bank Transfer",
-      person: "Jane Smith",
-      description: "Utility Bill",
-      amount: 750,
-    },
-    {
-      id: 2,
-      sr: 2,
-      paymentType: "Bank Transfer",
-      person: "Jane Smith",
-      description: "Utility Bill",
-      amount: 750,
-    },
-    {
-      id: 2,
-      sr: 2,
-      paymentType: "Bank Transfer",
-      person: "Jane Smith",
-      description: "Utility Bill",
-      amount: 750,
-    },
-    {
-      id: 2,
-      sr: 2,
-      paymentType: "Bank Transfer",
-      person: "Jane Smith",
-      description: "Utility Bill",
-      amount: 750,
-    },
-    {
-      id: 2,
-      sr: 2,
-      paymentType: "Bank Transfer",
-      person: "Jane Smith",
-      description: "Utility Bill",
-      amount: 750,
-    },
-
-    { id: 3, amount: "Total : 750" },
-  ];
-
   return (
     <div>
-      <Buttons leftSectionText="Inflow" addButtonLink="/" />
+      <Buttons leftSectionText="Amount Receives" addButtonLink="/" />
 
-      <div className={styles.tableSection}>
-        <div className={styles.tableHeader}>
-          <div>Sr.</div>
-          <div>Payment Type</div>
-          <div>Person</div>
-          <div>Description</div>
-          <div>Amount</div>
-        </div>
-        <div className={styles.tableBody}>
-          {tableData.map((row) => (
-            <div key={row.id} className={styles.tableRowData}>
-              <div>{row.sr}</div>
-              <div>{row.paymentType}</div>
-              <div>{row.person}</div>
-              <div>{row.description}</div>
-              <div>{row.amount}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <TableContainer component={Paper} className={styles.tableSection}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Sr.</TableCell>
+              <TableCell>Payment Type</TableCell>
+              <TableCell>Person</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Amount</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell>1</TableCell>
+              <TableCell> Cash </TableCell>
+              <TableCell> Aqib </TableCell>
+              <TableCell> Test </TableCell>
+              <TableCell> $20.00 </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <div className={styles.tableTotalRow}>Total: $20</div>
     </div>
   );
 };
