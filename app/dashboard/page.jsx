@@ -19,11 +19,11 @@ const Page = () => {
 
   return (
     <Grid container spacing={3}>
-      <Grid item lg={2} xs={12} sm={6} md={4}> 
+      <Grid item lg={12} xs={12} sm={12} md={12}> 
         <ExpenseCard />
       </Grid>
 
-      <Grid item lg={10} xs={12} sm={6} md={8}>
+      <Grid item lg={12} xs={12} sm={12} md={12}>
         <Inflow />
       </Grid>
 
