@@ -48,7 +48,6 @@ const Page = () => {
   const [items, setItems] = useState([]);
 
   console.log(items);
-  
 
   const [error, setError] = useState("");
 
@@ -111,13 +110,18 @@ const Page = () => {
 
   const fetchProducts = async () => {
     try {
+      setLoadingProducts(true);
+
       const response = await api.getDataWithToken(products);
-      const list = response.data.map((item, index) => ({
-        label: `${item.product_name}`,
-        index: index,
-        id: item.id,
-      }));
-      setProducts(list);
+      const filteredProducts = response.data
+        .filter((item) => item.product_type === "other")
+        .map((item, index) => ({
+          label: `${item.product_name}`,
+          index: index,
+          id: item.id,
+        }));
+
+      setProducts(filteredProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
       setError("Failed to fetch products. Please try again.");
@@ -172,7 +176,6 @@ const Page = () => {
         `${saleBook}/add_item`,
         formData
       );
-      
 
       if (response.details && Array.isArray(response.details)) {
         setItems(response.details);
