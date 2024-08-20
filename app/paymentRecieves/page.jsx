@@ -1,166 +1,267 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Grid } from "@mui/material";
 import styles from "../../styles/paymentRecieves.module.css";
+import InputWithTitle from "../../components/generic/InputWithTitle";
+import MultilineInput from "../../components/generic/MultilineInput";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+import Skeleton from "@mui/material/Skeleton";
+import axios from "axios";
+import Grid from "@mui/material/Grid";
+
+import { buyer, banks, buyerLedger } from "../../networkApi/Constants";
+
+import APICall from "../../networkApi/APICall";
 
 import DropDown from "@/components/generic/dropdown";
-
-import buyer from "../../networkApi/Constants";
-
-import APICall from "@/networkApi/APICall";
-
-import InputWithTitle from "@/components/generic/InputWithTitle";
-import MultilineInput from "@/components/generic/MultilineInput";
 
 const Page = () => {
   const api = new APICall();
 
-  const [buyerData, setBuyerData] = useState([]);
-  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    buyer_id: "",
+    payment_type: "",
+    description: "",
+    cash_amount: "",
+
+    bank_id: "",
+    cheque_no: "",
+    cheque_date: "",
+    cheque_amount: "",
+  });
+
+  const [tableBankData, setTableBankData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const [activeTab, setActiveTab] = useState("tab1");
 
+  const [tablePartyData, setPartyData] = useState([]);
+
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    fetchBuyerData();
+    fetchData();
+    fetchBankData();
   }, []);
 
-  const fetchBuyerData = async () => {
+  const fetchData = async () => {
     try {
       const response = await api.getDataWithToken(buyer);
-      console.log("API Response:", response);
       const data = response.data;
+
       if (Array.isArray(data)) {
-        const formattedData = data.map((buyers) => ({
-          label: buyers.expense_category,
-          id: buyers.id,
+        const formattedData = data.map((supplier) => ({
+          label: supplier.person_name,
+          id: supplier.id,
         }));
-        setBuyerData(formattedData);
+        setPartyData(formattedData);
       } else {
         throw new Error("Fetched data is not an array");
       }
     } catch (error) {
       console.error("Error fetching data:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBankData = async () => {
+    try {
+      const response = await api.getDataWithToken(banks);
+      const data = response.data;
+      if (Array.isArray(data)) {
+        const formattedData = data.map((bank) => ({
+          label: bank.bank_name,
+          id: bank.id,
+        }));
+        setTableBankData(formattedData);
+      } else {
+        throw new Error("Fetched data is not an array");
+      }
+    } catch (error) {
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
+    setFormData((prevState) => ({
+      ...prevState,
+      payment_type: tab,
+    }));
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleDropdownChange = (name, selectedOption) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: selectedOption.id,
+    }));
+  };
+
+  const handleBankSelect = (_, value) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      bank_id: value?.id || "",
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingSubmit(true);
+    try {
+      const response = await api.postDataWithToken(buyerLedger, formData);
+      console.log("Success:", response);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoadingSubmit(false);
+    }
   };
 
   return (
     <div>
-        <div className={styles.paymentHeader}>
-            Add Recieve Payments
-        </div>
-      <div className={styles.container}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={4} lg={6}>
-            <DropDown
-              title="Select Expense Category"
-              options={buyerData}
-              // onChange={handleDropdownChange}
-              // value={formData.expense_category_id}
-              // name="expense_category_id"
-            />
+      <div className={styles.recievesHead}>Add Amount Recieves</div>
+      <div>
+        <Grid container spacing={2} className="mt-10">
+          <Grid item xs={12} md={6}>
+            {loading ? (
+              <Skeleton variant="rectangular" width="100%" height={56} />
+            ) : (
+              <div className="mt-5">
+                <DropDown
+                  title="Select Buyer"
+                  options={tablePartyData}
+                  onChange={handleDropdownChange}
+                  value={formData.buyer_id}
+                  name="buyer_id"
+                />
+              </div>
+            )}
           </Grid>
-
-          <Grid item xs={12} sm={6} md={4} lg={6}>
-            <div className={styles.tabPaymentContainer}>
-              <button
-                className={`${styles.tabPaymentButton} ${
-                  activeTab === "tab1" ? styles.active : ""
-                }`}
-                onClick={() => handleTabClick("tab1")}
-              >
-                Cash
-              </button>
-              <button
-                className={`${styles.tabPaymentButton} ${
-                  activeTab === "tab2" ? styles.active : ""
-                }`}
-                onClick={() => handleTabClick("tab2")}
-              >
-                Cheque
-              </button>
-            </div>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={4} lg={12}>
-            <div className={styles.tabPaymentContent}>
-              {activeTab === "tab1" && (
-                <Grid container spacing={2} className="">
-                  <Grid item xs={12} md={4} lg={6}>
-                    <InputWithTitle
-                      title="Cash Amount"
-                      type="text"
-                      placeholder="Cash Amount"
-                      name="cheque_no"
-                      // value={formData.cheque_no}
-                      // onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={4} lg={6}>
-                    <MultilineInput
-                      title="Description"
-                      type="text"
-                      placeholder="Description"
-                      name="cheque_no"
-                      // value={formData.cheque_no}
-                      // onChange={handleInputChange}
-                    />
-                  </Grid>
-                </Grid>
-              )}
-            </div>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={4} lg={12}>
-            <div className={styles.tabPaymentContent}>
-              {activeTab === "tab2" && (
-                <Grid container spacing={2} className="">
-                  <Grid item xs={12} md={4} lg={6}>
-                    <InputWithTitle
-                      title="Cheque Number"
-                      type="text"
-                      placeholder="Cheque Number"
-                      name="cheque_no"
-                      // value={formData.cheque_no}
-                      // onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={4} lg={6}>
-                    <InputWithTitle
-                      title="Cheque Amount"
-                      type="text"
-                      placeholder="Cheque Amount"
-                      name="cheque_no"
-                      // value={formData.cheque_no}
-                      // onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid className="mt-5" item xs={12} md={4} lg={12}>
-                    <MultilineInput
-                      title="Description"
-                      type="text"
-                      placeholder="Description"
-                      name="cheque_no"
-                      // value={formData.cheque_no}
-                      // onChange={handleInputChange}
-                    />
-                  </Grid>
-                </Grid>
-              )}
-            </div>
+          <Grid item xs={12} md={6}>
+            {activeTab === "cash" || activeTab === "both" ? (
+              <InputWithTitle
+                title="Amount"
+                type="text"
+                placeholder="Amount"
+                value={formData.cash_amount}
+                name="cash_amount"
+                onChange={handleInputChange}
+              />
+            ) : null}
           </Grid>
         </Grid>
 
+        <div className="mt-10">
+          <div className={styles.tabPaymentContainer}>
+            <button
+              className={`${styles.tabPaymentButton} ${
+                activeTab === "cash" ? styles.active : ""
+              }`}
+              onClick={() => handleTabClick("cash")}
+            >
+              Cash
+            </button>
+            <button
+              className={`${styles.tabPaymentButton} ${
+                activeTab === "cheque" ? styles.active : ""
+              }`}
+              onClick={() => handleTabClick("cheque")}
+            >
+              Cheque
+            </button>
+            <button
+              className={`${styles.tabPaymentButton} ${
+                activeTab === "both" ? styles.active : ""
+              }`}
+              onClick={() => handleTabClick("both")}
+            >
+              Both
+            </button>
+          </div>
+
+          <div className={styles.tabPaymentContent}>
+            {activeTab === "cheque" || activeTab === "both" ? (
+              <Grid container spacing={2} className="mt-10">
+                <Grid item xs={12} md={4} className="mt-5">
+                  <Autocomplete
+                    disablePortal
+                    id="combo-box-demo"
+                    options={tableBankData}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Select Bank" />
+                    )}
+                    onChange={handleBankSelect}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <InputWithTitle
+                    title="Cheque Number"
+                    type="text"
+                    placeholder="Cheque Number"
+                    name="cheque_no"
+                    value={formData.cheque_no}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <InputWithTitle
+                    title="Cheque Date"
+                    type="date"
+                    placeholder="Cheque Date"
+                    name="cheque_date"
+                    value={formData.cheque_date}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <InputWithTitle
+                    title="Cheque Amount"
+                    type="text"
+                    placeholder="Cheque Amount"
+                    name="cheque_amount"
+                    value={formData.cheque_amount}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+              </Grid>
+            ) : null}
+
+            <Grid className="mt-5" item xs={12} md={4} lg={8}>
+              <MultilineInput
+                title="Description"
+                placeholder="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </div>
+        </div>
+
         <div className={styles.btnCont}>
-          <div className={styles.saveBtn}>Submit Your Information</div>
+          <button
+            className={styles.saveBtn}
+            onClick={handleSubmit}
+            disabled={loadingSubmit}
+          >
+            {loadingSubmit ? "Submitting..." : "Submit Payments"}
+          </button>
         </div>
       </div>
     </div>

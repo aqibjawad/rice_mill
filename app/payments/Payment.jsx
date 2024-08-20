@@ -42,31 +42,35 @@ const Payment = () => {
   const handleCloseExpense = () => setOpenExpense(false);
   const [tablePartyData, setPartyData] = useState([]);
 
+  console.log(tablePartyData);
+  
+
   useEffect(() => {
     fetchData();
     fetchBankData();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await api.getDataWithToken(suppliers);
-      const data = result.response;
+const fetchData = async () => {
+  try {
+    const response = await api.getDataWithToken(suppliers);
+    const data = response.data;
 
-      if (Array.isArray(data)) {
-        const formattedData = data.map((supplier) => ({
-          label: supplier.person_name,
-          id: supplier.id,
-        }));
-        setPartyData(formattedData);
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      console.error(error.message);
-    } finally {
-      setLoading(false);
+    if (Array.isArray(data)) {
+      const formattedData = data.map((supplier) => ({
+        label: supplier.person_name,
+        id: supplier.id,
+      }));
+      setPartyData(formattedData);
+    } else {
+      throw new Error("Fetched data is not an array");
     }
-  };
+  } catch (error) {
+    console.error('Error fetching data:', error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const fetchBankData = async () => {
     try {
@@ -105,7 +109,6 @@ const Payment = () => {
       ...prevState,
       [name]: selectedOption.id,
     }));
-    setSelectedExpenseCategory(selectedOption);
   };
 
   const handleBankSelect = (_, value) => {

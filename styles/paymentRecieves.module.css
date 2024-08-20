@@ -1,4 +1,4 @@
-.paymentHeader {
+.recievesHead {
   font-family: "regular";
   font-size: 36px;
   font-weight: 700;
@@ -22,7 +22,7 @@
 }
 
 .tabPaymentButton {
-  width: 45%;
+  width: 32%;
   height: 60px;
   border-radius: 14px;
   border: 1px;
@@ -36,7 +36,7 @@
 }
 
 .tabPaymentButton.active {
-  width: 45%;
+  width: 32%;
   height: 60px;
   border-radius: 14px;
   border: 1px;

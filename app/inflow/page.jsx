@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
-import { payment_In } from "../../networkApi/Constants";
+import { buyerLedger } from "../../networkApi/Constants";
 import {
   Table,
   TableBody,
@@ -31,7 +31,7 @@ const Page = () => {
 
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(payment_In);
+      const response = await api.getDataWithToken(buyerLedger);
 
       const data = response.data;
       if (Array.isArray(data)) {
@@ -48,7 +48,7 @@ const Page = () => {
 
   const calculateTotalAmount = () => {
     const total = tableData.reduce(
-      (total, row) => total + parseFloat(row.amount),
+      (total, row) => total + parseFloat(row.balance),
       0
     );
     return total.toLocaleString("en-IN", {
@@ -69,11 +69,13 @@ const Page = () => {
               <TableCell>Payment Type</TableCell>
               <TableCell>Person</TableCell>
               <TableCell>Description</TableCell>
+              <TableCell>Cash Amount</TableCell>
+
               <TableCell>Bank Id</TableCell>
               <TableCell>Bank Name</TableCell>
               <TableCell>Cheque No</TableCell>
               <TableCell>Cheque Date</TableCell>
-              <TableCell>Amount</TableCell>
+              <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -92,14 +94,15 @@ const Page = () => {
                 tableData.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>{row.payment_type}</TableCell>
-                    <TableCell>{row.customer_id}</TableCell>
-                    <TableCell>{row.description.slice(0, 10)}...</TableCell>
+                    <TableCell>{row.customer.person_name}</TableCell>
+                    <TableCell>{row.description}</TableCell>
+                    <TableCell>{row.cash_amount}</TableCell>
+
                     <TableCell>{row.bank_id || "N/A"}</TableCell>
                     <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>{" "}
-                    {/* Use optional chaining and fallback */}
-                    <TableCell>{row.cheque_no}</TableCell>
-                    <TableCell>{row.cheque_date}</TableCell>
-                    <TableCell>{row.amount}</TableCell>
+                    <TableCell>{row.cheque_no || "N/A"}</TableCell>
+                    <TableCell>{row.cheque_date || "N/A"}</TableCell>
+                    <TableCell>{row.balance}</TableCell>
                   </TableRow>
                 ))}
           </TableBody>
