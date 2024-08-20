@@ -1,0 +1,69 @@
+.paymentHeader {
+  font-family: "regular";
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 43.57px;
+  text-align: left;
+  color: #50575f;
+  margin-top: 5rem;
+
+}
+
+.container {
+  margin-top: 2rem;
+}
+
+.tabPaymentContent {
+  padding: 20px 0;
+}
+
+.tabContainer {
+  display: flex;
+}
+
+.tabPaymentButton {
+  width: 45%;
+  height: 60px;
+  border-radius: 14px;
+  border: 1px;
+  background: #e4e4e466;
+  margin-right: 10px;
+  font-family: "regular";
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: #8c8c8c;
+}
+
+.tabPaymentButton.active {
+  width: 45%;
+  height: 60px;
+  border-radius: 14px;
+  border: 1px;
+  background: #0e7669;
+  font-family: "regular";
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: #ffffff;
+}
+
+.saveBtn {
+  width: 20%;
+  height: 50px;
+  top: 1233px;
+  left: 316px;
+  border-radius: 14px;
+  background: #0e7669;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 43.57px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.btnCont {
+  display: flex;
+  justify-content: center;
+}

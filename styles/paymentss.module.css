@@ -1,207 +1,112 @@
+.payment {
+  font-family: "regular";
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 43.57px;
+  text-align: left;
+  color: #0e7669;
+  margin-bottom: 2rem;
+}
+
 .gridContainer {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 40px;
 }
 
 .gridItem {
-    width: 100%;
+  width: 100%;
 }
 
-
 .container {
-    padding: 20px;
-    margin-top: 2rem;
+  padding: 20px;
+  margin-top: 2rem;
 }
 
 .tabContainer {
-    display: flex;
+  display: flex;
 }
-
-.tabButton {
-    width: 120px;
-    height: 50px;
-    top: 1937px;
-    left: -4546px;
-    border-radius: 30px;
-    background: #FEFEFE;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    margin-right: 2rem;
-}
-
-.tabButton:hover {
-    background-color: #ddd;
-}
-
-.tabButton.active {
-    width: 120px;
-    height: 50px;
-    top: 1937px;
-    left: -4208px;
-    border-radius: 30px;
-    background: #316AFF;
-    color: white
-}
-
-.tabContent {
-    padding: 20px;
-    border-top: none;
-}
-
-.tabPaymentContainer {
-    display: flex;
-}
-
 .tabPaymentButton {
-    width: 120px;
-    height: 50px;
-    top: 1937px;
-    left: -4546px;
-    border-radius: 30px;
-    background: #FEFEFE;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    margin-right: 2rem;
-    margin-top: 1rem;
+  width: 48%;
+  height: 60px;
+  border-radius: 14px;
+  border: 1px;
+  background: #e4e4e466;
+  margin-right: 10px;
+  font-family: "regular";
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: #8c8c8c;
 }
 
 .tabPaymentButton.active {
-    width: 120px;
-    height: 50px;
-    top: 1937px;
-    left: -4208px;
-    border-radius: 30px;
-    background: #316AFF;
-    color: white
-}
-
-.tabPaymentContent {
-    padding: 20px 0;
+  width: 48%;
+  height: 60px;
+  border-radius: 14px;
+  border: 1px;
+  background: #0e7669;
+  font-family: "regular";
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: #ffffff;
 }
 
 .bankHead {
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: left;
-    color: #363EF2
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18.75px;
+  text-align: left;
+  color: #363ef2;
 }
 
 .bankList {
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: left;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18.75px;
+  text-align: left;
 }
 
-.tableHeader,
-.tableRow {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    align-items: center;
-    gap: 1rem;
-}
-
-
-.tableRowData {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    align-items: center;
-    gap: 1rem;
-}
-
-.tableBody {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.tableHeader>div,
-.tableRow>div {
-    padding: 12px;
-    text-align: left;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    color: #9A9A9A
-}
-
-.tableRowData>div {
-    padding: 12px;
-    text-align: left;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    color: #8E8E93
-}
-
-.tableHeader,
-.tableRowData {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    align-items: center;
-    gap: 1rem;
-}
-
-.saveBtn {
-    width: 100%;
-    height: 47px;
-    padding: 14px 58px 14px 58px;
-    gap: 10px;
-    border-radius: 35px;
-    background: #316AFF;
-    color: white;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
+.btnCont {
+  display: flex;
+  justify-content: center;
 }
 
 .ledgerHead {
-    font-family: "regular";
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 36px;
-    text-align: center;
+  font-family: "regular";
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 36px;
+  text-align: center;
 }
 
 .logocontainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .logo {
-    max-width: 100%;
-    height: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 .paymentInBtn {
-    width: 200px;
-    height: 47px;
-    padding: 14px;
-    gap: 10px;
-    border-radius: 35px;
-    background: #316AFF;
-    color: white;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    margin-top: 2rem;
+  width: 50%;
+  height: 50px;
+  top: 1451px;
+  left: 285.5px;
+  border-radius: 14px;
+  background: #0e7669;
+  margin-top: 2rem;
+  font-family: "regular";
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 43.57px;
+  text-align: center;
+  color: white;
 }

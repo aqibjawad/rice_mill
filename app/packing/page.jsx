@@ -11,13 +11,14 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Grid
 } from "@mui/material";
 import { MdDelete, MdEdit } from "react-icons/md"; // Import React Icons
 import AddPacking from "../../components/stock/addPacking";
 import { packings } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 const Page = () => {
   const api = new APICall();
@@ -58,26 +59,25 @@ const Page = () => {
   const handleDelete = async (id) => {
     try {
       const response = await api.deleteDataWithToken(`${packings}/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
-      setTableData(tableData.filter(item => item.id !== id));
+      setTableData(tableData.filter((item) => item.id !== id));
 
       Swal.fire({
-        title: 'Deleted!',
-        text: 'The stock item has been deleted successfully.',
-        icon: 'success',
-        confirmButtonText: 'OK'
+        title: "Deleted!",
+        text: "The stock item has been deleted successfully.",
+        icon: "success",
+        confirmButtonText: "OK",
       });
-
     } catch (error) {
-      console.error('Error deleting Stock:', error);
+      console.error("Error deleting Stock:", error);
 
       Swal.fire({
-        title: 'Error!',
-        text: 'Failed to delete the stock item.',
-        icon: 'error',
-        confirmButtonText: 'OK'
+        title: "Error!",
+        text: "Failed to delete the stock item.",
+        icon: "error",
+        confirmButtonText: "OK",
       });
     }
   };
@@ -91,15 +91,34 @@ const Page = () => {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.container}>
-        <div className={styles.leftSection}>Packing</div>
-        <div className={styles.rightSection}>
-          <div className={styles.rightItemExp} onClick={handleOpen}>
-            + Add
-          </div>
-          <div className={styles.rightItem}>date</div>
-          <div className={styles.rightItem}>view all</div>
-          <div className={styles.rightItemExp}>export</div>
-        </div>
+        <Grid container spacing={2}>
+          <Grid item lg={8} sm={12} xs={12} md={4}>
+            <div className={styles.leftSection}>Packing</div>
+          </Grid>
+          <Grid item lg={4} sm={12} xs={12} md={8}>
+            <div className={styles.rightSection}>
+              <Grid container spacing={2}>
+                <Grid lg={3} item xs={6} sm={6} md={3}>
+                  <div onClick={handleOpen} className={styles.rightItem}>
+                    Add
+                  </div>
+                </Grid>
+
+                <Grid lg={3} item xs={6} sm={6} md={3}>
+                  <div className={styles.rightItem}>date</div>
+                </Grid>
+
+                <Grid item lg={3} xs={6} sm={6} md={3}>
+                  <div className={styles.rightItem}>view</div>
+                </Grid>
+
+                <Grid item lg={3} xs={6} sm={6} md={3}>
+                  <div className={styles.rightItemExp}>export</div>
+                </Grid>
+              </Grid>
+            </div>
+          </Grid>
+        </Grid>
       </div>
 
       <div className={styles.contentContainer}>
@@ -157,7 +176,11 @@ const Page = () => {
         </TableContainer>
       </div>
 
-      <AddPacking open={open} handleClose={handleCloseModal} editData={editingData} />
+      <AddPacking
+        open={open}
+        handleClose={handleCloseModal}
+        editData={editingData}
+      />
     </div>
   );
 };

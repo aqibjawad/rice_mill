@@ -5,6 +5,8 @@ class APICall {
   async handleRequest(request) {
     try {
       const response = await request();
+      console.log(response);
+      
       if (response.status === 200 || response.status === 204) {
         return response.data || { success: true };
       } else {

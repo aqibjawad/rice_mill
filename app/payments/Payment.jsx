@@ -4,215 +4,254 @@ import React, { useState, useEffect } from "react";
 import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import Skeleton from '@mui/material/Skeleton';
-import axios from 'axios';
-import Grid from '@mui/material/Grid';
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+import Skeleton from "@mui/material/Skeleton";
+import axios from "axios";
+import Grid from "@mui/material/Grid";
 
 import { suppliers, banks, payment_Out } from "../../networkApi/Constants";
 
+import APICall from "../../networkApi/APICall";
+
+import AddExpense from "@/components/stock/addExpense";
+import DropDown from "@/components/generic/dropdown";
+
 const Payment = () => {
-    const [tableData, setTableData] = useState([]);
-    const [tableBankData, setTableBankData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [bankLoading, setBankLoading] = useState(true);
+  const api = new APICall();
 
-    const [activeTab, setActiveTab] = useState("tab1");
-    const [amount, setAmount] = useState('');
-    const [description, setDescription] = useState('');
-    const [selectedCustomerId, setSelectedCustomerId] = useState(null);
-    const [selectedBankId, setSelectedBankId] = useState(null);
-    const [chequeNumber, setChequeNumber] = useState('');
-    const [chequeDate, setChequeDate] = useState('');
+  const [formData, setFormData] = useState({
+    expense_category_id: "",
+    payment_type: "cash",
+    description: "",
+    cash_amount: "",
+    bank_id: "",
+    cheque_no: "",
+    cheque_date: "",
+    cheque_amount: "",
+  });
 
-    useEffect(() => {
-        fetchData();
-        fetchBankData();
-    }, []);
+  const [tableBankData, setTableBankData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
 
-    const fetchData = async () => {
-        try {
-            const response = await fetch(suppliers);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const result = await response.json();
-            const data = result.data;
-            if (Array.isArray(data)) {
-                const formattedData = data.map(customer => ({ label: customer.person_name, id: customer.id }));
-                setTableData(formattedData);
-            } else {
-                throw new Error('Fetched data is not an array');
-            }
-        } catch (error) {
-            console.error(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const [activeTab, setActiveTab] = useState("tab1");
 
-    const fetchBankData = async () => {
-        try {
-            const response = await fetch(banks);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const result = await response.json();
-            const data = result.data;
-            if (Array.isArray(data)) {
-                const formattedData = data.map(bank => ({ label: bank.bank_name, id: bank.id }));
-                setTableBankData(formattedData);
-            } else {
-                throw new Error('Fetched data is not an array');
-            }
-        } catch (error) {
-            console.error(error.message);
-        } finally {
-            setBankLoading(false);
-        }
-    };
+  const [openExpense, setOpenExpense] = useState(false);
+  const handleOpenExpense = () => setOpenExpense(true);
+  const handleCloseExpense = () => setOpenExpense(false);
+  const [tablePartyData, setPartyData] = useState([]);
 
-    const handleTabClick = (tab) => {
-        setActiveTab(tab);
-    };
+  useEffect(() => {
+    fetchData();
+    fetchBankData();
+  }, []);
 
-    const handleCustomerSelect = (_, value) => {
-        setSelectedCustomerId(value?.id || null);
-    };
+  const fetchData = async () => {
+    try {
+      const response = await api.getDataWithToken(suppliers);
+      const data = result.response;
 
-    const handleBankSelect = (_, value) => {
-        setSelectedBankId(value?.id || null);
-    };
+      if (Array.isArray(data)) {
+        const formattedData = data.map((supplier) => ({
+          label: supplier.person_name,
+          id: supplier.id,
+        }));
+        setPartyData(formattedData);
+      } else {
+        throw new Error("Fetched data is not an array");
+      }
+    } catch (error) {
+      console.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleAmountChange = (event) => {
-        setAmount(event.target.value);
-    };
+  const fetchBankData = async () => {
+    try {
+      const response = await api.getDataWithToken(banks);
+      const data = response.data;
+      if (Array.isArray(data)) {
+        const formattedData = data.map((bank) => ({
+          label: bank.bank_name,
+          id: bank.id,
+        }));
+        setTableBankData(formattedData);
+      } else {
+        throw new Error("Fetched data is not an array");
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleDescriptionChange = (event) => {
-        setDescription(event.target.value);
-    };
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+  };
 
-    const handleChequeNumberChange = (event) => {
-        setChequeNumber(event.target.value);
-    };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
-    const handleChequeDateChange = (event) => {
-        setChequeDate(event.target.value);
-    };
+  const handleDropdownChange = (name, selectedOption) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: selectedOption.id,
+    }));
+    setSelectedExpenseCategory(selectedOption);
+  };
 
-    const handleSubmit = async () => {
-        const paymentData = {
-            customer_id: selectedCustomerId,
-            payment_type: activeTab === 'tab1' ? 'cash' : 'cheque',
-            amount: amount,
-            description: description,
-            bank_id: selectedBankId,
-            cheque_no: activeTab === 'tab2' ? chequeNumber : null,
-            cheque_date: activeTab === 'tab2' ? chequeDate : null,
-        };
+  const handleBankSelect = (_, value) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      bank_id: value?.id || "",
+    }));
+  };
 
-        try {
-            await axios.post(payment_Out, paymentData);
-            console.log('Payment data sent to the backend successfully!');
-        } catch (error) {
-            console.error('Error sending payment data to the backend:', error);
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingSubmit(true);
+    try {
+      const response = await api.postDataWithToken(expense, formData);
+      console.log("Success:", response);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoadingSubmit(false);
+    }
+  };
 
-    return (
-        <div>
-            <Grid container spacing={2} className='mt-10'>
-                <Grid className="mt-5" item xs={12} md={6}>
-                    {loading ? (
-                        <Skeleton variant="rectangular" width="100%" height={56} />
-                    ) : (
-                        <Autocomplete
-                            disablePortal
-                            id="combo-box-demo"
-                            options={tableData}
-                            renderInput={(params) => <TextField {...params} label="Select Party" />}
-                            onChange={handleCustomerSelect}
-                        />
-                    )}
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <InputWithTitle
-                        title="Amount"
-                        type="text"
-                        placeholder="Amount"
-                        name="amount"
-                        value={amount}
-                        onChange={handleAmountChange}
-                    />
-                </Grid>
-            </Grid>
+  return (
+    <div>
+      <Grid container spacing={2} className="mt-10">
+        <Grid className="" item xs={12} md={6}>
+          {loading ? (
+            <Skeleton variant="rectangular" width="100%" height={56} />
+          ) : (
+            <>
+              <div className="mt-5">
+                <DropDown
+                  title="Select Supplier"
+                  options={tablePartyData}
+                  onChange={handleDropdownChange}
+                  value={formData.expense_category_id}
+                  name="expense_category_id"
+                />
+              </div>
+            </>
+          )}
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <InputWithTitle
+            title="Amount"
+            type="text"
+            placeholder="Amount"
+            value={formData.cash_amount}
+            name="cash_amount"
+            onChange={handleInputChange}
+          />
+        </Grid>
+      </Grid>
 
-            <div className='mt-10'>
-                <div className={styles.tabPaymentContainer}>
-                    <button className={`${styles.tabPaymentButton} ${activeTab === "tab1" ? styles.active : ""}`} onClick={() => handleTabClick("tab1")}>
-                        Cash
-                    </button>
-                    <button className={`${styles.tabPaymentButton} ${activeTab === "tab2" ? styles.active : ""}`} onClick={() => handleTabClick("tab2")}>
-                        Cheque
-                    </button>
-                </div>
-                <div className={styles.tabPaymentContent}>
-                    {activeTab === "tab2" && (
-                        <Grid container spacing={2} className='mt-10'>
-                            <Grid item xs={12} md={4}>
-                                {bankLoading ? (
-                                    <Skeleton variant="rectangular" width="100%" height={56} />
-                                ) : (
-                                    <Autocomplete
-                                        disablePortal
-                                        id="combo-box-demo"
-                                        options={tableBankData}
-                                        renderInput={(params) => <TextField {...params} label="Select Bank" />}
-                                        onChange={handleBankSelect}
-                                    />
-                                )}
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <InputWithTitle
-                                    title="Cheque Number"
-                                    type="text"
-                                    placeholder="Cheque Number"
-                                    name="cheque_number"
-                                    value={chequeNumber}
-                                    onChange={handleChequeNumberChange}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <InputWithTitle
-                                    title="Cheque Date"
-                                    type="text"
-                                    placeholder="Cheque Date"
-                                    name="cheque_date"
-                                    value={chequeDate}
-                                    onChange={handleChequeDateChange}
-                                />
-                            </Grid>
-                        </Grid>
-                    )}
-                </div>
-            </div>
-
-            <div>
-                <div className='mt-10'>
-                    <MultilineInput  
-                        title="Description"
-                        placeholder="Description"
-                        name="description"
-                        value={description}
-                        onChange={handleDescriptionChange}
-                    />
-                </div>
-            </div>
-
-            <button className={styles.paymentInBtn} onClick={handleSubmit}>Submit Payment</button>
+      <div className="mt-10">
+        <div className={styles.tabPaymentContainer}>
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "tab1" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("tab1")}
+          >
+            Cash
+          </button>
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "tab2" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("tab2")}
+          >
+            Cheque
+          </button>
         </div>
-    );
-}
+
+        <div className={styles.tabPaymentContent}>
+          {activeTab === "tab2" && (
+            <Grid container spacing={2} className="mt-10">
+              <Grid className="mt-5" item xs={12} md={4}>
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={tableBankData}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Select Bank" />
+                  )}
+                  onChange={handleBankSelect}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <InputWithTitle
+                  title="Cheque Number"
+                  type="text"
+                  placeholder="Cheque Number"
+                  name="cheque_no"
+                  value={formData.cheque_no}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <InputWithTitle
+                  title="Cheque Date"
+                  type="date"
+                  placeholder="Cheque Date"
+                  name="cheque_date"
+                  value={formData.cheque_date}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <InputWithTitle
+                  title="Cheque Amount"
+                  type="text"
+                  placeholder="Cheque Amount"
+                  name="cheque_amount"
+                  value={formData.cheque_amount}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+            </Grid>
+          )}
+          <Grid className="mt-5" item xs={12} md={4} lg={8}>
+            <MultilineInput
+              title="Description"
+              placeholder="Description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+            />
+          </Grid>
+        </div>
+      </div>
+
+      <div className={styles.btnCont}>
+        <button
+          className={styles.paymentInBtn}
+          onClick={handleSubmit}
+          disabled={loadingSubmit}
+        >
+          {loadingSubmit ? "Submitting..." : "Submit Payments"}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default Payment;

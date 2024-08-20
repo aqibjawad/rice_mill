@@ -11,6 +11,8 @@ import MultilineInput from "../generic/MultilineInput";
 import Swal from "sweetalert2";
 import styles from "../../styles/paymentss.module.css";
 
+import DropDown from "@/components/generic/dropdown";
+
 const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
   const [allProducts, setAllProducts] = useState([]);
   const [fetchingProducts, setFetchingProducts] = useState(false);
@@ -55,23 +57,40 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
     setPrice("");
   };
 
+  // const fetchProducts = async () => {
+  //   try {
+  //     setFetchingProducts(true);
+
+  //     const response = await api.getDataWithToken(
+  //       `${products}?product_type=other`
+  //     );
+  //     const filteredProducts = response.data;
+  //     setProductsList(filteredProducts);
+  //   } catch (error) {
+  //     console.error("Error fetching products:", error);
+  //     setError("Failed to fetch products. Please try again.");
+  //   } finally {
+  //     setFetchingProducts(false);
+  //   }
+  // };
+
   const fetchProducts = async () => {
     try {
-      setFetchingProducts(true);
-
-      const response = await api.getDataWithToken(products);
-      const filteredProducts = response.data
-        .filter((item) => item.product_type === "other")
-        .map((item, index) => ({
-          label: `${item.product_name}`,
-          index: index,
-          id: item.id,
+      const response = await api.getDataWithToken(
+        `${products}?product_type=other`
+      );
+      const data = response.data;
+      if (Array.isArray(data)) {
+        const formattedData = data.map((product) => ({
+          label: product.product_name,
+          id: product.id,
         }));
-
-      setProducts(filteredProducts);
+        setProductsList(formattedData);
+      } else {
+        throw new Error("Fetched data is not an array");
+      }
     } catch (error) {
-      console.error("Error fetching products:", error);
-      setError("Failed to fetch products. Please try again.");
+      setError(error.message);
     } finally {
       setFetchingProducts(false);
     }
@@ -246,19 +265,15 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
           {fetchingProducts ? (
             <Skeleton height={70} />
           ) : (
-            <Autocomplete
-              disablePortal
-              id="product-select"
-              options={productsList}
-              value={
-                productsList.find((item) => item.id === selectedProductID[0]) ||
-                null
-              }
-              renderInput={(params) => (
-                <TextField {...params} label="Select Product" />
-              )}
-              onChange={handleProductChange}
-            />
+            <>
+              <DropDown
+                title="Select Products"
+                options={productsList}
+                onChange={handleProductChange}
+                // value={formData.productsList}
+                // name="productsList"
+              />
+            </>
           )}
         </div>
         <div className="mb-5">

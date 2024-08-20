@@ -60,7 +60,7 @@ const Page = () => {
 
   return (
     <div>
-      <Buttons leftSectionText="Amount Recieves" addButtonLink="/payments" />
+      <Buttons leftSectionText="Amount Recieves" addButtonLink="/paymentRecieves" />
 
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">

@@ -33,17 +33,6 @@
     display: flex;
 }
 
-.expenseCardWrapper {
-    flex: 1;
-    margin-right: 20px;
-}
-
-.inflowWrapper {
-    flex: 6;
-}
-
-
-
 .container {
     display: flex;
     justify-content: space-between;
@@ -65,121 +54,34 @@
 }
 
 .rightItem {
-    width: Hug (62px)px;
-    height: Hug (32px)px;
-    padding: 6px 5px 6px 5px;
-    gap: 7px;
-    border-radius: 8px;
-    border: 1px;
-    margin-left: 20px;
-    font-family: "regular";
-    font-size: 16px;
-    border: 1px solid #E3E3E3;
-    padding: 10px;
-    font-family: "regular";
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 14.06px;
-    text-align: left;
-    color: #9A9A9A
+  width: 100px;
+  height: 35px;
+  border-radius: 13px;
+  background: #e6e6e6;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 29.05px;
+  text-align: center;
+  display: flex;
+  justify-content: center; /* Horizontally center text */
+  align-items: center; /* Vertically center text */
 }
 
 .rightItemExp {
-    width: Hug (62px)px;
-    height: Hug (32px)px;
-    padding: 6px 5px 6px 5px;
-    gap: 7px;
-    border-radius: 8px;
-    border: 1px;
-    margin-left: 20px;
-    font-family: "regular";
-    font-size: 16px;
-    border: 1px solid #E3E3E3;
-    padding: 10px;
-    font-family: "regular";
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 14.06px;
-    text-align: left;
-    color: white;
-    background: #316AFF;
-}
-
-.tableSection {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #FFFFFF;
-    border-radius: 30px 30px;
-    padding: 20px;
-}
-
-.tableHeader,
-.tableRow {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    align-items: center;
-    gap: 1rem;
-}
-
-
-.tableRowData {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    align-items: center;
-    gap: 1rem;
-}
-
-.tableHeader {
-    background-color: #FFFFFF;
-    font-weight: bold;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.tableBody {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.tableRow {
-    border-bottom: 1px solid #E3E3E3
-}
-
-.tableHeader>div,
-.tableRow>div {
-    padding: 12px;
-    text-align: left;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    color: #9A9A9A
-}
-
-.tableRowData>div {
-    padding: 12px;
-    text-align: left;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    color: #8E8E93
-}
-
-.tableRowData {
-
-    border-bottom: 1px solid #E3E3E3
-}
-
-
-.tableRow:last-child {
-    border-bottom: none;
-}
-
-.tableRow:last-child {
-    border-bottom: none;
+  width: 100px;
+  height: 35px;
+  border-radius: 13px;
+  background: #0e7669;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 29.05px;
+  text-align: center;
+  display: flex;
+  justify-content: center; /* Horizontally center text */
+  align-items: center; /* Vertically center text */
+  color: white;
 }
 
 .deleteButton {
@@ -189,12 +91,4 @@
     cursor: pointer;
     width: 50px;
     height: 50px;
-}
-
-.tableHeader,
-.tableRowData {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    align-items: center;
-    gap: 1rem;
 }

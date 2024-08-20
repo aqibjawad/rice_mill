@@ -9,7 +9,9 @@ export const customers = apiPrefix + "/customer";
 
 export const packings = apiPrefix + "/packing";
 
-export const expense = apiPrefix + "/expense_category";
+export const expenseCat = apiPrefix + "/expense_category";
+
+export const expense = apiPrefix + "/expense";
 
 export const payment_In = apiPrefix + "/payment_in";
 
