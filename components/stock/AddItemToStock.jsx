@@ -56,16 +56,19 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
   };
 
   const fetchProducts = async () => {
-    setFetchingProducts(true);
     try {
+      setFetchingProducts(true);
+
       const response = await api.getDataWithToken(products);
-      setAllProducts(response.data);
-      const list = response.data.map((item, index) => ({
-        label: item.product_name,
-        index: index,
-        id: item.id,
-      }));
-      setProductsList(list);
+      const filteredProducts = response.data
+        .filter((item) => item.product_type === "other")
+        .map((item, index) => ({
+          label: `${item.product_name}`,
+          index: index,
+          id: item.id,
+        }));
+
+      setProducts(filteredProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
       setError("Failed to fetch products. Please try again.");

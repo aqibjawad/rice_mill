@@ -4,7 +4,6 @@ import styles from "../../styles/stock.module.css";
 import AddItemToStock from "../../components/stock/AddItemToStock";
 import APICall from "../../networkApi/APICall";
 import { stocks } from "@/networkApi/Constants";
-import DatePicker from "react-datepicker";
 import Swal from "sweetalert2";
 
 import { Grid } from "@mui/material";
@@ -19,10 +18,9 @@ import {
   TableRow,
   Paper,
   Skeleton,
-  Button,
   IconButton,
 } from "@mui/material";
-import { MdDelete, MdEdit, MdAdd } from "react-icons/md";
+import { MdDelete, MdEdit } from "react-icons/md";
 
 const Page = () => {
   const api = new APICall();
