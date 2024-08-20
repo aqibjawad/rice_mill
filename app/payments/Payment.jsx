@@ -1,30 +1,29 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import styles from "../../styles/paymentss.module.css";
+import styles from "../../styles/paymentRecieves.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Skeleton from "@mui/material/Skeleton";
-import axios from "axios";
 import Grid from "@mui/material/Grid";
 
-import { suppliers, banks, payment_Out } from "../../networkApi/Constants";
+import { suppliers, banks, supplierLedger } from "../../networkApi/Constants";
 
 import APICall from "../../networkApi/APICall";
 
-import AddExpense from "@/components/stock/addExpense";
 import DropDown from "@/components/generic/dropdown";
 
-const Payment = () => {
+const Page = () => {
   const api = new APICall();
 
   const [formData, setFormData] = useState({
-    expense_category_id: "",
-    payment_type: "cash",
+    sup_id: "",
+    payment_type: "",
     description: "",
     cash_amount: "",
+
     bank_id: "",
     cheque_no: "",
     cheque_date: "",
@@ -37,40 +36,35 @@ const Payment = () => {
 
   const [activeTab, setActiveTab] = useState("tab1");
 
-  const [openExpense, setOpenExpense] = useState(false);
-  const handleOpenExpense = () => setOpenExpense(true);
-  const handleCloseExpense = () => setOpenExpense(false);
   const [tablePartyData, setPartyData] = useState([]);
 
-  console.log(tablePartyData);
-  
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
     fetchBankData();
   }, []);
 
-const fetchData = async () => {
-  try {
-    const response = await api.getDataWithToken(suppliers);
-    const data = response.data;
+  const fetchData = async () => {
+    try {
+      const response = await api.getDataWithToken(suppliers);
+      const data = response.data;
 
-    if (Array.isArray(data)) {
-      const formattedData = data.map((supplier) => ({
-        label: supplier.person_name,
-        id: supplier.id,
-      }));
-      setPartyData(formattedData);
-    } else {
-      throw new Error("Fetched data is not an array");
+      if (Array.isArray(data)) {
+        const formattedData = data.map((supply) => ({
+          label: supply.person_name,
+          id: supply.id,
+        }));
+        setPartyData(formattedData);
+      } else {
+        throw new Error("Fetched data is not an array");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error.message);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching data:', error.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const fetchBankData = async () => {
     try {
@@ -94,6 +88,10 @@ const fetchData = async () => {
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
+    setFormData((prevState) => ({
+      ...prevState,
+      payment_type: tab,
+    }));
   };
 
   const handleInputChange = (e) => {
@@ -122,7 +120,7 @@ const fetchData = async () => {
     e.preventDefault();
     setLoadingSubmit(true);
     try {
-      const response = await api.postDataWithToken(expense, formData);
+      const response = await api.postDataWithToken(supplierLedger, formData);
       console.log("Success:", response);
     } catch (error) {
       console.error("Error:", error);
@@ -134,32 +132,32 @@ const fetchData = async () => {
   return (
     <div>
       <Grid container spacing={2} className="mt-10">
-        <Grid className="" item xs={12} md={6}>
+        <Grid item xs={12} md={6}>
           {loading ? (
             <Skeleton variant="rectangular" width="100%" height={56} />
           ) : (
-            <>
-              <div className="mt-5">
-                <DropDown
-                  title="Select Supplier"
-                  options={tablePartyData}
-                  onChange={handleDropdownChange}
-                  value={formData.expense_category_id}
-                  name="expense_category_id"
-                />
-              </div>
-            </>
+            <div className="mt-5">
+              <DropDown
+                title="Select Supplier"
+                options={tablePartyData}
+                onChange={handleDropdownChange}
+                value={formData.sup_id}
+                name="sup_id"
+              />
+            </div>
           )}
         </Grid>
         <Grid item xs={12} md={6}>
-          <InputWithTitle
-            title="Amount"
-            type="text"
-            placeholder="Amount"
-            value={formData.cash_amount}
-            name="cash_amount"
-            onChange={handleInputChange}
-          />
+          {activeTab === "cash" || activeTab === "both" ? (
+            <InputWithTitle
+              title="Amount"
+              type="text"
+              placeholder="Amount"
+              value={formData.cash_amount}
+              name="cash_amount"
+              onChange={handleInputChange}
+            />
+          ) : null}
         </Grid>
       </Grid>
 
@@ -167,26 +165,34 @@ const fetchData = async () => {
         <div className={styles.tabPaymentContainer}>
           <button
             className={`${styles.tabPaymentButton} ${
-              activeTab === "tab1" ? styles.active : ""
+              activeTab === "cash" ? styles.active : ""
             }`}
-            onClick={() => handleTabClick("tab1")}
+            onClick={() => handleTabClick("cash")}
           >
             Cash
           </button>
           <button
             className={`${styles.tabPaymentButton} ${
-              activeTab === "tab2" ? styles.active : ""
+              activeTab === "cheque" ? styles.active : ""
             }`}
-            onClick={() => handleTabClick("tab2")}
+            onClick={() => handleTabClick("cheque")}
           >
             Cheque
+          </button>
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "both" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("both")}
+          >
+            Both
           </button>
         </div>
 
         <div className={styles.tabPaymentContent}>
-          {activeTab === "tab2" && (
+          {activeTab === "cheque" || activeTab === "both" ? (
             <Grid container spacing={2} className="mt-10">
-              <Grid className="mt-5" item xs={12} md={4}>
+              <Grid item xs={12} md={4} className="mt-5">
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
@@ -231,7 +237,8 @@ const fetchData = async () => {
                 />
               </Grid>
             </Grid>
-          )}
+          ) : null}
+
           <Grid className="mt-5" item xs={12} md={4} lg={8}>
             <MultilineInput
               title="Description"
@@ -246,7 +253,7 @@ const fetchData = async () => {
 
       <div className={styles.btnCont}>
         <button
-          className={styles.paymentInBtn}
+          className={styles.saveBtn}
           onClick={handleSubmit}
           disabled={loadingSubmit}
         >
@@ -257,4 +264,4 @@ const fetchData = async () => {
   );
 };
 
-export default Payment;
+export default Page;
