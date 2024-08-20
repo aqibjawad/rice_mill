@@ -1,33 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { Grid, Skeleton, CircularProgress } from "@mui/material";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import InputWithTitle from "@/components/generic/InputWithTitle";
 import DropDown from "../../components/generic/dropdown";
 import styles from "../../styles/addPurchase.module.css";
 import APICall from "../../networkApi/APICall";
 import Tabs from "./tabs";
 import Swal from "sweetalert2";
-
 import { purchaseBook, suppliers, products } from "../../networkApi/Constants";
-
-export const dynamic = "force-dynamic";
-
-import { useRouter } from "next/navigation";
-
-const SearchParamsWrapper = ({ children }) => {
-  const searchParams = useSearchParams();
-  return children(searchParams);
-};
-
-const AddPurchase = () => {
-  return <AddPurchaseContent />;
-};
 
 const AddPurchaseContent = () => {
   const router = useRouter();
-
   const api = new APICall();
 
   const [formData, setFormData] = useState({
@@ -35,6 +20,7 @@ const AddPurchaseContent = () => {
     date: "",
     pro_id: "",
     quantity: "",
+    rate: "",
     packing_type: "",
     bardaanaQuantity: "",
     truckNumber: "",
@@ -79,21 +65,18 @@ const AddPurchaseContent = () => {
   useEffect(() => {
     fetchSuppliers();
     fetchProducts();
-
-    // const editData = searchParams.get("editData");
-    // if (editData) {
-    //   try {
-    //     const decodedData = JSON.parse(decodeURIComponent(editData));
-    //     setFormData((prevState) => ({
-    //       ...prevState,
-    //       ...decodedData,
-    //     }));
-    //     setActiveTab(decodedData.payment_type || "cash");
-    //   } catch (error) {
-    //     console.error("Error parsing edit data:", error);
-    //   }
-    // }
   }, []);
+
+  useEffect(() => {
+    // Calculate cash_amount when quantity or rate changes
+    const quantity = parseFloat(formData.quantity) || 0;
+    const rate = parseFloat(formData.rate) || 0;
+    const cash_amount = quantity * rate;
+    setFormData((prevState) => ({
+      ...prevState,
+      cash_amount: cash_amount.toFixed(2), // Round to 2 decimal places
+    }));
+  }, [formData.quantity, formData.rate]);
 
   const fetchSuppliers = async () => {
     try {
@@ -117,7 +100,6 @@ const AddPurchaseContent = () => {
       setLoadingProducts(true); // Set loading state to true at the beginning of the fetch
 
       const response = await api.getDataWithToken(products);
-      // Assuming response.data is an array of product objects
       const filteredProducts = response.data
         .filter((item) => item.product_type === "paddy")
         .map((item, index) => ({
@@ -264,6 +246,16 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
+        <Grid className="mt-5" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Enter Rate"}
+            placeholder={"Enter Rate"}
+            name="rate"
+            value={formData.rate}
+            onChange={handleInputChange}
+          />
+        </Grid>
+
         <Grid className="mt-10" item xs={12} sm={4}>
           <DropDown
             title="Select Bardaana"
@@ -308,11 +300,12 @@ const AddPurchaseContent = () => {
 
         <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
-            title={"cash Amount"}
-            placeholder={"cash Amount"}
+            title={"Cash Amount"}
+            placeholder={"Cash Amount"}
             name="cash_amount"
             value={formData.cash_amount}
             onChange={handleInputChange}
+            disabled // The value of cash_amount is now calculated automatically
           />
         </Grid>
 
@@ -449,4 +442,4 @@ const AddPurchaseContent = () => {
   );
 };
 
-export default AddPurchase;
+export default AddPurchaseContent;
