@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
-import { payment_Out } from "../../networkApi/Constants";
+import { expense, supplierLedger } from "../../networkApi/Constants";
 
 import {
   Table,
@@ -16,12 +16,11 @@ import {
 } from "@mui/material";
 
 import Buttons from "../../components/buttons";
-
 import APICall from "../../networkApi/APICall";
 
 const Page = () => {
   const api = new APICall();
-
+  
   const [tableData, setTableData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,11 +31,17 @@ const Page = () => {
 
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(payment_Out);
+      const [expenseResponse, supplierResponse] = await Promise.all([
+        api.getDataWithToken(expense),
+        api.getDataWithToken(supplierLedger),
+      ]);
 
-      const data = response.data;
-      if (Array.isArray(data)) {
-        setTableData(data);
+      const expenseData = expenseResponse.data;
+      const supplierData = supplierResponse.data;
+
+      if (Array.isArray(expenseData) && Array.isArray(supplierData)) {
+        const combinedData = [...expenseData, ...supplierData];
+        setTableData(combinedData);
       } else {
         throw new Error("Fetched data is not an array");
       }
@@ -49,7 +54,7 @@ const Page = () => {
 
   const calculateTotalAmount = () => {
     const total = tableData.reduce(
-      (total, row) => total + parseFloat(row.amount),
+      (total, row) => total + parseFloat(row.balance || 0),
       0
     );
     return total.toLocaleString("en-IN", {
@@ -66,14 +71,17 @@ const Page = () => {
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
-            <TableRow>
+               <TableRow>
               <TableCell>Payment Type</TableCell>
               <TableCell>Person</TableCell>
               <TableCell>Description</TableCell>
+              <TableCell>Cash Amount</TableCell>
+
               <TableCell>Bank Id</TableCell>
+              <TableCell>Bank Name</TableCell>
               <TableCell>Cheque No</TableCell>
               <TableCell>Cheque Date</TableCell>
-              <TableCell>Amount</TableCell>
+              <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -90,14 +98,18 @@ const Page = () => {
                 ))
               : // Actual data
                 tableData.map((row) => (
-                  <TableRow key={row.id}>
+                    <TableRow key={row.id}>
                     <TableCell>{row.payment_type}</TableCell>
-                    <TableCell>{row.customer_id}</TableCell>
+                    {/* <TableCell>{row.customer.person_name || "N/A"}</TableCell> */}
+                    <TableCell> testing name just </TableCell>
                     <TableCell>{row.description}</TableCell>
-                    <TableCell>{row.bank_id}</TableCell>
-                    <TableCell>{row.cheque_no}</TableCell>
-                    <TableCell>{row.cheque_date}</TableCell>
-                    <TableCell>{row.amount}</TableCell>
+                    <TableCell>{row.cash_amount}</TableCell>
+
+                    <TableCell>{row.bank_id || "N/A"}</TableCell>
+                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>{" "}
+                    <TableCell>{row.cheque_no || "N/A"}</TableCell>
+                    <TableCell>{row.cheque_date || "N/A"}</TableCell>
+                    <TableCell>{row.balance || "Expense"}</TableCell>
                   </TableRow>
                 ))}
           </TableBody>
