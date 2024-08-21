@@ -18,6 +18,8 @@ import { buyer } from "../../networkApi/Constants";
 import APICall from "@/networkApi/APICall";
 import Swal from "sweetalert2";
 
+import Link from "next/link";
+
 const Page = () => {
   const api = new APICall();
   const [open, setOpen] = useState(false);
@@ -141,6 +143,18 @@ const Page = () => {
                     <TableCell>{row.opening_balance}</TableCell>
                     <TableCell>
                       <div className={styles.iconContainer}>
+                        <div
+                          style={{
+                            color: "#316AFF",
+                            fontSize: "15px",
+                            marginTop: "1rem",
+                          }}
+                        >
+                          <Link href={`/buyer_ledger?buyer_id=${row.id}`}>
+                            View Details
+                          </Link>
+                        </div>
+
                         <MdEdit
                           onClick={() => handleEdit(row)}
                           className={styles.editButton}

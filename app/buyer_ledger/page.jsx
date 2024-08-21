@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import APICall from "@/networkApi/APICall";
 import { useSearchParams } from "next/navigation";
-import { supplierLedger } from "../../networkApi/Constants";
+import { buyerLedger } from "../../networkApi/Constants";
 
 const Page = () => {
   const api = new APICall();
@@ -32,7 +32,7 @@ const Page = () => {
   const [modalData, setModalData] = useState(null);
 
   const searchParams = useSearchParams();
-  const id = searchParams.get("sup_id");
+  const id = searchParams.get("buyer_id");
 
   useEffect(() => {
     fetchData();
@@ -42,7 +42,7 @@ const Page = () => {
     setLoading(true);
     try {
       const response = await api.getDataWithToken(
-        `${supplierLedger}?sup_id=${id}`
+        `${buyerLedger}?buyer_id=${id}`
       );
 
       const data = response.data;
@@ -74,7 +74,7 @@ const Page = () => {
   return (
     <div>
       <div className={styles.container}>
-        <div className={styles.leftSection}>{rowData?.person_name}</div>
+        <div className={styles.leftSection}>{rowData.person_name}</div>
       </div>
 
       <TableContainer component={Paper}>
