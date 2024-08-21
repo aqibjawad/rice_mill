@@ -68,13 +68,13 @@ const AddPurchaseContent = () => {
   }, []);
 
   useEffect(() => {
-    // Calculate cash_amount when quantity or rate changes
+
     const quantity = parseFloat(formData.quantity) || 0;
     const rate = parseFloat(formData.rate) || 0;
-    const cash_amount = quantity * rate;
+    const price = quantity * rate;
     setFormData((prevState) => ({
       ...prevState,
-      cash_amount: cash_amount.toFixed(2), // Round to 2 decimal places
+      price: price.toFixed(2),
     }));
   }, [formData.quantity, formData.rate]);
 
@@ -158,7 +158,6 @@ const AddPurchaseContent = () => {
     e.preventDefault();
     setLoadingSubmit(true);
     try {
-      let response;
       if (formData.id) {
         response = await api.putDataWithToken(
           `${purchaseBook}/${formData.id}`,
@@ -305,7 +304,6 @@ const AddPurchaseContent = () => {
             name="cash_amount"
             value={formData.cash_amount}
             onChange={handleInputChange}
-            disabled // The value of cash_amount is now calculated automatically
           />
         </Grid>
 

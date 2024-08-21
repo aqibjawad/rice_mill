@@ -20,7 +20,6 @@ import Link from "next/link";
 import APICall from "@/networkApi/APICall";
 
 const Page = () => {
-
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -151,28 +150,46 @@ const Page = () => {
                     <TableCell>{row.address}</TableCell>
                     <TableCell>{row.firm_name}</TableCell>
                     <TableCell>{row.current_balance}</TableCell>
-                    
+
                     <TableCell>
                       <div className={styles.iconContainer}>
-                        <div style={{ color: "#316AFF", fontSize: "15px", marginTop: "1rem" }}>
+                        <div
+                          style={{
+                            color: "#316AFF",
+                            fontSize: "15px",
+                            marginTop: "1rem",
+                          }}
+                        >
                           <Link href={`/supplier_ledger?sup_id=${row.id}`}>View Details
 
                           </Link>
+                          {/* <Link href={`/supplier_ledger`}>
+                            View Details
+                          </Link> */}
                         </div>
-                        <MdDelete onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
-                        <MdEdit onClick={() => handleEdit(row)} className={styles.editButton} />
+                        <MdDelete
+                          onClick={() => handleDelete(row.id)}
+                          className={styles.deleteButton}
+                        />
+                        <MdEdit
+                          onClick={() => handleEdit(row)}
+                          className={styles.editButton}
+                        />
                       </div>
                     </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
-
           </Table>
         </TableContainer>
       </div>
 
-      <AddSupplier open={open} handleClose={handleClose} editData={editingData} />
+      <AddSupplier
+        open={open}
+        handleClose={handleClose}
+        editData={editingData}
+      />
     </div>
   );
 };

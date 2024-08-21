@@ -31,7 +31,7 @@ const Page = () => {
 
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(buyerLedger);
+      const response = await api.getDataWithToken(`${buyerLedger}`);
 
       const data = response.data;
       if (Array.isArray(data)) {
