@@ -2,18 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "../styles/sidebar.module.css";
 import { useRouter } from "next/navigation";
 import MobileMenuButton from "./MobileMenuButton";
-import {
-  FaHome,
-  FaArrowRight,
-  FaArrowLeft,
-  FaBoxes,
-  FaShoppingCart,
-  FaBox,
-  FaCreditCard,
-  FaShoppingBag,
-  FaTruck,
-  FaUserTie,
-} from "react-icons/fa";
+import { FaHome, FaArrowRight, FaArrowLeft, FaShoppingCart, FaBox, FaBoxes, FaCreditCard, FaShoppingBag, FaTruck, FaUserTie } from 'react-icons/fa';
 
 const SideBar = () => {
   const router = useRouter();
@@ -36,20 +25,21 @@ const SideBar = () => {
     window.location.href = "/";
   };
 
-  const menuItems = [
-    { name: "Dashboard", href: "/dashboard", icon: <FaHome /> },
-    { name: "Recieves", href: "/inflow", icon: <FaArrowRight /> },
-    { name: "Outflow", href: "/outflow", icon: <FaArrowLeft /> },
-    { name: "Product", href: "/product", icon: <FaShoppingCart /> },
-    { name: "Packing", href: "/packing", icon: <FaBox /> },
-    { name: "Stock", href: "/stock", icon: <FaBoxes /> },
-    // { name: "Payments", href: "/payments", icon: <FaCreditCard /> },
-    { name: "Purchase", href: "/purchase", icon: <FaShoppingBag /> },
-    { name: "Supplier", href: "/supplier", icon: <FaTruck /> },
-    { name: "Buyer", href: "/Buyer", icon: <FaUserTie /> },
-    { name: "Sale", href: "/sale", icon: <FaUserTie /> },
-  ];
-
+const menuItems = [
+  { name: "Dashboard", href: "/dashboard", icon: <FaHome /> },
+  { name: "Banks", href: "/bank", icon: <FaArrowRight /> },
+  { name: "Bank Cheque", href: "/bankCheque", icon: <FaArrowRight /> },
+  { name: "Recieves", href: "/inflow", icon: <FaArrowRight /> },
+  { name: "Outflow", href: "/outflow", icon: <FaArrowLeft /> },
+  { name: "Product", href: "/product", icon: <FaShoppingCart /> },
+  { name: "Packing", href: "/packing", icon: <FaBox /> },
+  { name: "Stock", href: "/stock", icon: <FaBoxes /> },
+  { name: "Payments", href: "/payments", icon: <FaCreditCard /> },
+  { name: "Purchase", href: "/purchase", icon: <FaShoppingBag /> },
+  { name: "Supplier", href: "/supplier", icon: <FaTruck /> },
+  { name: "Buyer", href: "/buyer", icon: <FaUserTie /> },
+  { name: "Sale", href: "/sale", icon: <FaUserTie /> },
+]
   return (
     <>
       {isMobile && (

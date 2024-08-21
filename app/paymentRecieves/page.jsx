@@ -10,7 +10,12 @@ import Skeleton from "@mui/material/Skeleton";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
 
-import { buyer, banks, buyerLedger } from "../../networkApi/Constants";
+import {
+  buyer,
+  banks,
+  buyerLedger,
+  bankCheque,
+} from "../../networkApi/Constants";
 
 import APICall from "../../networkApi/APICall";
 
@@ -121,7 +126,14 @@ const Page = () => {
     e.preventDefault();
     setLoadingSubmit(true);
     try {
-      const response = await api.postDataWithToken(buyerLedger, formData);
+      let response;
+      if (formData.payment_type === "cash") {
+        response = await api.postDataWithToken(buyerLedger, formData);
+      } else if (formData.payment_type === "cheque") {
+        response = await api.postDataWithToken(bankCheque, formData);
+      } else {
+        throw new Error("Invalid payment type");
+      }
       console.log("Success:", response);
     } catch (error) {
       console.error("Error:", error);
@@ -129,7 +141,6 @@ const Page = () => {
       setLoadingSubmit(false);
     }
   };
-
   return (
     <div>
       <div className={styles.recievesHead}>Add Amount Recieves</div>
@@ -151,7 +162,7 @@ const Page = () => {
             )}
           </Grid>
           <Grid item xs={12} md={6}>
-            {activeTab === "cash" || activeTab === "both" ? (
+            {activeTab === "cash" && (
               <InputWithTitle
                 title="Amount"
                 type="text"
@@ -160,7 +171,7 @@ const Page = () => {
                 name="cash_amount"
                 onChange={handleInputChange}
               />
-            ) : null}
+            )}
           </Grid>
         </Grid>
 
@@ -181,14 +192,6 @@ const Page = () => {
               onClick={() => handleTabClick("cheque")}
             >
               Cheque
-            </button>
-            <button
-              className={`${styles.tabPaymentButton} ${
-                activeTab === "both" ? styles.active : ""
-              }`}
-              onClick={() => handleTabClick("both")}
-            >
-              Both
             </button>
           </div>
 
