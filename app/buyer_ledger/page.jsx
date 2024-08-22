@@ -74,7 +74,7 @@ const Page = () => {
   return (
     <div>
       <div className={styles.container}>
-        <div className={styles.leftSection}>{rowData.person_name}</div>
+        <div className={styles.leftSection}>{rowData?.person_name}</div>
       </div>
 
       <TableContainer component={Paper}>

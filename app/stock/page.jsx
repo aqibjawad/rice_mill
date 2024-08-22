@@ -6,7 +6,7 @@ import APICall from "../../networkApi/APICall";
 import { stocks } from "@/networkApi/Constants";
 import Swal from "sweetalert2";
 
-import { Grid } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 
 // MUI imports
 import {
@@ -74,7 +74,7 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await api.deleteDataWithToken(`${stocks}/${id}`, {
+      await api.deleteDataWithToken(`${stocks}/${id}`, {
         method: "DELETE",
       });
 
@@ -109,7 +109,9 @@ const Page = () => {
             <div className={styles.rightSection}>
               <Grid container spacing={2}>
                 <Grid lg={3} item xs={6} sm={6} md={3}>
-                    <div onClick={openAddStockModal} className={styles.rightItem}>Add</div>
+                  <div onClick={openAddStockModal} className={styles.rightItem}>
+                    Add
+                  </div>
                 </Grid>
 
                 <Grid lg={3} item xs={6} sm={6} md={3}>
@@ -143,42 +145,49 @@ const Page = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading
-              ? // Skeleton loader
-                [...Array(5)].map((_, index) => (
-                  <TableRow key={index}>
-                    {[...Array(9)].map((_, cellIndex) => (
-                      <TableCell key={cellIndex}>
-                        <Skeleton animation="wave" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              : // Actual data
-                tableData.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{row.id}</TableCell>
-                    <TableCell>{row.packing_size}</TableCell>
-                    <TableCell>{row.packing_unit}</TableCell>
-                    <TableCell>{row.product_description}</TableCell>
-                    <TableCell>{row.product_name}</TableCell>
-                    <TableCell>{row.quantity}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        onClick={() => handleDelete(row.id)}
-                        color="error"
-                      >
-                        <MdDelete />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => handleEdit(row)}
-                        color="primary"
-                      >
-                        <MdEdit />
-                      </IconButton>
+            {loading ? (
+              // Skeleton loader
+              [...Array(5)].map((_, index) => (
+                <TableRow key={index}>
+                  {[...Array(7)].map((_, cellIndex) => (
+                    <TableCell key={cellIndex}>
+                      <Skeleton animation="wave" />
                     </TableCell>
-                  </TableRow>
-                ))}
+                  ))}
+                </TableRow>
+              ))
+            ) : tableData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7}>
+                  <Typography variant="h6" align="center" color="textSecondary">
+                    No data for the selected date
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              // Actual data
+              tableData.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.packing_size}</TableCell>
+                  <TableCell>{row.packing_unit}</TableCell>
+                  <TableCell>{row.product_description}</TableCell>
+                  <TableCell>{row.product_name}</TableCell>
+                  <TableCell>{row.quantity}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={() => handleDelete(row.id)}
+                      color="error"
+                    >
+                      <MdDelete />
+                    </IconButton>
+                    <IconButton onClick={() => handleEdit(row)} color="primary">
+                      <MdEdit />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>

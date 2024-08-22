@@ -7,7 +7,7 @@ class APICall {
       const response = await request();
       console.log(response);
       
-      if (response.status === 200 || response.status === 204) {
+      if (response.status === 200 || response.status === 204 || response.status === 201) {
         return response.data || { success: true };
       } else {
         throw new Error(response.statusText);

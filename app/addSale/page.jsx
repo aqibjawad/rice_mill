@@ -45,15 +45,16 @@ const Page = () => {
   const [supplierList, setSuppliers] = useState([]);
   const [packingList, setPacking] = useState([]);
   const [refList, setRef] = useState({ id: "", next_ref_no: "" });
+  
   const [items, setItems] = useState([]);
-
-  console.log(items);
 
   const [error, setError] = useState("");
 
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingPackings, setLoadingPackings] = useState(true);
+
+  const [saleData, setSaleDetails] = useState([]);
 
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
@@ -177,9 +178,7 @@ const Page = () => {
         formData
       );
 
-      if (response.details && Array.isArray(response.details)) {
-        setItems(response.details);
-      }
+      setSaleDetails(response.data.details);
 
       Swal.fire({
         title: "Success!",
@@ -187,23 +186,35 @@ const Page = () => {
         icon: "success",
         confirmButtonText: "OK",
       });
-
-      // Clear form after successful submission
-      setFormData({
-        id: "",
-        buyer_id: "",
-        pro_id: "",
-        packing_id: "",
-        quantity: "",
-        price: "",
-        truck_no: "",
-        product_description: "",
+    } catch (error) {
+      console.error("Error:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "Something went wrong.",
+        icon: "error",
+        confirmButtonText: "Okay",
       });
+    } finally {
+      setLoadingSubmit(false);
+    }
+  };
 
-      setDropdownValues({
-        buyer_id: null,
-        pro_id: null,
-        packing_id: null,
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+
+    const bilObj = {sale_book_id: refList.id}
+
+    try {
+      const response = await api.postFormDataWithToken(
+        `${saleBook}`,
+        bilObj
+      );
+
+      Swal.fire({
+        title: "Success!",
+        text: "Your Bill is Updated.",
+        icon: "success",
+        confirmButtonText: "OK",
       });
     } catch (error) {
       console.error("Error:", error);
@@ -219,9 +230,11 @@ const Page = () => {
   };
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={2} style={{ marginTop: "2rem" }}>
       <Grid item lg={6} xs={12} md={6} sm={12}>
-        <div className={styles.saleHead}>Add Sale</div>
+        <div className={styles.saleHead} style={{ marginBottom: "2rem" }}>
+          Add Sale
+        </div>
         <Grid className="mt-10" container spacing={2}>
           <Grid item xs={12} sm={12}>
             {loadingSuppliers ? (
@@ -257,7 +270,9 @@ const Page = () => {
           </Grid>
 
           <div className={styles.saleSec}>
-            <div className={styles.itemBill}>Add Items in bill</div>
+            <div className={styles.itemBill} s tyle={{ marginBottom: "2rem" }}>
+              Add Items in bill
+            </div>
 
             <Grid className="mt-10" container spacing={2}>
               <Grid item xs={12}>
@@ -321,8 +336,6 @@ const Page = () => {
               >
                 {loadingSubmit ? (
                   <CircularProgress color="inherit" size={24} />
-                ) : formData.id ? (
-                  "Update"
                 ) : (
                   "Save"
                 )}
@@ -342,11 +355,10 @@ const Page = () => {
                 <TableCell>Quantity</TableCell>
                 <TableCell>Price</TableCell>
                 <TableCell>Amount</TableCell>
-                <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((item, index) => (
+              {saleData?.map((item, index) => (
                 <TableRow key={index}>
                   <TableCell>{item.product_name}</TableCell>
                   <TableCell>{`${item.packing_size} ${item.packing_unit}`}</TableCell>
@@ -375,6 +387,14 @@ const Page = () => {
             </TableBody>
           </Table>
         </TableContainer>
+
+        <button
+          type="submit"
+          className={styles.addItemBtn}
+          onClick={handleUpdate}
+        >
+            Complete Your Bill
+        </button>
       </Grid>
     </Grid>
   );

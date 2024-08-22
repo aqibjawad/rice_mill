@@ -20,7 +20,6 @@ const AddPurchaseContent = () => {
     date: "",
     pro_id: "",
     quantity: "",
-    rate: "",
     packing_type: "",
     bardaanaQuantity: "",
     truckNumber: "",
@@ -29,15 +28,56 @@ const AddPurchaseContent = () => {
     bankTax: "",
     cash_amount: "",
     chequeNumber: "",
-    remainingAmount: "",
     first_weight: "",
     second_weight: "",
     net_weight: "",
-    packing_weight: "",
+    packing_weight: 1,
     bardaanaDeduction: "",
     final_weight: "",
     payment_type: "cash",
   });
+
+  const validateForm = () => {
+    const requiredFields = [
+      "sup_id",
+      "date",
+      "pro_id",
+      "quantity",
+      "packing_type",
+      "truckNumber",
+      "first_weight",
+      "second_weight",
+      "net_weight",
+      "final_weight",
+      "freight",
+      "price",
+      "cash_amount",
+    ];
+
+    const missingFields = requiredFields.filter((field) => !formData[field]);
+
+    if (missingFields.length > 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Missing Fields",
+        text: `Please fill in the following fields: ${missingFields.join(
+          ", "
+        )}`,
+      });
+      return false;
+    }
+
+    if (formData.payment_type !== "cash" && !formData.chequeNumber) {
+      Swal.fire({
+        icon: "error",
+        title: "Missing Cheque Number",
+        text: "Please enter the cheque number for non-cash payments.",
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   const [dropdownValues, setDropdownValues] = useState({
     sup_id: null,
@@ -56,6 +96,10 @@ const AddPurchaseContent = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
+  const [totalAmount, setTotalAmount] = useState(0);
+
+  const [remainingAmount, setRemainingAmount] = useState("0.00");
+
   const bardaanaList = [
     { id: 1, label: "add" },
     { id: 2, label: "return" },
@@ -68,15 +112,21 @@ const AddPurchaseContent = () => {
   }, []);
 
   useEffect(() => {
-
     const quantity = parseFloat(formData.quantity) || 0;
-    const rate = parseFloat(formData.rate) || 0;
-    const price = quantity * rate;
-    setFormData((prevState) => ({
-      ...prevState,
-      price: price.toFixed(2),
-    }));
-  }, [formData.quantity, formData.rate]);
+    const price = parseFloat(formData.price) || 0;
+    const cashAmount = parseFloat(formData.cash_amount) || 0;
+    const total = quantity * price;
+
+    // Update total amount
+    setTotalAmount(total);
+
+    // Calculate remaining amount
+    const remaining = total - cashAmount;
+
+    // Set remaining amount (allow negative values)
+    setRemainingAmount(remaining.toFixed(2));
+
+  }, [formData.quantity, formData.price, formData.cash_amount, setTotalAmount, setRemainingAmount]);
 
   const fetchSuppliers = async () => {
     try {
@@ -156,33 +206,24 @@ const AddPurchaseContent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setLoadingSubmit(true);
+
     try {
-      if (formData.id) {
-        response = await api.putDataWithToken(
-          `${purchaseBook}/${formData.id}`,
-          formData
-        );
-      } else {
-        response = await api.postDataWithToken(purchaseBook, formData);
-      }
+      const response = await api.postDataWithToken(purchaseBook, formData);
+      // Show success alert
       Swal.fire({
-        title: "Success!",
-        text: "Data Added.",
         icon: "success",
-        confirmButtonText: "OK",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          router.back();
-        }
+        title: "Success",
+        text: "Data has been added successfully!",
       });
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
-        title: "Error!",
-        text: "Something went wrong.",
         icon: "error",
-        confirmButtonText: "Okay",
+        title: "Error",
+        text: "Failed to add data. Please try again.",
       });
     } finally {
       setLoadingSubmit(false);
@@ -235,26 +276,6 @@ const AddPurchaseContent = () => {
           )}
         </Grid>
 
-        <Grid className="mt-5" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Enter Quantity"}
-            placeholder={"Enter Quantity"}
-            name="quantity"
-            value={formData.quantity}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-5" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Enter Rate"}
-            placeholder={"Enter Rate"}
-            name="rate"
-            value={formData.rate}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
         <Grid className="mt-10" item xs={12} sm={4}>
           <DropDown
             title="Select Bardaana"
@@ -266,7 +287,7 @@ const AddPurchaseContent = () => {
         </Grid>
 
         {selectedBardaana && selectedBardaana.id === 1 && (
-          <Grid className="mt-10" item xs={12} sm={4}>
+          <Grid className="mt-5" item xs={12} sm={4}>
             <InputWithTitle
               title={"Bardaana Quantity"}
               placeholder={"Enter Bardaana Quantity"}
@@ -276,66 +297,6 @@ const AddPurchaseContent = () => {
             />
           </Grid>
         )}
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Truck Number"}
-            placeholder={"Enter Truck Number"}
-            name="truckNumber"
-            value={formData.truckNumber}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Freight"}
-            placeholder={"Enter Freight"}
-            name="freight"
-            value={formData.freight}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Cash Amount"}
-            placeholder={"Cash Amount"}
-            name="cash_amount"
-            value={formData.cash_amount}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Total Amount"}
-            placeholder={"Total Amount"}
-            name="price"
-            value={formData.price}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Bank Tax"}
-            placeholder={"Bank Tax"}
-            name="bankTax"
-            value={formData.bankTax}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Net Amount"}
-            placeholder={"Net Amount"}
-            name="amount"
-            value={formData.amount}
-            onChange={handleInputChange}
-          />
-        </Grid>
 
         {activeTab !== "cash" && (
           <Grid className="mt-10" item xs={12} sm={4}>
@@ -349,12 +310,12 @@ const AddPurchaseContent = () => {
           </Grid>
         )}
 
-        <Grid className="mt-10" item xs={12} sm={4}>
+        <Grid className="mt-5" item xs={12} sm={4}>
           <InputWithTitle
-            title={"Remaining Amount"}
-            placeholder={"Remaining Amount"}
-            name="remainingAmount"
-            value={formData.remainingAmount}
+            title={"Truck Number"}
+            placeholder={"Enter Truck Number"}
+            name="truckNumber"
+            value={formData.truckNumber}
             onChange={handleInputChange}
           />
         </Grid>
@@ -411,11 +372,71 @@ const AddPurchaseContent = () => {
 
         <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
-            title={"Saafi Weight"}
-            placeholder={"Saafi Weight"}
-            name="packing_weight"
-            value={formData.packing_weight}
+            title={"Freight"}
+            placeholder={"Enter Freight"}
+            name="freight"
+            value={formData.freight}
             onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid className="mt-5" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Enter Quantity"}
+            placeholder={"Enter Quantity"}
+            name="quantity"
+            value={formData.quantity}
+            onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid className="mt-5" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Enter Rate"}
+            placeholder={"Enter Rate"}
+            name="price"
+            value={formData.price}
+            onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid className="mt-5" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Total Amount"}
+            placeholder={"Total Amount"}
+            name="price"
+            value={totalAmount.toFixed(2)}
+            disable
+          />
+        </Grid>
+
+        <Grid className="mt-10" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Bank Tax"}
+            placeholder={"Bank Tax"}
+            name="bankTax"
+            value={formData.bankTax}
+            onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid className="mt-10" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Cash Amount"}
+            placeholder={"Cash Amount"}
+            name="cash_amount"
+            value={formData.cash_amount}
+            onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid className="mt-10" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Remaining Amount"}
+            placeholder={"Remaining Amount"}
+            name="remainingAmount"
+            value={remainingAmount} // Display only
+            disable
           />
         </Grid>
       </Grid>
