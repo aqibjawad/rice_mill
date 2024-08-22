@@ -11,6 +11,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Button
 } from "@mui/material";
 import { MdDelete, MdEdit } from "react-icons/md"; // Importing icons from react-icons
 import AddBuyer from "../../components/stock/addBuyer";
@@ -20,8 +21,12 @@ import Swal from "sweetalert2";
 
 import Link from "next/link";
 
+import { useRouter } from "next/navigation";
+
 const Page = () => {
   const api = new APICall();
+  const router = useRouter();
+
   const [open, setOpen] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,6 +88,11 @@ const Page = () => {
         confirmButtonText: "OK",
       });
     }
+  };
+
+  const handleViewDetails = (id) => {
+    localStorage.setItem("buyerId", id);
+    router.push("/buyer_ledger");
   };
 
   return (
@@ -150,9 +160,12 @@ const Page = () => {
                             marginTop: "1rem",
                           }}
                         >
-                          <Link href={`/buyer_ledger?buyer_id=${row.id}`}>
+                          <Button onClick={() => handleViewDetails(row.id)}>
                             View Details
-                          </Link>
+                          </Button>
+                          {/* <Link href={`/buyer_ledger?`}>
+                            View Details
+                          </Link> */}
                         </div>
 
                         <MdEdit

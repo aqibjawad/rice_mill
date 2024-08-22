@@ -17,10 +17,10 @@ import {
   IconButton,
 } from "@mui/material";
 import APICall from "@/networkApi/APICall";
-import { useSearchParams } from "next/navigation";
-import { buyerLedger } from "../../networkApi/Constants";
+import { buyerLedger, getLocalStorage } from "../../networkApi/Constants";
 
 const Page = () => {
+  
   const api = new APICall();
   const [tableData, setTableData] = useState([]);
 
@@ -31,18 +31,17 @@ const Page = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
 
-  const searchParams = useSearchParams();
-  const id = searchParams.get("buyer_id");
+  const buyerId = getLocalStorage("buyerId");
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, []); 
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const response = await api.getDataWithToken(
-        `${buyerLedger}?buyer_id=${id}`
+        `${buyerLedger}?buyer_id=${buyerId}`
       );
 
       const data = response.data;
@@ -73,7 +72,7 @@ const Page = () => {
 
   return (
     <div>
-      {/* <div className={styles.container}>
+      <div className={styles.container}>
         <div className={styles.leftSection}>{rowData?.person_name}</div>
       </div>
 
@@ -159,8 +158,7 @@ const Page = () => {
             </div>
           )}
         </Box>
-      </Modal> */}
-      test
+      </Modal>
     </div>
   );
 };
