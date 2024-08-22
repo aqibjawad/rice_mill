@@ -17,8 +17,11 @@ import { banks, expenseCat, expense } from "../../networkApi/Constants";
 
 import APICall from "../../networkApi/APICall";
 
+import { useRouter } from "next/navigation";
+
 const ExpensePayments = () => {
   const api = new APICall();
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     expense_category_id: "",
@@ -127,6 +130,7 @@ const ExpensePayments = () => {
     try {
       const response = await api.postDataWithToken(expense, formData);
       console.log("Success:", response);
+      router.push("/outflow");
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -153,8 +157,10 @@ const ExpensePayments = () => {
               <DropDown
                 title="Select Expense Category"
                 options={tableExpenseData}
-                onChange={handleDropdownChange}
-                value={formData.expense_category_id}
+                onChange={(selectedOption) =>
+                  handleDropdownChange("expense_category_id", selectedOption)
+                }
+                value={selectedExpenseCategory}
                 name="expense_category_id"
               />
             </>

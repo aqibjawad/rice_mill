@@ -41,6 +41,8 @@ const Page = () => {
     product_description: "",
   });
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [productList, setProducts] = useState([]);
   const [supplierList, setSuppliers] = useState([]);
   const [packingList, setPacking] = useState([]);
@@ -242,6 +244,22 @@ const Page = () => {
     }
   };
 
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const calculateTotalAmount = () => {
+    const total = saleData.reduce(
+      (total, row) => total + parseFloat(row.price),
+      0
+    );
+    return total.toLocaleString("en-IN", {
+      maximumFractionDigits: 2,
+      style: "currency",
+      currency: "PKR",
+    });
+  };
+
   return (
     <Grid container spacing={2} style={{ marginTop: "2rem" }}>
       <Grid item lg={6} xs={12} md={6} sm={12}>
@@ -387,13 +405,7 @@ const Page = () => {
               <TableRow>
                 <TableCell colSpan={4}></TableCell>
                 <TableCell style={{ fontSize: "20px" }}>
-                  Total:{" "}
-                  {items
-                    .reduce(
-                      (total, item) => total + parseFloat(item.total_amount),
-                      0
-                    )
-                    .toFixed(2)}
+                  Total: {calculateTotalAmount()}
                 </TableCell>
                 <TableCell></TableCell>
               </TableRow>

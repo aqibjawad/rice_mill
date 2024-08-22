@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../../styles/paymentRecieves.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
@@ -16,6 +17,7 @@ import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
 
 const Page = () => {
+  const router = useRouter();
   const api = new APICall();
 
   const [formData, setFormData] = useState({
@@ -23,7 +25,6 @@ const Page = () => {
     payment_type: "",
     description: "",
     cash_amount: "",
-
     bank_id: "",
     cheque_no: "",
     cheque_date: "",
@@ -122,6 +123,7 @@ const Page = () => {
     try {
       const response = await api.postDataWithToken(supplierLedger, formData);
       console.log("Success:", response);
+      router.push('/outflow'); 
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -141,7 +143,7 @@ const Page = () => {
                 title="Select Supplier"
                 options={tablePartyData}
                 onChange={handleDropdownChange}
-                value={formData.sup_id}
+                value={tablePartyData.find(option => option.id === formData.sup_id) || null}
                 name="sup_id"
               />
             </div>

@@ -13,21 +13,19 @@ import {
   Paper,
   Modal,
   Box,
-  Typography
+  Typography,
 } from "@mui/material";
 import { saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
-
 import Link from "next/link";
 
 const Page = () => {
   const api = new APICall();
 
   const [tableData, setTableData] = useState([]);
-
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
 
@@ -39,9 +37,8 @@ const Page = () => {
     setLoading(true);
     try {
       const response = await api.getDataWithToken(saleBook);
-
       const data = response.data;
-      
+
       if (Array.isArray(data)) {
         setTableData(data);
       } else {
@@ -64,11 +61,30 @@ const Page = () => {
     setModalData(null);
   };
 
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filteredData = tableData.filter((row) =>
+    row.buyer.person_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.container}>
         <div className={styles.leftSection}>Sale</div>
         <div className={styles.rightSection}>
+          
+          <div className={styles.searchContainer}>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className={styles.searchInput}
+            />
+          </div>
+
           <div className={styles.rightItemExp}>
             <Link href="/addSale">+ Add</Link>
           </div>
@@ -84,14 +100,13 @@ const Page = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Sr.</TableCell>
-                <TableCell> Reference No </TableCell>
-                <TableCell> Buyer Name </TableCell>
-                <TableCell> Total Amount </TableCell>
+                <TableCell>Reference No</TableCell>
+                <TableCell>Buyer Name</TableCell>
+                <TableCell>Total Amount</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
-                // Skeleton loader
                 [...Array(5)].map((_, index) => (
                   <TableRow key={index}>
                     <TableCell>
@@ -103,18 +118,21 @@ const Page = () => {
                     <TableCell>
                       <Skeleton animation="wave" width={100} />
                     </TableCell>
+                    <TableCell>
+                      <Skeleton animation="wave" />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={3}>Error: {error}</TableCell>
+                  <TableCell colSpan={4}>Error: {error}</TableCell>
                 </TableRow>
-              ) : tableData.length === 0 ? (
+              ) : filteredData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3}>No data available</TableCell>
+                  <TableCell colSpan={4}>No data available</TableCell>
                 </TableRow>
               ) : (
-                tableData.map((row, index) => (
+                filteredData.map((row, index) => (
                   <TableRow onClick={() => handleViewDetails(row)} key={row.id}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.ref_no}</TableCell>

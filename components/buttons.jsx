@@ -6,6 +6,8 @@ import { Grid } from "@mui/material";
 
 import Link from "next/link";
 
+import DateFilter from "./generic/DateFilter"
+
 const Buttons = ({ leftSectionText, addButtonLink }) => {
   return (
     <Grid container spacing={2}>
@@ -23,7 +25,9 @@ const Buttons = ({ leftSectionText, addButtonLink }) => {
             </Grid>
 
             <Grid lg={3} item xs={6} sm={6} md={3}>
-              <div className={styles.rightItem}>date</div>
+              {/* <div className={styles.rightItem}>date</div> */}
+
+              <DateFilter />
             </Grid>
 
             <Grid item lg={3} xs={6} sm={6} md={3}>

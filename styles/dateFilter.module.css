@@ -1,0 +1,20 @@
+.dateItem {
+  cursor: pointer;
+  height: 40px;
+  font-family: "regular";
+}
+
+.datePicker {
+  width: 120px;
+  height: 35px;
+  border-radius: 13px;
+  background: #e6e6e6;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 29.05px;
+  text-align: center;
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+}

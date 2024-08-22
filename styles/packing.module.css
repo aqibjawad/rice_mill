@@ -92,3 +92,15 @@
     width: 50px;
     height: 50px;
 }
+
+.searchContainer {
+  margin-right: 2rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+}
