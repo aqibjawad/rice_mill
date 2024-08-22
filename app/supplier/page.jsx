@@ -11,21 +11,26 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Button,
 } from "@mui/material";
 import { MdDelete, MdEdit } from "react-icons/md";
 import AddSupplier from "../../components/stock/addSupplier";
 import { suppliers } from "../../networkApi/Constants";
 import Swal from "sweetalert2";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import APICall from "@/networkApi/APICall";
 
 const Page = () => {
+  const api = new APICall();
+
+  const router = useRouter();
+
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
 
-  const api = new APICall();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
@@ -90,6 +95,11 @@ const Page = () => {
         confirmButtonText: "OK",
       });
     }
+  };
+
+  const handleViewDetails = (id) => {
+    localStorage.setItem("supplerId", id);
+    router.push("/supplier_ledger");
   };
 
   return (
@@ -160,6 +170,9 @@ const Page = () => {
                             marginTop: "1rem",
                           }}
                         >
+                          <Button onClick={() => handleViewDetails(row.id)}>
+                            View Details
+                          </Button>
                           {/* <Link href={`/supplier_ledger?sup_id=${row.id}`}>
                             View Details
                           </Link> */}
