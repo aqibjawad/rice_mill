@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
 import { buyerLedger } from "../../networkApi/Constants";
@@ -13,10 +11,9 @@ import {
   Paper,
   Skeleton,
 } from "@mui/material";
-
 import APICall from "../../networkApi/APICall";
-
 import Buttons from "../../components/buttons";
+import DateFilters from "../../components/generic/DateFilter";
 
 const Page = () => {
   const api = new APICall();
@@ -24,19 +21,22 @@ const Page = () => {
   const [tableData, setTableData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [startDate, endDate]); // Fetch data whenever startDate or endDate changes
 
   const fetchData = async () => {
     try {
-      // Get today's date
-      const today = new Date();
-      const formattedDate = today.toISOString().split("T")[0];
+      setLoading(true);
+      const queryParams = [];
+      if (startDate) queryParams.push(`start_date=${startDate}`);
+      if (endDate) queryParams.push(`end_date=${endDate}`);
 
       const response = await api.getDataWithToken(
-        `${buyerLedger}?start_date=${formattedDate}&end_date=${formattedDate}`
+        `${buyerLedger}?${queryParams.join("&")}`
       );
 
       const data = response.data;
@@ -50,6 +50,11 @@ const Page = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDateChange = (start, end) => {
+    setStartDate(start);
+    setEndDate(end);
   };
 
   const calculateTotalAmount = () => {
@@ -71,6 +76,8 @@ const Page = () => {
         addButtonLink="/paymentRecieves"
       />
 
+      <DateFilters onDateChange={handleDateChange} />
+
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -79,7 +86,6 @@ const Page = () => {
               <TableCell>Person</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Cash Amount</TableCell>
-
               <TableCell>Bank Id</TableCell>
               <TableCell>Bank Name</TableCell>
               <TableCell>Cheque No</TableCell>
@@ -89,8 +95,7 @@ const Page = () => {
           </TableHead>
           <TableBody>
             {loading
-              ? // Skeleton loader
-                [...Array(5)].map((_, index) => (
+              ? [...Array(5)].map((_, index) => (
                   <TableRow key={index}>
                     {[...Array(9)].map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
@@ -99,15 +104,14 @@ const Page = () => {
                     ))}
                   </TableRow>
                 ))
-              : // Actual data
-                tableData.map((row) => (
+              : tableData.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>{row.payment_type}</TableCell>
                     <TableCell>{row.customer.person_name}</TableCell>
                     <TableCell>{row.description}</TableCell>
                     <TableCell>{row.cash_amount}</TableCell>
                     <TableCell>{row.bank_id || "N/A"}</TableCell>
-                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>{" "}
+                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
                     <TableCell>{row.cheque_no || "N/A"}</TableCell>
                     <TableCell>{row.cheque_date || "N/A"}</TableCell>
                     <TableCell>{row.balance}</TableCell>
