@@ -11,37 +11,25 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Modal,
+  Box,
+  Typography
 } from "@mui/material";
-import { MdDelete, MdEdit } from "react-icons/md";
-import AddPacking from "../../components/stock/addPacking";
 import { saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
-
-import Swal from "sweetalert2";
 
 import Link from "next/link";
 
 const Page = () => {
+  const api = new APICall();
 
   const [tableData, setTableData] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editingData, setEditingData] = useState(null);
 
-  const api = new APICall();
-  const [open, setOpen] = useState(false);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
-    setEditingData(null);
-    fetchData();
-  };
-
-  const handleEdit = (row) => {
-    setEditingData(row);
-    setOpen(true);
-  };
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -53,7 +41,7 @@ const Page = () => {
       const response = await api.getDataWithToken(saleBook);
 
       const data = response.data;
-
+      
       if (Array.isArray(data)) {
         setTableData(data);
       } else {
@@ -66,33 +54,14 @@ const Page = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      const response = await api.deleteDataWithToken(`${saleBook}/${id}`, {
-        method: "DELETE",
-      });
+  const handleViewDetails = (row) => {
+    setModalData(row);
+    setModalOpen(true);
+  };
 
-      if (!response.ok) {
-        throw new Error("Failed to delete stock item");
-      }
-
-      setTableData((prevData) => prevData.filter((item) => item.id !== id));
-
-      Swal.fire({
-        title: "Deleted!",
-        text: "The stock item has been deleted successfully.",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-    } catch (error) {
-      console.error("Error deleting Stock:", error);
-      Swal.fire({
-        title: "Error!",
-        text: "Failed to delete the stock item.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    }
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setModalData(null);
   };
 
   return (
@@ -115,13 +84,81 @@ const Page = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Sr.</TableCell>
-                <TableCell>Packing Weight</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell> Reference No </TableCell>
+                <TableCell> Buyer Name </TableCell>
+                <TableCell> Total Amount </TableCell>
               </TableRow>
             </TableHead>
+            <TableBody>
+              {loading ? (
+                // Skeleton loader
+                [...Array(5)].map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <Skeleton animation="wave" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton animation="wave" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton animation="wave" width={100} />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : error ? (
+                <TableRow>
+                  <TableCell colSpan={3}>Error: {error}</TableCell>
+                </TableRow>
+              ) : tableData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3}>No data available</TableCell>
+                </TableRow>
+              ) : (
+                tableData.map((row, index) => (
+                  <TableRow onClick={() => handleViewDetails(row)} key={row.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{row.ref_no}</TableCell>
+                    <TableCell>{row.buyer.person_name}</TableCell>
+                    <TableCell>{row.total_amount}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
           </Table>
         </TableContainer>
       </div>
+
+      <Modal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            outline: "none",
+          }}
+        >
+          <Typography id="modal-title" variant="h6" component="h2">
+            Details
+          </Typography>
+          {modalData && (
+            <div>
+              <Typography id="modal-description" sx={{ mt: 2 }}>
+                test
+              </Typography>
+            </div>
+          )}
+        </Box>
+      </Modal>
     </div>
   );
 };

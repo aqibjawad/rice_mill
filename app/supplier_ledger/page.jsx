@@ -14,7 +14,6 @@ import {
   Modal,
   Box,
   Typography,
-  IconButton,
 } from "@mui/material";
 import APICall from "@/networkApi/APICall";
 import { useSearchParams } from "next/navigation";

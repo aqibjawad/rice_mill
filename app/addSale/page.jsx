@@ -45,7 +45,7 @@ const Page = () => {
   const [supplierList, setSuppliers] = useState([]);
   const [packingList, setPacking] = useState([]);
   const [refList, setRef] = useState({ id: "", next_ref_no: "" });
-  
+
   const [items, setItems] = useState([]);
 
   const [error, setError] = useState("");
@@ -202,20 +202,33 @@ const Page = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    const bilObj = {sale_book_id: refList.id}
+    const bilObj = { sale_book_id: refList.id };
 
     try {
-      const response = await api.postFormDataWithToken(
-        `${saleBook}`,
-        bilObj
-      );
+      const response = await api.postFormDataWithToken(`${saleBook}`, bilObj);
 
       Swal.fire({
         title: "Success!",
         text: "Your Bill is Updated.",
         icon: "success",
         confirmButtonText: "OK",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.back();
+        }
       });
+
+      // Clear specific fields after successful submission
+      setFormData((prevData) => ({
+        ...prevData,
+        buyer_id: "",
+        pro_id: "",
+        packing_id: "",
+        quantity: "",
+        price: "",
+        truck_no: "",
+        product_description: "",
+      }));
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
@@ -393,7 +406,7 @@ const Page = () => {
           className={styles.addItemBtn}
           onClick={handleUpdate}
         >
-            Complete Your Bill
+          Complete Your Bill
         </button>
       </Grid>
     </Grid>
