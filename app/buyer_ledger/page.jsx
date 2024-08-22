@@ -73,7 +73,7 @@ const Page = () => {
 
   return (
     <div>
-      <div className={styles.container}>
+      {/* <div className={styles.container}>
         <div className={styles.leftSection}>{rowData?.person_name}</div>
       </div>
 
@@ -159,7 +159,8 @@ const Page = () => {
             </div>
           )}
         </Box>
-      </Modal>
+      </Modal> */}
+      test
     </div>
   );
 };

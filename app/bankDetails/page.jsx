@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/bankCheque.module.css";
-import { banks, bankCheque } from "../../networkApi/Constants";
+import { banks, bankCheque, getLocalStorage } from "../../networkApi/Constants";
 import {
   Table,
   TableBody,
@@ -33,7 +33,7 @@ const Page = () => {
     fetchData();
   }, []);
 
-  const bankId = localStorage.getItem("selectedRowId");
+  const bankId = getLocalStorage("selectedRowId");
 
   const fetchData = async () => {
     try {
@@ -94,7 +94,6 @@ const Page = () => {
           <Grid item lg={4} sm={12} xs={12} md={8}>
             <div className={styles.rightSection}>
               <Grid container spacing={2}>
-
                 <Grid lg={4} item xs={6} sm={6} md={3}>
                   <div className={styles.rightItem}>date</div>
                 </Grid>

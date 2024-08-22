@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/bankCheque.module.css";
-import { expenseCat } from "../../networkApi/Constants";
+import { expenseCat, getLocalStorage } from "../../networkApi/Constants";
 import {
   Table,
   TableBody,
@@ -32,9 +32,10 @@ const Page = () => {
     fetchData();
   }, []);
 
-  const expenseId = localStorage.getItem("expenseId");
-
+  
   const fetchData = async () => {
+    const expenseId = getLocalStorage("expenseId");
+
     try {
       const response = await api.getDataWithToken(`${expenseCat}/${expenseId}`);
 
@@ -53,6 +54,9 @@ const Page = () => {
       setLoading(false);
     }
   };
+
+
+
 
   return (
     <div>

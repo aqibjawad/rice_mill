@@ -20,59 +20,60 @@ import { useSearchParams } from "next/navigation";
 import { supplierLedger } from "../../networkApi/Constants";
 
 const Page = () => {
-  const api = new APICall();
-  const [tableData, setTableData] = useState([]);
+  // const api = new APICall();
+  // const [tableData, setTableData] = useState([]);
 
-  const [rowData, setRowData] = useState();
+  // const [rowData, setRowData] = useState();
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalData, setModalData] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
+  // const [modalOpen, setModalOpen] = useState(false);
+  // const [modalData, setModalData] = useState(null);
 
-  const searchParams = useSearchParams();
-  const id = searchParams.get("sup_id");
+  // const searchParams = useSearchParams();
+  // const id = searchParams.get("sup_id");
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await api.getDataWithToken(
-        `${supplierLedger}?sup_id=${id}`
-      );
+  // const fetchData = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await api.getDataWithToken(
+  //       `${supplierLedger}?sup_id=${id}`
+  //     );
 
-      const data = response.data;
+  //     const data = response.data;
 
-      setRowData(data);
+  //     setRowData(data);
 
-      if (Array.isArray(data.ledgers)) {
-        setTableData(data.ledgers);
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     if (Array.isArray(data.ledgers)) {
+  //       setTableData(data.ledgers);
+  //     } else {
+  //       throw new Error("Fetched data is not an array");
+  //     }
+  //   } catch (error) {
+  //     setError(error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  const handleViewDetails = (row) => {
-    setModalData(row);
-    setModalOpen(true);
-  };
+  // const handleViewDetails = (row) => {
+  //   setModalData(row);
+  //   setModalOpen(true);
+  // };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setModalData(null);
-  };
+  // const handleCloseModal = () => {
+  //   setModalOpen(false);
+  //   setModalData(null);
+  // };
 
   return (
     <div>
-      <div className={styles.container}>
+      test
+      {/* <div className={styles.container}>
         <div className={styles.leftSection}>{rowData?.person_name}</div>
       </div>
 
@@ -158,7 +159,7 @@ const Page = () => {
             </div>
           )}
         </Box>
-      </Modal>
+      </Modal> */}
     </div>
   );
 };

@@ -12,19 +12,17 @@ import {
   Paper,
   Skeleton,
   Grid,
+  Button,
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
   const api = new APICall();
-
+  const router = useRouter();
   const [tableData, setTableData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const [openBankCheque, setOpenBankCheque] = useState(false);
-  const [editData, setEditData] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -50,6 +48,7 @@ const Page = () => {
   // New function to handle saving ID to local storage
   const handleViewDetails = (id) => {
     localStorage.setItem("expenseId", id);
+    router.push("/expenseDetails");
   };
 
   return (
@@ -84,9 +83,9 @@ const Page = () => {
                     <TableCell>{row.expense_category}</TableCell>
                     <TableCell>{row.expenses_sum_total_amount}</TableCell>
                     <TableCell>
-                      <Link onClick={() => handleViewDetails(row.id)} href="/expenseDetails">
-                          View Details
-                      </Link>
+                      <Button onClick={() => handleViewDetails(row.id)}>
+                        View Details
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

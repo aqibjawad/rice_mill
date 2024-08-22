@@ -160,9 +160,9 @@ const Page = () => {
                             marginTop: "1rem",
                           }}
                         >
-                          <Link href={`/supplier_ledger?sup_id=${row.id}`}>
+                          {/* <Link href={`/supplier_ledger?sup_id=${row.id}`}>
                             View Details
-                          </Link>
+                          </Link> */}
                         </div>
                         <MdDelete
                           onClick={() => handleDelete(row.id)}

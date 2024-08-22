@@ -14,10 +14,12 @@ import {
   Grid,
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
+  
   const api = new APICall();
+  const router = useRouter();
 
   const [tableData, setTableData] = useState([]);
   const [error, setError] = useState(null);
@@ -50,6 +52,7 @@ const Page = () => {
   // New function to handle saving ID to local storage
   const handleViewDetails = (id) => {
     localStorage.setItem("selectedRowId", id);
+    router.push("/bankDetails");
   };
 
   return (
@@ -90,9 +93,9 @@ const Page = () => {
                     </TableCell>
                     <TableCell>{/* Result content */}</TableCell>
                     <TableCell>
-                      <Link onClick={() => handleViewDetails(row.id)} href="/bankDetails">
-                          View Details
-                      </Link>
+                      <Button onClick={() => handleViewDetails(row.id)}>
+                        View Details
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
