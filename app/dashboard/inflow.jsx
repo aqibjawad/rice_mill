@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { format } from "date-fns";
 import styles from "../../styles/ledger1.module.css";
 import { buyerLedger } from "../../networkApi/Constants";
 import {
@@ -26,14 +27,21 @@ const Page = () => {
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate]); // Fetch data whenever startDate or endDate changes
+  }, [startDate, endDate]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       const queryParams = [];
-      if (startDate) queryParams.push(`start_date=${startDate}`);
-      if (endDate) queryParams.push(`end_date=${endDate}`);
+
+      if (startDate && endDate) {
+        queryParams.push(`start_date=${startDate}`);
+        queryParams.push(`end_date=${endDate}`);
+      } else {
+        const currentDate = format(new Date(), "yyyy-MM-dd");
+        queryParams.push(`start_date=${currentDate}`);
+        queryParams.push(`end_date=${currentDate}`);
+      }
 
       const response = await api.getDataWithToken(
         `${buyerLedger}?${queryParams.join("&")}`
@@ -72,8 +80,8 @@ const Page = () => {
   return (
     <div>
       <Buttons
-        leftSectionText="Amount Recieves"
-        addButtonLink="/paymentRecieves"
+        leftSectionText="Amount Receives"
+        addButtonLink="/paymentReceives"
       />
 
       <DateFilters onDateChange={handleDateChange} />
@@ -82,6 +90,7 @@ const Page = () => {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
+              <TableCell>Sr No</TableCell>
               <TableCell>Payment Type</TableCell>
               <TableCell>Person</TableCell>
               <TableCell>Description</TableCell>
@@ -104,8 +113,9 @@ const Page = () => {
                     ))}
                   </TableRow>
                 ))
-              : tableData.map((row) => (
-                  <TableRow key={row.id}>
+              : tableData.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.payment_type}</TableCell>
                     <TableCell>{row.customer.person_name}</TableCell>
                     <TableCell>{row.description}</TableCell>
