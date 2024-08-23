@@ -9,11 +9,10 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Skeleton from "@mui/material/Skeleton";
 import Grid from "@mui/material/Grid";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 import { suppliers, banks, supplierLedger } from "../../networkApi/Constants";
-
 import APICall from "../../networkApi/APICall";
-
 import DropDown from "@/components/generic/dropdown";
 
 const Page = () => {
@@ -36,9 +35,7 @@ const Page = () => {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const [activeTab, setActiveTab] = useState("tab1");
-
   const [tablePartyData, setPartyData] = useState([]);
-
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -50,7 +47,6 @@ const Page = () => {
     try {
       const response = await api.getDataWithToken(suppliers);
       const data = response.data;
-
       if (Array.isArray(data)) {
         const formattedData = data.map((supply) => ({
           label: supply.person_name,
@@ -117,15 +113,81 @@ const Page = () => {
     }));
   };
 
+  const validateForm = () => {
+    const {
+      sup_id,
+      payment_type,
+      cash_amount,
+      cheque_no,
+      cheque_date,
+      cheque_amount,
+      bank_id,
+      description,
+    } = formData;
+
+    if (!sup_id) {
+      Swal.fire("Error", "Supplier is required", "error");
+      return false;
+    }
+
+    if (payment_type === "cash" && !cash_amount) {
+      Swal.fire("Error", "Cash amount is required for cash payment", "error");
+      return false;
+    }
+
+    if (payment_type === "cash" && !description) {
+      Swal.fire("Error", "Description is required for cash payment", "error");
+      return false;
+    }
+
+    if (payment_type === "cheque" || payment_type === "both") {
+      if (!bank_id) {
+        Swal.fire(
+          "Error",
+          "Bank selection is required for cheque payment",
+          "error"
+        );
+        return false;
+      }
+      if (!cheque_no) {
+        Swal.fire("Error", "Cheque number is required", "error");
+        return false;
+      }
+      if (!cheque_date) {
+        Swal.fire("Error", "Cheque date is required", "error");
+        return false;
+      }
+      if (!cheque_amount) {
+        Swal.fire("Error", "Cheque amount is required", "error");
+        return false;
+      }
+
+      if (!description) {
+        Swal.fire("Error", "Description is required", "error");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setLoadingSubmit(true);
     try {
       const response = await api.postDataWithToken(supplierLedger, formData);
       console.log("Success:", response);
-      router.push('/outflow'); 
+      Swal.fire("Success", "Payments Added!", "success");
+      router.push("/outflow");
     } catch (error) {
       console.error("Error:", error);
+      Swal.fire(
+        "Error",
+        "An error occurred while submitting the payment",
+        "error"
+      );
     } finally {
       setLoadingSubmit(false);
     }
@@ -143,7 +205,11 @@ const Page = () => {
                 title="Select Supplier"
                 options={tablePartyData}
                 onChange={handleDropdownChange}
-                value={tablePartyData.find(option => option.id === formData.sup_id) || null}
+                value={
+                  tablePartyData.find(
+                    (option) => option.id === formData.sup_id
+                  ) || null
+                }
                 name="sup_id"
               />
             </div>

@@ -21,8 +21,12 @@ import APICall from "../../networkApi/APICall";
 
 import DropDown from "@/components/generic/dropdown";
 
+import { useRouter } from "next/navigation";
+
 const Page = () => {
   const api = new APICall();
+
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     buyer_id: "",
@@ -129,8 +133,11 @@ const Page = () => {
       let response;
       if (formData.payment_type === "cash") {
         response = await api.postDataWithToken(buyerLedger, formData);
+        alert("Your Data is added!")
+        router.push("/inflow");
       } else if (formData.payment_type === "cheque") {
         response = await api.postDataWithToken(bankCheque, formData);
+        router.push("/inflow");
       } else {
         throw new Error("Invalid payment type");
       }

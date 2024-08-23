@@ -17,6 +17,8 @@ import { banks, expenseCat, expense } from "../../networkApi/Constants";
 
 import APICall from "../../networkApi/APICall";
 
+import Swal from "sweetalert2"; 
+
 import { useRouter } from "next/navigation";
 
 const ExpensePayments = () => {
@@ -124,12 +126,73 @@ const ExpensePayments = () => {
     }));
   };
 
+  const validateForm = () => {
+    const {
+      expense_category_id,
+      payment_type,
+      cash_amount,
+      cheque_no,
+      cheque_date,
+      cheque_amount,
+      bank_id,
+      description,
+    } = formData;
+
+    if (!expense_category_id) {
+      Swal.fire("Error", "Expense Category is required", "error");
+      return false;
+    }
+
+    if (payment_type === "cash" && !cash_amount) {
+      Swal.fire("Error", "Cash amount is required for cash payment", "error");
+      return false;
+    }
+
+    if (payment_type === "cash" && !description) {
+      Swal.fire("Error", "Description is required for cash payment", "error");
+      return false;
+    }
+
+    if (payment_type === "cheque" || payment_type === "both") {
+      if (!bank_id) {
+        Swal.fire(
+          "Error",
+          "Bank selection is required for cheque payment",
+          "error"
+        );
+        return false;
+      }
+      if (!cheque_no) {
+        Swal.fire("Error", "Cheque number is required", "error");
+        return false;
+      }
+      if (!cheque_date) {
+        Swal.fire("Error", "Cheque date is required", "error");
+        return false;
+      }
+      if (!cheque_amount) {
+        Swal.fire("Error", "Cheque amount is required", "error");
+        return false;
+      }
+
+      if (!description) {
+        Swal.fire("Error", "Description is required", "error");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setLoadingSubmit(true);
     try {
       const response = await api.postDataWithToken(expense, formData);
       console.log("Success:", response);
+      alert("Expenses Added!");
       router.push("/outflow");
     } catch (error) {
       console.error("Error:", error);

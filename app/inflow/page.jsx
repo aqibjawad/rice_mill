@@ -66,6 +66,7 @@ const Page = () => {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
+              <TableCell>Sr No</TableCell>
               <TableCell>Payment Type</TableCell>
               <TableCell>Person</TableCell>
               <TableCell>Description</TableCell>
@@ -91,8 +92,9 @@ const Page = () => {
                   </TableRow>
                 ))
               : // Actual data
-                tableData.map((row) => (
-                  <TableRow key={row.id}>
+                tableData.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.payment_type}</TableCell>
                     <TableCell>{row.customer.person_name}</TableCell>
                     <TableCell>{row.description}</TableCell>
