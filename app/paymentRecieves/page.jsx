@@ -7,25 +7,16 @@ import MultilineInput from "../../components/generic/MultilineInput";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Skeleton from "@mui/material/Skeleton";
-import axios from "axios";
 import Grid from "@mui/material/Grid";
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
-import {
-  buyer,
-  banks,
-  buyerLedger,
-  bankCheque,
-} from "../../networkApi/Constants";
-
+import { buyer, banks, buyerLedger, bankCheque } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
-
 import DropDown from "@/components/generic/dropdown";
-
 import { useRouter } from "next/navigation";
 
 const Page = () => {
   const api = new APICall();
-
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -33,7 +24,6 @@ const Page = () => {
     payment_type: "",
     description: "",
     cash_amount: "",
-
     bank_id: "",
     cheque_no: "",
     cheque_date: "",
@@ -43,12 +33,8 @@ const Page = () => {
   const [tableBankData, setTableBankData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-
-  const [activeTab, setActiveTab] = useState("tab1");
-
+  const [activeTab, setActiveTab] = useState("cash");
   const [tablePartyData, setPartyData] = useState([]);
-
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -59,7 +45,6 @@ const Page = () => {
     try {
       const response = await api.getDataWithToken(buyer);
       const data = response.data;
-
       if (Array.isArray(data)) {
         const formattedData = data.map((supplier) => ({
           label: supplier.person_name,
@@ -90,7 +75,7 @@ const Page = () => {
         throw new Error("Fetched data is not an array");
       }
     } catch (error) {
-      setError(error.message);
+      console.error("Error fetching bank data:", error.message);
     } finally {
       setLoading(false);
     }
@@ -126,17 +111,58 @@ const Page = () => {
     }));
   };
 
+  const validateForm = () => {
+    const { buyer_id, payment_type, cash_amount, cheque_no, cheque_date, cheque_amount, bank_id } = formData;
+
+    if (!buyer_id) {
+      Swal.fire('Validation Error', 'Buyer is required', 'error');
+      return false;
+    }
+
+    if (payment_type === "cash") {
+      if (!cash_amount || isNaN(cash_amount) || parseFloat(cash_amount) <= 0) {
+        Swal.fire('Validation Error', 'Valid cash amount is required', 'error');
+        return false;
+      }
+    } else if (payment_type === "cheque") {
+      if (!bank_id) {
+        Swal.fire('Validation Error', 'Bank selection is required for cheque payment', 'error');
+        return false;
+      }
+      if (!cheque_no) {
+        Swal.fire('Validation Error', 'Cheque number is required', 'error');
+        return false;
+      }
+      if (!cheque_date) {
+        Swal.fire('Validation Error', 'Cheque date is required', 'error');
+        return false;
+      }
+      if (!cheque_amount || isNaN(cheque_amount) || parseFloat(cheque_amount) <= 0) {
+        Swal.fire('Validation Error', 'Valid cheque amount is required', 'error');
+        return false;
+      }
+    } else {
+      Swal.fire('Validation Error', 'Invalid payment type', 'error');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setLoadingSubmit(true);
     try {
       let response;
       if (formData.payment_type === "cash") {
         response = await api.postDataWithToken(buyerLedger, formData);
-        alert("Your Data is added!")
+        Swal.fire('Success', 'Your data has been added!', 'success');
         router.push("/inflow");
       } else if (formData.payment_type === "cheque") {
         response = await api.postDataWithToken(bankCheque, formData);
+        Swal.fire('Success', 'Your data has been added!', 'success');
         router.push("/inflow");
       } else {
         throw new Error("Invalid payment type");
@@ -144,13 +170,15 @@ const Page = () => {
       console.log("Success:", response);
     } catch (error) {
       console.error("Error:", error);
+      Swal.fire('Error', 'An error occurred while submitting the payment', 'error');
     } finally {
       setLoadingSubmit(false);
     }
   };
+
   return (
     <div>
-      <div className={styles.recievesHead}>Add Amount Recieves</div>
+      <div className={styles.recievesHead}>Add Amount Receives</div>
       <div>
         <Grid container spacing={2} className="mt-10">
           <Grid item xs={12} md={6}>
@@ -162,7 +190,7 @@ const Page = () => {
                   title="Select Buyer"
                   options={tablePartyData}
                   onChange={handleDropdownChange}
-                  value={formData.buyer_id}
+                  value={tablePartyData.find(option => option.id === formData.buyer_id) || null}
                   name="buyer_id"
                 />
               </div>
@@ -203,7 +231,7 @@ const Page = () => {
           </div>
 
           <div className={styles.tabPaymentContent}>
-            {activeTab === "cheque" || activeTab === "both" ? (
+            {(activeTab === "cheque" || activeTab === "both") && (
               <Grid container spacing={2} className="mt-10">
                 <Grid item xs={12} md={4} className="mt-5">
                   <Autocomplete
@@ -250,7 +278,7 @@ const Page = () => {
                   />
                 </Grid>
               </Grid>
-            ) : null}
+            )}
 
             <Grid className="mt-5" item xs={12} md={4} lg={8}>
               <MultilineInput
