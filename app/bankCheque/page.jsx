@@ -67,7 +67,6 @@ const Page = () => {
               <TableCell>Bank Name</TableCell>
               <TableCell>No of Cheque</TableCell>
               <TableCell>Amount</TableCell>
-              <TableCell>Result</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>

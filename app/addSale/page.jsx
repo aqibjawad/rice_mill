@@ -59,6 +59,7 @@ const Page = () => {
   const [saleData, setSaleDetails] = useState([]);
 
   const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [loadingCompleteBill, setLoadingCompleteBill] = useState(false); // New loading state
 
   const [dropdownValues, setDropdownValues] = useState({
     buyer_id: null,
@@ -203,6 +204,7 @@ const Page = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    setLoadingCompleteBill(true); // Set loading state to true when starting
 
     const bilObj = { sale_book_id: refList.id };
 
@@ -240,7 +242,7 @@ const Page = () => {
         confirmButtonText: "Okay",
       });
     } finally {
-      setLoadingSubmit(false);
+      setLoadingCompleteBill(false); // Set loading state to false when done
     }
   };
 
@@ -301,7 +303,7 @@ const Page = () => {
           </Grid>
 
           <div className={styles.saleSec}>
-            <div className={styles.itemBill} s tyle={{ marginBottom: "2rem" }}>
+            <div className={styles.itemBill} style={{ marginBottom: "2rem" }}>
               Add Items in bill
             </div>
 
@@ -396,9 +398,6 @@ const Page = () => {
                   <TableCell>{item.quantity}</TableCell>
                   <TableCell>{item.price}</TableCell>
                   <TableCell>{item.total_amount}</TableCell>
-                  <TableCell>
-                    {/* Add action buttons here if needed */}
-                  </TableCell>
                 </TableRow>
               ))}
 
@@ -417,8 +416,13 @@ const Page = () => {
           type="submit"
           className={styles.addItemBtn}
           onClick={handleUpdate}
+          disabled={loadingCompleteBill}
         >
-          Complete Your Bill
+          {loadingCompleteBill ? (
+            <CircularProgress color="inherit" size={24} />
+          ) : (
+            "Complete Your Bill"
+          )}
         </button>
       </Grid>
     </Grid>
