@@ -26,6 +26,10 @@ import {
   Paper,
 } from "@mui/material";
 
+// Define the conversion constants
+const MUND_TO_KG = 40; // 1 mund equals 40 kg
+const PRICE_PER_MUND = 2000; // Price for 1 mund
+
 const Page = () => {
   const api = new APICall();
   const router = useRouter();
@@ -66,6 +70,11 @@ const Page = () => {
     pro_id: null,
     packing_id: null,
   });
+
+  const [weight, setWeight] = useState("");
+  const [price, setPrice] = useState("");
+  const [munds, setMunds] = useState(""); // State to store calculated Munds
+  const [kgs, setKgs] = useState(""); // State to store calculated Munds
 
   useEffect(() => {
     fetchSuppliers();
@@ -157,6 +166,11 @@ const Page = () => {
       ...prevState,
       [name]: value,
     }));
+
+    if (name === "quantity" || name === "price") {
+      calculatePrice(value);
+      calculateMunds(value);
+    }
   };
 
   const handleDropdownChange = (name, selectedOption) => {
@@ -171,15 +185,46 @@ const Page = () => {
     }));
   };
 
+  const calculateMunds = (weight) => {
+    const weightInKg = parseFloat(weight);
+    if (isNaN(weightInKg)) {
+      setMunds("");
+      return;
+    }
+
+    const fullMunds = Math.floor(weightInKg / MUND_TO_KG);
+    const remainderKg = weightInKg % MUND_TO_KG;
+
+    setMunds(`${fullMunds}`);
+
+    setKgs(`${remainderKg}`);
+  };
+
+  const calculatePrice = (weight) => {
+    const weightInKg = parseFloat(weight);
+    if (isNaN(weightInKg)) {
+      setPrice("");
+      return;
+    }
+
+    const fullMunds = Math.floor(weightInKg / MUND_TO_KG);
+    const remainderKg = weightInKg % MUND_TO_KG;
+
+    const fullMundPrice = fullMunds * PRICE_PER_MUND;
+    const remainderMundPrice = (remainderKg / MUND_TO_KG) * PRICE_PER_MUND;
+
+    setPrice((fullMundPrice + remainderMundPrice).toFixed(2));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoadingSubmit(true);
 
     try {
-      const response = await api.postFormDataWithToken(
-        `${saleBook}/add_item`,
-        formData
-      );
+      const response = await api.postFormDataWithToken(`${saleBook}/add_item`, {
+        ...formData,
+        price,
+      });
 
       setSaleDetails(response.data.details);
 
@@ -193,7 +238,7 @@ const Page = () => {
       console.error("Error:", error.message);
       Swal.fire({
         title: "Error!",
-        text: `${error.message}`, // Use template literals correctly here
+        text: `${error.message}`,
         icon: "error",
         confirmButtonText: "Okay",
       });
@@ -319,34 +364,43 @@ const Page = () => {
               </Grid>
 
               <Grid className="mt-5" item xs={12}>
-                {loadingPackings ? (
-                  <Skeleton variant="rectangular" width="100%" height={56} />
-                ) : (
-                  <DropDown
-                    title="Select Packings"
-                    options={packingList}
-                    onChange={handleDropdownChange}
-                    value={dropdownValues.packing_id}
-                    name="packing_id"
-                  />
-                )}
-              </Grid>
-
-              <Grid className="mt-5" item xs={12}>
                 <InputWithTitle
-                  title={"Enter Unit Price"}
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
+                  title={"Enter Weight in KG"}
+                  name="quantity"
+                  value={weight}
+                  onChange={(e) => {
+                    setWeight(e.target.value);
+                    handleInputChange(e);
+                  }}
+                  type="number"
                 />
               </Grid>
 
-              <Grid className="mt-5" item xs={12}>
+              <Grid item xs={12} sm={6}>
                 <InputWithTitle
-                  title={"Enter quantity"}
-                  name="quantity"
-                  value={formData.quantity}
-                  onChange={handleInputChange}
+                  title="Weight in Munds"
+                  name="pounds"
+                  value={munds}
+                  type="text"
+                  readOnly
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <InputWithTitle
+                  title="Weight in Kilograms"
+                  name="kilograms"
+                  value={kgs}
+                  type="number"
+                  readOnly
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <InputWithTitle
+                  title={"Calculated Price"}
+                  name="price"
+                  value={price}
+                  readOnly
                 />
               </Grid>
 
@@ -358,6 +412,7 @@ const Page = () => {
                   onChange={handleInputChange}
                 />
               </Grid>
+
               <button
                 type="submit"
                 className={styles.addItemBtn}
