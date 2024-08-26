@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Box, Modal, Skeleton, Typography } from "@mui/material";
+import { Box, Modal, Skeleton, Typography, CircularProgress } from "@mui/material";
 import { packings, products, stocks } from "@/networkApi/Constants";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -30,6 +30,8 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
 
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const api = new APICall();
 
@@ -169,6 +171,7 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
 
     setIsLoading(true);
     setError("");
+    setIsSubmitting(true);
 
     try {
       let data;
@@ -328,13 +331,24 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
             {error}
           </Typography>
         )}
-        <div className="mt-10">
-          <PrimaryButton
-            onClick={handleSubmit}
-            title={editingData ? "Update Item" : "Add Item"}
-            disabled={isLoading}
-          />
-        </div>
+          <div style={{ flex: 1, marginRight: "10px" }}>
+            <button
+              className={styles.saveBtn}
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {isSubmitting ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Save"
+              )}
+            </button>
+          </div>
       </Box>
     </Modal>
   );

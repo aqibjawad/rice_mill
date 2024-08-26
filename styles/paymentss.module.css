@@ -110,3 +110,21 @@
   text-align: center;
   color: white;
 }
+
+.saveBtn {
+  width: 100%;
+  height: 47px;
+  padding: 14px 58px;
+  border-radius: 35px;
+  background: #316aff;
+  color: white;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18.75px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+}

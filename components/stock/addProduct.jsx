@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect } from "react";
 import { Modal, Box, CircularProgress } from "@mui/material";
 import styles from "../../styles/product.module.css";
@@ -23,6 +22,7 @@ const style = {
 };
 
 const AddProduct = ({ open, handleClose, editData = null }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const api = new APICall();
   const [sendingData, setSendingData] = useState(false);
   const [formData, setFormData] = useState({
@@ -60,6 +60,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     if (!formData.product_name.trim()) {
       Swal.fire({
@@ -68,6 +69,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
         icon: "error",
         confirmButtonText: "OK",
       });
+      setIsSubmitting(false);
       return;
     }
 
@@ -78,6 +80,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
         icon: "error",
         confirmButtonText: "OK",
       });
+      setIsSubmitting(false);
       return;
     }
 
@@ -85,8 +88,6 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
     for (const key in formData) {
       data.append(key, formData[key]);
     }
-
-    setSendingData(true);
 
     try {
       let response;
@@ -98,7 +99,6 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
         response = await api.postFormDataWithToken(url, formData);
       }
 
-      handleClose();
       Swal.fire({
         title: "Success!",
         text: `Product has been ${
@@ -107,6 +107,8 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
         icon: "success",
         confirmButtonText: "OK",
       });
+
+      handleClose(); // Close modal after success
     } catch (error) {
       console.error("An error occurred", error);
       Swal.fire({
@@ -116,7 +118,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
         confirmButtonText: "OK",
       });
     } finally {
-      setSendingData(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -175,20 +177,29 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
           style={{ display: "flex", justifyContent: "space-between" }}
         >
           <div style={{ flex: 1, marginRight: "10px" }}>
-            <div className={styles.saveBtn} onClick={handleClose}>
+            <div className={styles.cancelBtn} onClick={handleClose}>
               Cancel
             </div>
           </div>
-          <div style={{ flex: 1, marginLeft: "10px" }}>
-            <div className={styles.editBtn} onClick={handleSubmit}>
-              {sendingData ? (
-                <CircularProgress color="inherit" size={20} />
+          <div style={{ flex: 1, marginRight: "10px" }}>
+            <button
+              className={styles.saveBtn}
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {isSubmitting ? (
+                <CircularProgress size={24} color="inherit" />
               ) : editData ? (
                 "Update"
               ) : (
                 "Save"
               )}
-            </div>
+            </button>
           </div>
         </div>
       </Box>

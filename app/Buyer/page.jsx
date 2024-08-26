@@ -118,7 +118,7 @@ const Page = () => {
                 <TableCell>Contact</TableCell>
                 <TableCell>Address</TableCell>
                 <TableCell>Firm Name</TableCell>
-                <TableCell>Opening Balance</TableCell>
+                <TableCell>Current Balance</TableCell>
                 <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
@@ -150,7 +150,7 @@ const Page = () => {
                     <TableCell>{row.contact}</TableCell>
                     <TableCell>{row.address}</TableCell>
                     <TableCell>{row.firm_name}</TableCell>
-                    <TableCell>{row.opening_balance}</TableCell>
+                    <TableCell>{row.current_balance}</TableCell>
                     <TableCell>
                       <div className={styles.iconContainer}>
                         <div

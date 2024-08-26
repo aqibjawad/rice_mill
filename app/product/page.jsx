@@ -26,15 +26,18 @@ const Page = () => {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingData, setEditingData] = useState(null);
 
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setEditingData(null);
+    fetchData(); // Refresh the data after closing the modal
+  };
 
   const handleEdit = (row) => {
     setEditingData(row);
-    setIsModalOpen(true);
+    setOpen(true);
   };
 
   useEffect(() => {
@@ -45,9 +48,6 @@ const Page = () => {
     try {
       const response = await api.getDataWithToken(products);
       const data = response.data;
-
-      // Debug: Log the data fetched from the API
-      console.log("Fetched data:", data);
 
       if (Array.isArray(data)) {
         setTableData(data);
@@ -76,7 +76,7 @@ const Page = () => {
         confirmButtonText: "OK",
       });
     } catch (error) {
-      console.error("Error deleting Stock:", error);
+      console.error("Error deleting product:", error);
 
       Swal.fire({
         title: "Error!",
@@ -85,12 +85,6 @@ const Page = () => {
         confirmButtonText: "OK",
       });
     }
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingData(null);
-    fetchData(); // Refresh the data after closing the modal
   };
 
   return (
@@ -108,15 +102,12 @@ const Page = () => {
                     Add
                   </div>
                 </Grid>
-
                 <Grid lg={3} item xs={6} sm={6} md={3}>
                   <div className={styles.rightItem}>date</div>
                 </Grid>
-
                 <Grid item lg={3} xs={6} sm={6} md={3}>
                   <div className={styles.rightItem}>view</div>
                 </Grid>
-
                 <Grid item lg={3} xs={6} sm={6} md={3}>
                   <div className={styles.rightItemExp}>export</div>
                 </Grid>
@@ -179,7 +170,7 @@ const Page = () => {
       </div>
       <AddProduct
         open={open}
-        handleClose={handleCloseModal}
+        handleClose={handleClose}
         editData={editingData}
       />
     </div>

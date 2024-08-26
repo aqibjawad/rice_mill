@@ -9,15 +9,38 @@
 .saveBtn {
   width: 100%;
   height: 47px;
-  padding: 14px 58px 14px 58px;
-  gap: 10px;
+  padding: 14px 58px;
   border-radius: 35px;
-  border: 1px;
-  background: #ffffff;
-  border: 1px solid #e3e3e3;
-  text-align: center;
+  background: #316aff;
+  color: white;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
   line-height: 18.75px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
+.cancelBtn {
+  width: 100%;
+  height: 47px;
+  padding: 14px 58px;
+  border-radius: 35px;
+  background: white;
+  color: black;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18.75px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid black;
+}
+
 
 .inflowWrapper {
   flex: 6;
