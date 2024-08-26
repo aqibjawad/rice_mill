@@ -190,10 +190,10 @@ const Page = () => {
         confirmButtonText: "OK",
       });
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error:", error.message);
       Swal.fire({
         title: "Error!",
-        text: "Something went wrong.",
+        text: `${error.message}`, // Use template literals correctly here
         icon: "error",
         confirmButtonText: "Okay",
       });
@@ -246,13 +246,9 @@ const Page = () => {
     }
   };
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
   const calculateTotalAmount = () => {
     const total = saleData.reduce(
-      (total, row) => total + parseFloat(row.price),
+      (total, row) => total + parseFloat(row.total_amount),
       0
     );
     return total.toLocaleString("en-IN", {
