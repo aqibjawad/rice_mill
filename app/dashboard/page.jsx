@@ -5,10 +5,7 @@ import Grid from "@mui/material/Grid";
 import Inflow from "./inflow";
 import ExpenseCard from "./expenseCard";
 import OutFlow from "./outFlow";
-import Ledger from "./ledgaer";
-import Expense from "./expense";
 import Stock from "./stock";
-import Product from "./product";
 
 import withAuth from '@/utils/withAuth'; 
 import { useRouter } from 'next/navigation';

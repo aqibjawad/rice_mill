@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
 import Buttons from "../../components/buttons";
-import DateFilters from "../../components/generic/DateFilter";
 
 const Page = () => {
   const api = new APICall();
@@ -82,9 +81,8 @@ const Page = () => {
       <Buttons
         leftSectionText="Amount Receives"
         addButtonLink="/paymentReceives"
+        onDateChange={handleDateChange} // Pass the handler
       />
-
-      <DateFilters onDateChange={handleDateChange} />
 
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
