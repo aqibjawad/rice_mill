@@ -37,6 +37,9 @@ const SideBar = () => {
     window.location.href = "/";
   };
 
+  const userInfoString = localStorage.getItem("user");
+  console.log(userInfoString);
+  
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: <FaHome /> },
 
@@ -91,7 +94,7 @@ const SideBar = () => {
             <img className={styles.userPic} src="/userPic.png" />
           </div>
 
-          <div className={styles.userName}>Sarah Webb</div>
+          <div className={styles.userName}>{userInfoString?.name}</div>
 
           <div className={styles.userEmail}>sarahweb456@gmail.com</div>
 

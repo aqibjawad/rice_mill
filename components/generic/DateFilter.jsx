@@ -12,20 +12,49 @@ const DateFilters = ({ onOptionChange, onDateChange }) => {
 
   const handleOptionClick = (option) => {
     setSelectedOption(option);
+    let start, end;
+
+    switch (option) {
+      case "today":
+        start = end = new Date().toISOString().split("T")[0];
+        break;
+      case "This Month":
+        start = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+          .toISOString()
+          .split("T")[0];
+        end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+          .toISOString()
+          .split("T")[0];
+        break;
+      case "This Year":
+        start = new Date(new Date().getFullYear(), 0, 1)
+          .toISOString()
+          .split("T")[0];
+        end = new Date(new Date().getFullYear(), 11, 31)
+          .toISOString()
+          .split("T")[0];
+        break;
+      case "dateRange":
+        // Don't set dates here, let the user pick them
+        break;
+      default:
+        console.error("Unknown option selected");
+        return;
+    }
+
+    setStartDate(start);
+    setEndDate(end);
+    setTitle(option);
 
     if (option !== "dateRange") {
-      setStartDate(null);
-      setEndDate(null);
       handleClose();
-      if (typeof onOptionChange === "function") {
-        onOptionChange(option, null, null);
+      if (typeof onDateChange === "function") {
+        onDateChange(start, end);
       } else {
-        console.error("onOptionChange is not a function");
+        console.error("onDateChange is not a function");
       }
     }
-    setTitle(option);
   };
-
   const handleStartDateChange = (event) => {
     const date = event.target.value;
     setStartDate(date);
