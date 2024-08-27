@@ -125,9 +125,42 @@ const AddPurchaseContent = () => {
 
     // Set remaining amount (allow negative values)
     setRemainingAmount(remaining.toFixed(2));
+  }, [
+    formData.quantity,
+    formData.price,
+    formData.cash_amount,
+    setTotalAmount,
+    setRemainingAmount,
+  ]);
 
-  }, [formData.quantity, formData.price, formData.cash_amount, setTotalAmount, setRemainingAmount]);
+  useEffect(() => {
+    const netWeight = parseFloat(formData.net_weight) || 0;
+    const firstWeight = parseFloat(formData.first_weight) || 0;
+    const secondWeight = parseFloat(formData.second_weight) || 0;
+    const bardaanaDeduction = parseFloat(formData.bardaanaDeduction) || 0;
+    const bardaanaQuantity = parseFloat(formData.bardaanaQuantity) || 0;
 
+    const finalWeight =
+      netWeight - firstWeight - secondWeight - bardaanaDeduction;
+    setFormData((prevData) => ({
+      ...prevData,
+      final_weight: finalWeight.toFixed(2), // Format to 2 decimal places
+    }));
+
+    const weightPerBag = finalWeight
+      ? ( finalWeight/ bardaanaQuantity).toFixed(2)
+      : 0;
+    setFormData((prevData) => ({
+      ...prevData,
+      weightPerBag,
+    }));
+  }, [
+    formData.net_weight,
+    formData.first_weight,
+    formData.second_weight,
+    formData.bardaanaDeduction,
+    formData.bardaanaQuantity,
+  ]);
   const fetchSuppliers = async () => {
     try {
       const response = await api.getDataWithToken(suppliers);
@@ -286,18 +319,6 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        {selectedBardaana && selectedBardaana.id === 1 && (
-          <Grid className="mt-5" item xs={12} sm={4}>
-            <InputWithTitle
-              title={"Bardaana Quantity"}
-              placeholder={"Enter Bardaana Quantity"}
-              name="bardaanaQuantity"
-              value={formData.bardaanaQuantity}
-              onChange={handleInputChange}
-            />
-          </Grid>
-        )}
-
         {activeTab !== "cash" && (
           <Grid className="mt-10" item xs={12} sm={4}>
             <InputWithTitle
@@ -322,8 +343,18 @@ const AddPurchaseContent = () => {
 
         <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
-            title={"First Weight"}
-            placeholder={"First Weight"}
+            title={"Net Weight"}
+            placeholder={"Net Weight"}
+            name="net_weight"
+            value={formData.net_weight}
+            onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid className="mt-10" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Khoot"}
+            placeholder={"Khoot"}
             name="first_weight"
             value={formData.first_weight}
             onChange={handleInputChange}
@@ -332,20 +363,10 @@ const AddPurchaseContent = () => {
 
         <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
-            title={"Second Weight"}
-            placeholder={"Second Weight"}
+            title={"Chungi"}
+            placeholder={"Chungi"}
             name="second_weight"
             value={formData.second_weight}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Net Weight"}
-            placeholder={"Net Weight"}
-            name="net_weight"
-            value={formData.net_weight}
             onChange={handleInputChange}
           />
         </Grid>
@@ -366,7 +387,27 @@ const AddPurchaseContent = () => {
             placeholder={"Final Weight"}
             name="final_weight"
             value={formData.final_weight}
+            readOnly
+          />
+        </Grid>
+
+        <Grid className="mt-5" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Bardaana Quantity"}
+            placeholder={"Enter Bardaana Quantity"}
+            name="bardaanaQuantity"
+            value={formData.bardaanaQuantity}
             onChange={handleInputChange}
+          />
+        </Grid>
+
+        <Grid className="mt-5" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Weight Per Bag"}
+            placeholder={"Enter Weight Per Bag"}
+            name="weightPerBag"
+            value={formData.weightPerBag}
+            readOnly
           />
         </Grid>
 
