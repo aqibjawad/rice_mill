@@ -412,7 +412,7 @@ const Page = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Product</TableCell>
-                <TableCell>Packing</TableCell>
+                <TableCell>Weight</TableCell>
                 <TableCell>Price</TableCell>
                 <TableCell>Amount</TableCell>
               </TableRow>
@@ -421,7 +421,7 @@ const Page = () => {
               {saleData?.map((item, index) => (
                 <TableRow key={index}>
                   <TableCell>{item.product_name}</TableCell>
-                  <TableCell>{`${item.packing_size} ${item.packing_unit}`}</TableCell>
+                  <TableCell>{`${item.weight}`}</TableCell>
                   <TableCell>{item.price}</TableCell>
                   <TableCell>{item.total_amount}</TableCell>
                 </TableRow>
