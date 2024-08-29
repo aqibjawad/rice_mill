@@ -11,6 +11,19 @@ import Tabs from "./tabs";
 import Swal from "sweetalert2";
 import { purchaseBook, suppliers, products } from "../../networkApi/Constants";
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+
+const MUND_TO_KG = 40; // 1 mund equals 40 kg
+const PRICE_PER_MUND = 2000; // Price for 1 mund
+
 const AddPurchaseContent = () => {
   const router = useRouter();
   const api = new APICall();
@@ -20,19 +33,19 @@ const AddPurchaseContent = () => {
     date: "",
     pro_id: "",
     quantity: "",
-    packing_type: "",
-    bardaanaQuantity: "",
+    bardaana_type: "",
+    bardaana_quantity: "",
     truckNumber: "",
     freight: "",
-    price: "",
-    bankTax: "",
+    price_mann: "",
+    bank_tax: "",
     cash_amount: "",
     chequeNumber: "",
-    first_weight: "",
-    second_weight: "",
+    khoot: "",
+    chungi: "",
     net_weight: "",
     packing_weight: 1,
-    bardaanaDeduction: "",
+    bardaana_deduction: "",
     final_weight: "",
     payment_type: "cash",
   });
@@ -42,15 +55,14 @@ const AddPurchaseContent = () => {
       "sup_id",
       "date",
       "pro_id",
-      "quantity",
-      "packing_type",
+      "bardaana_type",
       "truckNumber",
-      "first_weight",
-      "second_weight",
+      "khoot",
+      "chungi",
       "net_weight",
       "final_weight",
       "freight",
-      "price",
+      "price_mann",
       "cash_amount",
     ];
 
@@ -82,7 +94,7 @@ const AddPurchaseContent = () => {
   const [dropdownValues, setDropdownValues] = useState({
     sup_id: null,
     pro_id: null,
-    packing_type: null,
+    bardaana_type: null,
   });
 
   const [productList, setProducts] = useState([]);
@@ -97,8 +109,9 @@ const AddPurchaseContent = () => {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const [totalAmount, setTotalAmount] = useState(0);
-
   const [remainingAmount, setRemainingAmount] = useState("0.00");
+  const [munds, setMunds] = useState("");
+  const [kgs, setKgs] = useState("");
 
   const bardaanaList = [
     { id: 1, label: "add" },
@@ -133,34 +146,53 @@ const AddPurchaseContent = () => {
     setRemainingAmount,
   ]);
 
+  const calculateMunds = (weight) => {
+    const weightInKg = parseFloat(weight);
+    if (isNaN(weightInKg)) {
+      setMunds("");
+      setKgs("");
+      return;
+    }
+
+    const fullMunds = Math.floor(weightInKg / MUND_TO_KG);
+    const remainderKg = weightInKg % MUND_TO_KG;
+
+    setMunds(fullMunds.toFixed(0));
+    setKgs(remainderKg.toFixed(2));
+  };
+
   useEffect(() => {
     const netWeight = parseFloat(formData.net_weight) || 0;
-    const firstWeight = parseFloat(formData.first_weight) || 0;
-    const secondWeight = parseFloat(formData.second_weight) || 0;
-    const bardaanaDeduction = parseFloat(formData.bardaanaDeduction) || 0;
-    const bardaanaQuantity = parseFloat(formData.bardaanaQuantity) || 0;
+    const firstWeight = parseFloat(formData.khoot) || 0;
+    const secondWeight = parseFloat(formData.chungi) || 0;
+    const bardaana_deduction = parseFloat(formData.bardaana_deduction) || 0;
+    const bardaana_quantity = parseFloat(formData.bardaana_quantity) || 0;
 
     const finalWeight =
-      netWeight - firstWeight - secondWeight - bardaanaDeduction;
+      netWeight - firstWeight - secondWeight - bardaana_deduction;
     setFormData((prevData) => ({
       ...prevData,
       final_weight: finalWeight.toFixed(2), // Format to 2 decimal places
     }));
 
     const weightPerBag = finalWeight
-      ? ( finalWeight/ bardaanaQuantity).toFixed(2)
+      ? (finalWeight / bardaana_quantity).toFixed(2)
       : 0;
     setFormData((prevData) => ({
       ...prevData,
       weightPerBag,
     }));
+
+    // Calculate munds and kgs based on final weight
+    calculateMunds(finalWeight);
   }, [
     formData.net_weight,
-    formData.first_weight,
-    formData.second_weight,
-    formData.bardaanaDeduction,
-    formData.bardaanaQuantity,
+    formData.khoot,
+    formData.chungi,
+    formData.bardaana_deduction,
+    formData.bardaana_quantity,
   ]);
+
   const fetchSuppliers = async () => {
     try {
       const response = await api.getDataWithToken(suppliers);
@@ -215,7 +247,7 @@ const AddPurchaseContent = () => {
     }));
 
     if (selectedOption) {
-      if (name === "packing_type") {
+      if (name === "bardaana_type") {
         setFormData((prev) => ({
           ...prev,
           [name]: selectedOption.label,
@@ -314,8 +346,8 @@ const AddPurchaseContent = () => {
             title="Select Bardaana"
             options={bardaanaList}
             onChange={handleDropdownChange}
-            value={dropdownValues.packing_type}
-            name="packing_type"
+            value={dropdownValues.bardaana_type}
+            name="bardaana_type"
           />
         </Grid>
 
@@ -355,8 +387,8 @@ const AddPurchaseContent = () => {
           <InputWithTitle
             title={"Khoot"}
             placeholder={"Khoot"}
-            name="first_weight"
-            value={formData.first_weight}
+            name="khoot"
+            value={formData.khoot}
             onChange={handleInputChange}
           />
         </Grid>
@@ -365,8 +397,8 @@ const AddPurchaseContent = () => {
           <InputWithTitle
             title={"Chungi"}
             placeholder={"Chungi"}
-            name="second_weight"
-            value={formData.second_weight}
+            name="chungi"
+            value={formData.chungi}
             onChange={handleInputChange}
           />
         </Grid>
@@ -375,8 +407,8 @@ const AddPurchaseContent = () => {
           <InputWithTitle
             title={"Bardaana Deduction"}
             placeholder={"Bardaana Deduction"}
-            name="bardaanaDeduction"
-            value={formData.bardaanaDeduction}
+            name="bardaana_deduction"
+            value={formData.bardaana_deduction}
             onChange={handleInputChange}
           />
         </Grid>
@@ -395,8 +427,8 @@ const AddPurchaseContent = () => {
           <InputWithTitle
             title={"Bardaana Quantity"}
             placeholder={"Enter Bardaana Quantity"}
-            name="bardaanaQuantity"
-            value={formData.bardaanaQuantity}
+            name="bardaana_quantity"
+            value={formData.bardaana_quantity}
             onChange={handleInputChange}
           />
         </Grid>
@@ -411,6 +443,47 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
+        {/* <Grid className="mt-5" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Enter Price Munds"}
+            placeholder={"Enter Price Munds"}
+            name="price_mann"
+            value={formData.price_mann}
+            onChange={handleInputChange}
+          />
+        </Grid> */}
+
+        <Grid className="mt-5" item xs={12} sm={4}>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Munds</TableCell>
+                  <TableCell>Kgs</TableCell>
+                  <TableCell>Price</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>{munds}</TableCell>
+                  <TableCell>{kgs}</TableCell>
+                  <TableCell>
+                    <Grid className="mt-5" item lg={12} xs={12} sm={4}>
+                      <InputWithTitle
+                        title={"Enter Price Munds"}
+                        placeholder={"Enter Price Munds"}
+                        name="price_mann"
+                        value={formData.price_mann}
+                        onChange={handleInputChange}
+                      />
+                    </Grid>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+
         <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
             title={"Freight"}
@@ -421,42 +494,12 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        <Grid className="mt-5" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Enter Quantity"}
-            placeholder={"Enter Quantity"}
-            name="quantity"
-            value={formData.quantity}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-5" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Enter Rate"}
-            placeholder={"Enter Rate"}
-            name="price"
-            value={formData.price}
-            onChange={handleInputChange}
-          />
-        </Grid>
-
-        <Grid className="mt-5" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Total Amount"}
-            placeholder={"Total Amount"}
-            name="price"
-            value={totalAmount.toFixed(2)}
-            disable
-          />
-        </Grid>
-
         <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
             title={"Bank Tax"}
             placeholder={"Bank Tax"}
-            name="bankTax"
-            value={formData.bankTax}
+            name="bank_tax"
+            value={formData.bank_tax}
             onChange={handleInputChange}
           />
         </Grid>

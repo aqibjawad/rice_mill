@@ -1,208 +1,137 @@
 .ledgerHead {
-    font-family: "regular";
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 36px;
-    text-align: left;
-
+  font-family: "regular";
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 36px;
+  text-align: left;
 }
 
 .saveBtn {
-    width: 100%;
-    height: 47px;
-    padding: 14px 58px 14px 58px;
-    gap: 10px;
-    border-radius: 35px;
-    background: #316AFF;
-    color: white;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
+  width: 100%;
+  height: 47px;
+  padding: 14px 58px 14px 58px;
+  gap: 10px;
+  border-radius: 35px;
+  background: #316aff;
+  color: white;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18.75px;
+  text-align: center;
 }
 
-.editBtn { 
-    width: 100%;
-    height: 47px;
-    padding: 14px 58px 14px 58px;
-    gap: 10px;
-    border-radius: 35px;
-    border: 1px;
-    background: #FFFFFF;
-    border: 1px solid #E3E3E3;
-    text-align: center;
-    line-height: 18.75px;
+.editBtn {
+  width: 100%;
+  height: 47px;
+  padding: 14px 58px 14px 58px;
+  gap: 10px;
+  border-radius: 35px;
+  border: 1px;
+  background: #ffffff;
+  border: 1px solid #e3e3e3;
+  text-align: center;
+  line-height: 18.75px;
 }
 
 .flexContainer {
-    display: flex;
+  display: flex;
 }
 
 .expenseCardWrapper {
-    flex: 1;
-    margin-right: 20px;
+  flex: 1;
+  margin-right: 20px;
 }
 
 .inflowWrapper {
-    flex: 6;
+  flex: 6;
 }
 
-
-
 .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    min-height: 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  min-height: 100px;
 }
 
 .leftSection {
-    font-family: "regular";
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 36px;
+  font-family: "regular";
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 36px;
+}
+
+.leftContact {
+  font-family: "regular";
+  font-size: 20px;
+  font-weight: 400;
+  margin-top: -1rem;
+  margin-bottom: 2rem;
 }
 
 .rightSection {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .rightItem {
-    width: Hug (62px)px;
-    height: Hug (32px)px;
-    padding: 6px 5px 6px 5px;
-    gap: 7px;
-    border-radius: 8px;
-    border: 1px;
-    margin-left: 20px;
-    font-family: "regular";
-    font-size: 16px;
-    border: 1px solid #E3E3E3;
-    padding: 10px;
-    font-family: "regular";
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 14.06px;
-    text-align: left;
-    color: #9A9A9A
+  width: Hug (62px) px;
+  height: Hug (32px) px;
+  padding: 6px 5px 6px 5px;
+  gap: 7px;
+  border-radius: 8px;
+  border: 1px;
+  margin-left: 20px;
+  font-family: "regular";
+  font-size: 16px;
+  border: 1px solid #e3e3e3;
+  padding: 10px;
+  font-family: "regular";
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14.06px;
+  text-align: left;
+  color: #9a9a9a;
 }
 
 .rightItemExp {
-    width: Hug (62px)px;
-    height: Hug (32px)px;
-    padding: 6px 5px 6px 5px;
-    gap: 7px;
-    border-radius: 8px;
-    border: 1px;
-    margin-left: 20px;
-    font-family: "regular";
-    font-size: 16px;
-    border: 1px solid #E3E3E3;
-    padding: 10px;
-    font-family: "regular";
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 14.06px;
-    text-align: left;
-    color: white;
-    background: #316AFF;
+  width: Hug (62px) px;
+  height: Hug (32px) px;
+  padding: 6px 5px 6px 5px;
+  gap: 7px;
+  border-radius: 8px;
+  border: 1px;
+  margin-left: 20px;
+  font-family: "regular";
+  font-size: 16px;
+  border: 1px solid #e3e3e3;
+  padding: 10px;
+  font-family: "regular";
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14.06px;
+  text-align: left;
+  color: white;
+  background: #316aff;
 }
 
 .tableSection {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #FFFFFF;
-    border-radius: 30px 30px;
-    padding: 20px;
-}
-
-.tableHeader,
-.tableRow {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    align-items: center;
-    gap: 1rem;
-}
-
-
-.tableRowData {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    align-items: center;
-    gap: 1rem;
-}
-
-.tableHeader {
-    background-color: #FFFFFF;
-    font-weight: bold;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.tableBody {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.tableRow {
-    border-bottom: 1px solid #E3E3E3
-}
-
-.tableHeader>div,
-.tableRow>div {
-    padding: 12px;
-    text-align: left;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    color: #9A9A9A
-}
-
-.tableRowData>div {
-    padding: 12px;
-    text-align: left;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 18.75px;
-    text-align: center;
-    color: #8E8E93
-}
-
-.tableRowData {
-
-    border-bottom: 1px solid #E3E3E3
-}
-
-
-.tableRow:last-child {
-    border-bottom: none;
-}
-
-.tableRow:last-child {
-    border-bottom: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #ffffff;
+  border-radius: 30px 30px;
+  padding: 20px;
 }
 
 .deleteButton {
-    color: #ff4d4f;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    width: 50px;
-    height: 50px;
-}
-
-.tableHeader,
-.tableRowData {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    align-items: center;
-    gap: 1rem;
+  color: #ff4d4f;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
 }
 
 .iconContainer {
@@ -211,22 +140,22 @@
 }
 
 .editButton {
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    width: 50px;
-    height: 50px;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
 }
 
-.ledgerDiv{
-    width: 100px;
-    height: 47px;
-    padding: 14px;
-    border-radius: 35px;
-    color: #316AFF;
-    font-family: "regular";
-    font-size: 16px;
-    font-weight: 500;
-    text-align: center;
-    justify-content: center;
+.ledgerDiv {
+  width: 100px;
+  height: 47px;
+  padding: 14px;
+  border-radius: 35px;
+  color: #316aff;
+  font-family: "regular";
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  justify-content: center;
 }

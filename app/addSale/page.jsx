@@ -38,9 +38,8 @@ const Page = () => {
     id: "",
     buyer_id: "",
     pro_id: "",
-    packing_id: "",
-    quantity: "",
-    price: "",
+    price_mann: "",
+    weight: "",
     truck_no: "",
     product_description: "",
   });
@@ -68,7 +67,6 @@ const Page = () => {
   const [dropdownValues, setDropdownValues] = useState({
     buyer_id: null,
     pro_id: null,
-    packing_id: null,
   });
 
   const [weight, setWeight] = useState("");
@@ -79,7 +77,6 @@ const Page = () => {
   useEffect(() => {
     fetchSuppliers();
     fetchProducts();
-    fetchPackings();
     fetchRef();
   }, []);
 
@@ -143,23 +140,6 @@ const Page = () => {
     }
   };
 
-  const fetchPackings = async () => {
-    try {
-      const response = await api.getDataWithToken(packings);
-      const list = response.data.map((item, index) => ({
-        label: `${item.packing_size} ${item.packing_unit}`,
-        index: index,
-        id: item.id,
-      }));
-      setPacking(list);
-    } catch (error) {
-      console.error("Error fetching packings:", error);
-      setError("Failed to fetch packings. Please try again.");
-    } finally {
-      setLoadingPackings(false);
-    }
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -167,9 +147,10 @@ const Page = () => {
       [name]: value,
     }));
 
-    if (name === "quantity" || name === "price") {
-      calculatePrice(value);
+    if (name === "weight") {
+      setWeight(value);
       calculateMunds(value);
+      calculatePrice(value);
     }
   };
 
@@ -189,6 +170,7 @@ const Page = () => {
     const weightInKg = parseFloat(weight);
     if (isNaN(weightInKg)) {
       setMunds("");
+      setKgs("");
       return;
     }
 
@@ -196,7 +178,6 @@ const Page = () => {
     const remainderKg = weightInKg % MUND_TO_KG;
 
     setMunds(`${fullMunds}`);
-
     setKgs(`${remainderKg}`);
   };
 
@@ -223,7 +204,7 @@ const Page = () => {
     try {
       const response = await api.postFormDataWithToken(`${saleBook}/add_item`, {
         ...formData,
-        price,
+        price: price,
       });
 
       setSaleDetails(response.data.details);
@@ -339,7 +320,7 @@ const Page = () => {
               defaultValue={`${refList.next_ref_no}`}
               value={formData.id}
               name="id"
-              readOnly={true}
+              readOnly
             />
           </Grid>
 
@@ -363,16 +344,12 @@ const Page = () => {
                 )}
               </Grid>
 
-              <Grid className="mt-5" item xs={12}>
+              <Grid item xs={12} sm={6} lg={12}>
                 <InputWithTitle
-                  title={"Enter Weight in KG"}
-                  name="quantity"
+                  title="Weight (kg)"
+                  name="weight"
                   value={weight}
-                  onChange={(e) => {
-                    setWeight(e.target.value);
-                    handleInputChange(e);
-                  }}
-                  type="number"
+                  onChange={handleInputChange}
                 />
               </Grid>
 
@@ -398,9 +375,9 @@ const Page = () => {
               <Grid item xs={12}>
                 <InputWithTitle
                   title={"Calculated Price"}
-                  name="price"
-                  value={price}
-                  readOnly
+                  name="price_mann"
+                  value={formData.price_mann}
+                  onChange={handleInputChange}
                 />
               </Grid>
 
@@ -436,7 +413,6 @@ const Page = () => {
               <TableRow>
                 <TableCell>Product</TableCell>
                 <TableCell>Packing</TableCell>
-                <TableCell>Quantity</TableCell>
                 <TableCell>Price</TableCell>
                 <TableCell>Amount</TableCell>
               </TableRow>
@@ -446,7 +422,6 @@ const Page = () => {
                 <TableRow key={index}>
                   <TableCell>{item.product_name}</TableCell>
                   <TableCell>{`${item.packing_size} ${item.packing_unit}`}</TableCell>
-                  <TableCell>{item.quantity}</TableCell>
                   <TableCell>{item.price}</TableCell>
                   <TableCell>{item.total_amount}</TableCell>
                 </TableRow>
