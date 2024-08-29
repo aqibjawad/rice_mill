@@ -1,0 +1,98 @@
+.invoiceContainer {
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.invoiceCompName {
+  font-family: "regular";
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 32px;
+  text-align: left;
+  color: #1a1c21;
+}
+
+.compAddress {
+  font-family: "regular";
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+  text-align: left;
+  color: #5e6470;
+}
+
+.img {
+  width: 63.61px;
+  height: 63.61px;
+  top: 26.57px;
+  left: 496.18px;
+}
+
+.custDetails {
+  margin-top: 1rem;
+  width: 100%;
+  top: 112px;
+  left: 40px;
+  border: 0.5px;
+  border: 0.5px solid #d7dae0;
+}
+
+.amount {
+  color: #5e6470;
+}
+
+.tableTotalRow {
+  /* background: #0E7669; */
+  height: 50px;
+  top: 1222px;
+  font-family: "regular";
+  font-size: 15px;
+  font-weight: 700;
+  text-align: end;
+  color: black;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  border-bottom: 0.5px solid #d7dae0;
+}
+.amountBorder {
+  top: 629px;
+  left: 356.79px;
+  gap: 48px;
+  /* border: 2px;
+  border-style: solid;
+  border-color: #7c4dff; */
+}
+
+.amountDue {
+  font-family: "regular";
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: right;
+  color: #7241fa;
+  padding-top: 0.5rem;
+  padding-right: 1rem;
+}
+
+.issueDate {
+  font-family: "regular";
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: left;
+}
+
+.border {
+  width: 80%;
+  top: 764px;
+  left: 40px;
+  border: 0.5px solid #d7dae0;
+  margin-top: 2rem;
+}
+
+@media print {
+  .invoiceContainer {
+    width: 100%;
+  }
+}
