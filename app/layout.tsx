@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import styles from "../styles/print.module.css"
 import RootLayoutClient from "./RootLayoutClient";
+import { PaymentProvider } from './paymentContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,9 +20,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <RootLayoutClient>
-          {children}
+        <PaymentProvider>
+          <RootLayoutClient>
+            {children}
           </RootLayoutClient>
+        </PaymentProvider>
       </body>
     </html>
   );
