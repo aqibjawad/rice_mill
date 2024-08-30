@@ -85,9 +85,7 @@ const AddSupplier = ({ open, handleClose, editData = null }) => {
     }else if (!formData.opening_balance.trim()) {
       alert("please enter supplier opening_balance")
       return;
-    } else(
-      alert("please enter description")
-    )
+    } 
 
 
     const data = new FormData();

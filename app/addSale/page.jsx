@@ -31,8 +31,9 @@ const MUND_TO_KG = 40; // 1 mund equals 40 kg
 const PRICE_PER_MUND = 2000; // Price for 1 mund
 
 const Page = () => {
-  const api = new APICall();
   const router = useRouter();
+
+  const api = new APICall();
 
   const [formData, setFormData] = useState({
     id: "",
@@ -209,6 +210,8 @@ const Page = () => {
 
       setSaleDetails(response.data.details);
 
+      localStorage.setItem("saleBookId", response.data.id);
+
       Swal.fire({
         title: "Success!",
         text: "Data Added.",
@@ -237,6 +240,8 @@ const Page = () => {
     try {
       const response = await api.postFormDataWithToken(`${saleBook}`, bilObj);
 
+      // localStorage.setItem('saleBookId', response.data.id);
+
       Swal.fire({
         title: "Success!",
         text: "Your Bill is Updated.",
@@ -244,7 +249,7 @@ const Page = () => {
         confirmButtonText: "OK",
       }).then((result) => {
         if (result.isConfirmed) {
-          router.back();
+          router.push("/invoice");
         }
       });
 
@@ -426,17 +431,13 @@ const Page = () => {
                   <TableCell>{item.total_amount}</TableCell>
                 </TableRow>
               ))}
-
-              <TableRow>
-                <TableCell colSpan={4}></TableCell>
-                <TableCell style={{ fontSize: "20px" }}>
-                  Total: {calculateTotalAmount()}
-                </TableCell>
-                <TableCell></TableCell>
-              </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
+
+        <div className={styles.tableTotalRow}>
+          Total: {calculateTotalAmount()}
+        </div>
 
         <button
           type="submit"

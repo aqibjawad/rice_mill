@@ -47,7 +47,7 @@
   height: 50px;
   top: 1222px;
   font-family: "regular";
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 700;
   text-align: end;
   color: black;
@@ -59,20 +59,17 @@
   top: 629px;
   left: 356.79px;
   gap: 48px;
-  /* border: 2px;
-  border-style: solid;
-  border-color: #7c4dff; */
 }
 
 .amountDue {
   font-family: "regular";
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 14px;
   text-align: right;
   color: #7241fa;
   padding-top: 0.5rem;
-  padding-right: 1rem;
+  padding-right: 3rem;
 }
 
 .issueDate {
@@ -91,8 +88,21 @@
   margin-top: 2rem;
 }
 
+.buyerName {
+  font-family: "regular";
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: left;
+  color: #5e6470;
+  margin-top: 1rem;
+}
+
 @media print {
   .invoiceContainer {
     width: 100%;
+  }
+  .printButton {
+    display: none;
   }
 }

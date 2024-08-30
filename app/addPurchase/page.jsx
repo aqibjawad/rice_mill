@@ -514,7 +514,7 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        <Grid className="mt-10" item xs={12} sm={4}>
+        {/* <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
             title={"Remaining Amount"}
             placeholder={"Remaining Amount"}
@@ -522,7 +522,7 @@ const AddPurchaseContent = () => {
             value={remainingAmount} // Display only
             disable
           />
-        </Grid>
+        </Grid> */}
       </Grid>
 
       <div className={styles.button_container}>

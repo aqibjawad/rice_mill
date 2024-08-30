@@ -94,27 +94,11 @@ const Page = () => {
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Supplier ID</TableCell>
-              <TableCell>Product ID</TableCell>
-              <TableCell>Quantity</TableCell>
-              <TableCell>Packing Type</TableCell>
-              <TableCell>Bardaana Quantity</TableCell>
-              <TableCell>Truck Number</TableCell>
-              <TableCell>Freight</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Bank Tax</TableCell>
-              <TableCell>Cash Amount</TableCell>
-              <TableCell>Cheque Number</TableCell>
-              <TableCell>Remaining Amount</TableCell>
-              <TableCell>First Weight</TableCell>
-              <TableCell>Second Weight</TableCell>
-              <TableCell>Net Weight</TableCell>
-              <TableCell>Packing Weight</TableCell>
-              <TableCell>Bardaana Deduction</TableCell>
-              <TableCell>Final Weight</TableCell>
-              <TableCell>Payment Type</TableCell>
-              <TableCell>Action</TableCell>
+              <TableCell>Product</TableCell>
+              <TableCell> Party </TableCell>
+              <TableCell> Weight </TableCell>
+              <TableCell> Amount </TableCell>
+
             </TableRow>
           </TableHead>
           <TableBody>
@@ -132,30 +116,13 @@ const Page = () => {
               tableData.map((row, index) => (
                 <TableRow key={index}>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.date}</TableCell>
-                  <TableCell>{row.sup_id}</TableCell>
-                  <TableCell>{row.pro_id}</TableCell>
-                  <TableCell>{row.quantity}</TableCell>
-                  <TableCell>{row.packing_type}</TableCell>
-                  <TableCell>{row.bardaanaQuantity}</TableCell>
-                  <TableCell>{row.truckNumber}</TableCell>
-                  <TableCell>{row.freight}</TableCell>
-                  <TableCell>{row.price}</TableCell>
-                  <TableCell>{row.bankTax}</TableCell>
-                  <TableCell>{row.cash_amount}</TableCell>
-                  <TableCell>{row.chequeNumber}</TableCell>
-                  <TableCell>{row.remainingAmount}</TableCell>
-                  <TableCell>{row.first_weight}</TableCell>
-                  <TableCell>{row.second_weight}</TableCell>
+                  <TableCell>{row.product.product_name}</TableCell>
+                  <TableCell>{row.supplier.person_name}</TableCell>
                   <TableCell>{row.net_weight}</TableCell>
-                  <TableCell>{row.packing_weight}</TableCell>
-                  <TableCell>{row.bardaanaDeduction}</TableCell>
-                  <TableCell>{row.final_weight}</TableCell>
-                  <TableCell>{row.payment_type}</TableCell>
+                  <TableCell>{row.total_amount}</TableCell>
                   <TableCell>
                     <div className={styles.iconContainer}>
-                      <MdDelete onClick={() => handleDelete(row.id)} className={styles.deleteButton} />
-                      <MdEdit onClick={() => handleEdit(row)} className={styles.editButton} />
+                      View Details
                     </div>
                   </TableCell>
                 </TableRow>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styles from "../../styles/invoice.module.css";
 import {
   Grid,
@@ -13,16 +13,75 @@ import {
   Paper,
 } from "@mui/material";
 
+import { getLocalStorage, saleBook } from "../../networkApi/Constants";
+
+import APICall from "../../networkApi/APICall";
+
 const Invoice = () => {
+  const api = new APICall();
+
+  const [salesBook, setSaleBook] = useState([]);
+  const [rowData, setRowData] = useState();
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const saleBookId = getLocalStorage("saleBookId");
+
   const handlePrint = () => {
     window.print();
   };
 
+  useEffect(() => {
+    fetchSaleBook();
+  }, []);
+
+  useEffect(() => {
+    if (salesBook.length > 0 && !isPrinting) {
+      setIsPrinting(true);
+      setTimeout(() => {
+        window.print();
+        setIsPrinting(false);
+      }, 1000);
+    }
+  }, [salesBook]);
+
+  const fetchSaleBook = async () => {
+    try {
+      const response = await api.getDataWithToken(`${saleBook}/${saleBookId}`);
+
+      const data = response.data;
+
+      setRowData(data);
+
+      if (Array.isArray(data.details)) {
+        setSaleBook(data.details);
+      } else {
+        throw new Error("Fetched data is not an array");
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+
+  const calculateTotalAmount = () => {
+    const total = salesBook.reduce(
+      (total, row) => total + parseFloat(row.total_amount),
+      0
+    );
+    return total.toLocaleString("en-IN", {
+      maximumFractionDigits: 2,
+      style: "currency",
+      currency: "PKR",
+    });
+  };
+
   return (
     <>
-      <button onClick={handlePrint} className={styles.printButton}>
+      {/* <button
+        onClick={handlePrint}
+        className={`${styles.printButton} printButton`}
+      >
         Print Invoice
-      </button>
+      </button> */}
 
       <div className={styles.invoiceContainer}>
         <Grid container spacing={2}>
@@ -42,17 +101,15 @@ const Invoice = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <div className={styles.issueDate}>Issued</div>
-              <div className={styles.compAddress}>01 Aug, 2023</div>
-
-              <div className={` mt-5 ${styles.issueDate}`}>Due</div>
-              <div className={styles.compAddress}>01 Aug, 2023</div>
+              <div className={styles.buyerName}> {rowData?.date} </div>
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <div className={styles.invoiceCompName}>Billed to</div>
-              <div className={styles.compAddress}>Farooq Cosmetic Store</div>
-              <div className={styles.compAddress}>Galamindi chunain</div>
-              <div className={styles.compAddress}>0300 5061234</div>
+              <div className={styles.buyerName}>
+                {rowData?.buyer?.person_name}
+              </div>
+              <div className={styles.buyerName}> {rowData?.buyer?.address} </div>
+              <div className={styles.buyerName}> {rowData?.buyer?.contact} </div>
             </Grid>
           </Grid>
         </div>
@@ -71,29 +128,21 @@ const Invoice = () => {
                 <TableRow>
                   <TableCell>Name</TableCell>
                   <TableCell>Description</TableCell>
-                  <TableCell>Quantity</TableCell>
                   <TableCell>Weight</TableCell>
                   <TableCell>Rate</TableCell>
                   <TableCell>Total Amount</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow>
-                  <TableCell> item </TableCell>
-                  <TableCell> test </TableCell>
-                  <TableCell> quantity </TableCell>
-                  <TableCell> 100 </TableCell>
-                  <TableCell> 100 </TableCell>
-                  <TableCell> 100 </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell> item </TableCell>
-                  <TableCell> test </TableCell>
-                  <TableCell> quantity </TableCell>
-                  <TableCell> 100 </TableCell>
-                  <TableCell> 100 </TableCell>
-                  <TableCell> 100 </TableCell>
-                </TableRow>
+                {salesBook?.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item.product_name}</TableCell>
+                    <TableCell>{`${item.product_description}`}</TableCell>
+                    <TableCell>{`${item.weight}`}</TableCell>
+                    <TableCell>{item.price_mann}</TableCell>
+                    <TableCell>{item.total_amount}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -104,55 +153,12 @@ const Invoice = () => {
             }}
           >
             <div className={styles.tableTotalRow}>
-              Subtotal: <span className={styles.amount}> $400.00 </span>{" "}
+              Total:{" "}
+              <span className={styles.amountDue}>
+                {" "}
+                {calculateTotalAmount()}{" "}
+              </span>
             </div>
-
-            <div className={styles.tableTotalRow}>
-              Tax: <span className={styles.amount}> $400.00 </span>{" "}
-            </div>
-
-            <div className={styles.tableTotalRow}>
-              Total: <span className={styles.amount}> $400.00 </span>{" "}
-            </div>
-
-            <div className={styles.amountBorder}>
-              <div className={styles.amountDue}>Subtotal: $400.00</div>
-            </div>
-          </div>
-
-          <div className="mt-10">
-            <div className={styles.invoiceCompName}>
-              Thank you for the business!
-            </div>
-            <div className={styles.compAddress}>
-              Please pay within 15 days of receiving this invoice.
-            </div>
-          </div>
-
-          <div className={styles.border}></div>
-
-          <div className="mt-5 w-85">
-            <Grid container spacing={2}>
-              <Grid item xs={12} lg={6} sm={6}>
-                <div className={styles.compAddress}>
-                  Digital Product Designer, IN
-                </div>
-              </Grid>
-              <Grid item xs={12} lg={6} sm={6}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} lg={6} sm={6}>
-                    <div className={styles.compAddress}>+91 00000 00000 </div>
-                  </Grid>
-                  <Grid item xs={12} lg={6} sm={6}>
-                    {" "}
-                    <div className={styles.compAddress}>
-                      {" "}
-                      hello@email.com{" "}
-                    </div>{" "}
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
           </div>
         </div>
       </div>
