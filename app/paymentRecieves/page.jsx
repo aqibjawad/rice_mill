@@ -8,14 +8,27 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Skeleton from "@mui/material/Skeleton";
 import Grid from "@mui/material/Grid";
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import Swal from "sweetalert2"; // Import SweetAlert2
 
-import { buyer, banks, buyerLedger, bankCheque } from "../../networkApi/Constants";
+import PaymentReceipt from "../paymentReciept/page";
+
+import { usePaymentContext } from './PaymentContext';
+
+
+import {
+  buyer,
+  banks,
+  buyerLedger,
+  bankCheque,
+} from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
 import { useRouter } from "next/navigation";
 
 const Page = () => {
+
+  const { setPaymentData } = usePaymentContext();
+
   const api = new APICall();
   const router = useRouter();
 
@@ -112,42 +125,67 @@ const Page = () => {
   };
 
   const validateForm = () => {
-    const { buyer_id, payment_type, cash_amount, cheque_no, cheque_date, cheque_amount, bank_id } = formData;
+    const {
+      buyer_id,
+      payment_type,
+      cash_amount,
+      cheque_no,
+      cheque_date,
+      cheque_amount,
+      bank_id,
+    } = formData;
 
     if (!buyer_id) {
-      Swal.fire('Validation Error', 'Buyer is required', 'error');
+      Swal.fire("Validation Error", "Buyer is required", "error");
       return false;
     }
 
     if (payment_type === "cash") {
       if (!cash_amount || isNaN(cash_amount) || parseFloat(cash_amount) <= 0) {
-        Swal.fire('Validation Error', 'Valid cash amount is required', 'error');
+        Swal.fire("Validation Error", "Valid cash amount is required", "error");
         return false;
       }
     } else if (payment_type === "cheque") {
       if (!bank_id) {
-        Swal.fire('Validation Error', 'Bank selection is required for cheque payment', 'error');
+        Swal.fire(
+          "Validation Error",
+          "Bank selection is required for cheque payment",
+          "error"
+        );
         return false;
       }
       if (!cheque_no) {
-        Swal.fire('Validation Error', 'Cheque number is required', 'error');
+        Swal.fire("Validation Error", "Cheque number is required", "error");
         return false;
       }
       if (!cheque_date) {
-        Swal.fire('Validation Error', 'Cheque date is required', 'error');
+        Swal.fire("Validation Error", "Cheque date is required", "error");
         return false;
       }
-      if (!cheque_amount || isNaN(cheque_amount) || parseFloat(cheque_amount) <= 0) {
-        Swal.fire('Validation Error', 'Valid cheque amount is required', 'error');
+      if (
+        !cheque_amount ||
+        isNaN(cheque_amount) ||
+        parseFloat(cheque_amount) <= 0
+      ) {
+        Swal.fire(
+          "Validation Error",
+          "Valid cheque amount is required",
+          "error"
+        );
         return false;
       }
     } else {
-      Swal.fire('Validation Error', 'Invalid payment type', 'error');
+      Swal.fire("Validation Error", "Invalid payment type", "error");
       return false;
     }
 
     return true;
   };
+
+  const [responseData, setResponseData] = useState();
+  console.log(responseData);
+  
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -158,19 +196,23 @@ const Page = () => {
       let response;
       if (formData.payment_type === "cash") {
         response = await api.postDataWithToken(buyerLedger, formData);
-        Swal.fire('Success', 'Your data has been added!', 'success');
-        router.push("/inflow");
       } else if (formData.payment_type === "cheque") {
         response = await api.postDataWithToken(bankCheque, formData);
-        Swal.fire('Success', 'Your data has been added!', 'success');
-        router.push("/inflow");
       } else {
         throw new Error("Invalid payment type");
       }
-      console.log("Success:", response);
+
+      setPaymentData(response);
+      router.push("/paymentReceipt");
+
+      Swal.fire("Success", "Your data has been added!", "success");
     } catch (error) {
       console.error("Error:", error);
-      Swal.fire('Error', 'An error occurred while submitting the payment', 'error');
+      Swal.fire(
+        "Error",
+        "An error occurred while submitting the payment",
+        "error"
+      );
     } finally {
       setLoadingSubmit(false);
     }
@@ -190,7 +232,11 @@ const Page = () => {
                   title="Select Buyer"
                   options={tablePartyData}
                   onChange={handleDropdownChange}
-                  value={tablePartyData.find(option => option.id === formData.buyer_id) || null}
+                  value={
+                    tablePartyData.find(
+                      (option) => option.id === formData.buyer_id
+                    ) || null
+                  }
                   name="buyer_id"
                 />
               </div>
@@ -302,6 +348,8 @@ const Page = () => {
           </button>
         </div>
       </div>
+
+      {responseData && <PaymentReceipt data={responseData} />}
     </div>
   );
 };

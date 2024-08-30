@@ -96,7 +96,7 @@ const Page = () => {
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.payment_type}</TableCell>
-                    <TableCell>{row.customer.person_name}</TableCell>
+                    <TableCell>{row.customer?.person_name}</TableCell>
                     <TableCell>{row.description}</TableCell>
                     <TableCell>{row.cash_amount}</TableCell>
 

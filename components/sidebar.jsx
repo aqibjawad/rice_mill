@@ -37,24 +37,23 @@ const SideBar = () => {
     window.location.href = "/";
   };
 
-  const userInfoString = localStorage.getItem("user");
-  console.log(userInfoString);
+  // const userInfoString = localStorage.getItem("user");
   
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: <FaHome /> },
 
     { name: "Supplier", href: "/supplier", icon: <FaTruck /> },
     { name: "Purchase", href: "/purchase", icon: <FaShoppingBag /> },
-    { name: "Payments", href: "/payments", icon: <FaCreditCard /> },
+    { name: "Payments", href: "/outflow", icon: <FaArrowLeft /> },
+    // { name: "Payments", href: "/payments", icon: <FaCreditCard /> },
 
     { name: "Buyer", href: "/buyer", icon: <FaUserTie /> },
     { name: "Sale", href: "/sale", icon: <FaUserTie /> },
-    { name: "Outflow", href: "/outflow", icon: <FaArrowLeft /> },
-
-    { name: "Banks", href: "/bank", icon: <FaArrowRight /> },
-    { name: "Bank Cheque", href: "/bankCheque", icon: <FaArrowRight /> },
     { name: "Recieves", href: "/inflow", icon: <FaArrowRight /> },
+
     { name: "Expenses", href: "/expenses", icon: <FaMoneyBill /> },
+    { name: "Bank Cheque", href: "/bankCheque", icon: <FaArrowRight /> },
+    { name: "Banks", href: "/banks", icon: <FaArrowRight /> },
     { name: "Product", href: "/product", icon: <FaShoppingCart /> },
     { name: "Packing", href: "/packing", icon: <FaBox /> },
     { name: "Stock", href: "/stock", icon: <FaBoxes /> },
@@ -94,7 +93,7 @@ const SideBar = () => {
             <img className={styles.userPic} src="/userPic.png" />
           </div>
 
-          <div className={styles.userName}>{userInfoString?.name}</div>
+          {/* <div className={styles.userName}>{userInfoString?.name}</div> */}
 
           <div className={styles.userEmail}>sarahweb456@gmail.com</div>
 

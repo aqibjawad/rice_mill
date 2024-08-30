@@ -1,6 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Box, Modal, Skeleton, Typography, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Modal,
+  Skeleton,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import { packings, products, stocks } from "@/networkApi/Constants";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -13,12 +19,11 @@ import styles from "../../styles/paymentss.module.css";
 import DropDown from "@/components/generic/dropdown";
 
 const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
-  const [allProducts, setAllProducts] = useState([]);
+
   const [fetchingProducts, setFetchingProducts] = useState(false);
+
   const [productsList, setProductsList] = useState([]);
   const [selectedProductID, setSelectedProductID] = useState([]);
-  const [sendingDate, setSendingData] = useState(false);
-  const [allPackings, setAllPackings] = useState([]);
   const [fetchingPackings, setFetchPackings] = useState(false);
   const [allPackingsList, setAllPackingsList] = useState([]);
   const [selectedPackingID, setSelectedPackingID] = useState([]);
@@ -142,14 +147,14 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
   };
 
   const validateInputs = () => {
-    if (selectedProductID.length === 0) {
-      setError("Please select a product.");
-      return false;
-    }
-    if (selectedPackingID.length === 0) {
-      setError("Please select a packing.");
-      return false;
-    }
+    // if (selectedProductID.length === 0) {
+    //   setError("Please select a product.");
+    //   return false;
+    // }
+    // if (selectedPackingID.length === 0) {
+    //   setError("Please select a packing.");
+    //   return false;
+    // }
     if (!description.trim()) {
       setError("Please enter a description.");
       return false;
@@ -176,16 +181,16 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
       let data;
       if (editingData) {
         data = {
-          product_id: selectedProductID,
-          packing_id: selectedPackingID,
+          "product_id[0]": selectedProductID,
+          "packing_id[0]": selectedPackingID,
           product_description: description.trim(),
           quantity: parseInt(quantity),
           price: parseFloat(price),
         };
       } else {
         data = {
-          "product_id[0]": selectedProductID[0],
-          "packing_id[0]": selectedPackingID[0],
+          "product_id[0]": selectedProductID,
+          "packing_id[0]": selectedPackingID,
           "product_description[0]": description.trim(),
           "quantity[0]": parseInt(quantity),
           "price[0]": parseFloat(price),
@@ -272,8 +277,13 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
                 title="Select Products"
                 options={productsList}
                 onChange={handleProductChange}
+                value={
+                  productsList.find(
+                    (item) => item.id === selectedProductID[0]
+                  ) || null
+                }
                 // value={formData.productsList}
-                // name="productsList"
+                name="productsList"
               />
             </>
           )}
@@ -330,24 +340,24 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
             {error}
           </Typography>
         )}
-          <div style={{ flex: 1, marginRight: "10px" }}>
-            <button
-              className={styles.saveBtn}
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {isSubmitting ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Save"
-              )}
-            </button>
-          </div>
+        <div style={{ flex: 1, marginRight: "10px" }}>
+          <button
+            className={styles.saveBtn}
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {isSubmitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Save"
+            )}
+          </button>
+        </div>
       </Box>
     </Modal>
   );

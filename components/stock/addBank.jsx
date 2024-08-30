@@ -21,7 +21,7 @@ const style = {
   overflow: { xs: "auto", sm: "initial" },
 };
 
-export const AddBank = ({ openBank, handleCloseBank, editData = null }) => {
+export const AddBank = ({ openBank, handleCloseBank, editData = null, onBankUpdated }) => {
   const api = new APICall();
 
   const [formData, setFormData] = useState({ bank_name: "" });

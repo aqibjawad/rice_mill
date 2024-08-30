@@ -57,7 +57,6 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
       [name]: selectedOption ? selectedOption.value : "",
     }));
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);

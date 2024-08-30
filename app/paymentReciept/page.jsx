@@ -1,44 +1,19 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
+import React from "react";
 import styles from "../../styles/payment.module.css";
+import { usePaymentContext } from "./PaymentContext";
 
 const PaymentReceipt = () => {
-  // const receiptRef = useRef(null);
-
-  // const generatePDF = async () => {
-  //     if (receiptRef.current) {
-  //         const pdf = new jsPDF({
-  //             orientation: 'portrait',
-  //             unit: 'mm',
-  //             format: 'a4'
-  //         });
-
-  //         const pdfWidth = pdf.internal.pageSize.getWidth();
-  //         const pdfHeight = pdf.internal.pageSize.getHeight();
-
-  //         const canvas = await html2canvas(receiptRef.current, {
-  //             scale: 2, // Increase scale for better quality
-  //         });
-  //         const imgData = canvas.toDataURL('image/png');
-
-  //         const imgWidth = canvas.width;
-  //         const imgHeight = canvas.height;
-
-  //         const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-  //         const imgX = (pdfWidth - imgWidth * ratio) / 2;
-  //         const imgY = -4; // Add some top margin
-
-  //         pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-  //         pdf.save("payment_receipt.pdf");
-  //     }
-  // };
+  const { paymentData } = usePaymentContext();
 
   const handlePrint = () => {
     window.print();
   };
+
+  if (!paymentData) {
+    return <div>No payment data available. Please submit a payment first.</div>;
+  }
 
   return (
     <div>
@@ -46,7 +21,7 @@ const PaymentReceipt = () => {
         Print Invoice
       </button>
 
-      <div>
+      {/* <div>
         <div className={styles.paymentCard}>
           <div className="" style={{ display: "flex", alignItems: "center" }}>
             <div
@@ -88,19 +63,22 @@ const PaymentReceipt = () => {
           <div className="flex mt-2">
             <div className="flex-grow">
               <div className={styles.paymentHeading}>
-                Reference No.______________________________
+                Reference No.{" "}
+                {paymentData.referenceNumber ||
+                  "______________________________"}
               </div>
             </div>
 
             <div className="flex-grow">
               <div className={styles.paymentHeading}>
-                Party Name: ______________________________
+                Party Name:{" "}
+                {paymentData.partyName || "____________________________"}
               </div>
             </div>
 
             <div className="flex-grow">
               <div className={styles.paymentHeading}>
-                Date : ______________________________
+                Date : {paymentData.date || "____________________________"}
               </div>
             </div>
           </div>
@@ -108,14 +86,16 @@ const PaymentReceipt = () => {
           <div className="flex mt-3">
             <div className="flex-grow">
               <div className={styles.paymentHeading}>
-                Amount._______________________________
+                Amount:{" "}
+                {paymentData.amount || "_______________________________"}
               </div>
             </div>
 
             <div className="flex-grow">
               <div className={styles.paymentHeading}>
                 Bank and Cheque:
-                _______________________________________________________________
+                {paymentData.bankAndCheque ||
+                  "_______________________________________________________________"}
               </div>
             </div>
           </div>
@@ -134,29 +114,16 @@ const PaymentReceipt = () => {
                 </div>
 
                 <div className={styles.tableBody}>
-                  <div className={styles.tableRow}>
-                    <div>1 </div>
-                    <div> 202 </div>
-                    <div> 1000 </div>
-                    <div> 1000 </div>
-                    <div> $100 </div>
-                  </div>
-
-                  <div className={styles.tableRow}>
-                    <div>1 </div>
-                    <div> 202 </div>
-                    <div> 1000 </div>
-                    <div> 1000 </div>
-                    <div> $100 </div>
-                  </div>
-
-                  <div className={styles.tableRow}>
-                    <div>1 </div>
-                    <div> 202 </div>
-                    <div> 1000 </div>
-                    <div> 1000 </div>
-                    <div> $100 </div>
-                  </div>
+                  {paymentData.transactions &&
+                    paymentData.transactions.map((transaction, index) => (
+                      <div key={index} className={styles.tableRow}>
+                        <div>{index + 1}</div>
+                        <div>{transaction.desc}</div>
+                        <div>{transaction.cr}</div>
+                        <div>{transaction.dr}</div>
+                        <div>{transaction.balance}</div>
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
@@ -165,20 +132,21 @@ const PaymentReceipt = () => {
               <div className="flex">
                 <div className="flex-grow">
                   <div className={styles.paymentHeading}>
-                    Recieved By: _____________________
+                    Received By:{" "}
+                    {paymentData.receivedBy || "___________________"}
                   </div>
                 </div>
 
                 <div className="flex-grow">
                   <div className={styles.paymentHeading}>
-                    Signature: ______________________
+                    Signature: {paymentData.signature || "____________________"}
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
