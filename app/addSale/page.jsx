@@ -43,6 +43,7 @@ const Page = () => {
     weight: "",
     truck_no: "",
     product_description: "",
+    reference_no: "",
   });
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -377,11 +378,20 @@ const Page = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid item lg={6} xs={12}>
                 <InputWithTitle
                   title={"Calculated Price"}
                   name="price_mann"
                   value={formData.price_mann}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item lg={6} xs={12}>
+                <InputWithTitle
+                  title={"Bill Reference Number"}
+                  name="reference_no"
+                  value={formData.reference_no}
                   onChange={handleInputChange}
                 />
               </Grid>
