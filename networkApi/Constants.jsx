@@ -33,6 +33,10 @@ export const saleBook = apiPrefix + "/sale_book";
 
 export const bankCheque = apiPrefix + "/advance_cheque";
 
+export const companyLedger = apiPrefix + "/company_ledger";
+
+export const dashboard = apiPrefix + "/dashboard";
+
 export const getLocalStorage = (key) => {
   if (typeof window !== "undefined") {
     return localStorage.getItem(key);

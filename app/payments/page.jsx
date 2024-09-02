@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import styles from "../../styles/paymentss.module.css";
 import ExpensePayments from "./Expense";
 import Payment from "./Payment";
+import Online from "./online";
 
 const Page = () => {
   const [activeTab, setActiveTab] = useState("tab1");
@@ -33,6 +34,15 @@ const Page = () => {
         >
           Expenses
         </button>
+
+        <button
+          className={`${styles.tabPaymentButton} ${
+            activeTab === "tab3" ? styles.active : ""
+          }`}
+          onClick={() => handleTabClick("tab3")}
+        >
+          Online
+        </button>
       </div>
 
       <div className={styles.tabContent}>
@@ -45,6 +55,12 @@ const Page = () => {
         {activeTab === "tab2" && (
           <div>
             <ExpensePayments />
+          </div>
+        )}
+
+        {activeTab === "tab3" && (
+          <div>
+            <Online />
           </div>
         )}
       </div>

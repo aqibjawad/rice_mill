@@ -25,7 +25,7 @@ const Home = () => {
       ...prevState,
       [name]: value,
     }));
-  };
+  }; 
 
   const api = new APICall();
 

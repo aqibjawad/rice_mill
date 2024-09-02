@@ -2,18 +2,12 @@
 
 import React from "react";
 import styles from "../../styles/payment.module.css";
-import { usePaymentContext } from "./PaymentContext";
 
 const PaymentReceipt = () => {
-  const { paymentData } = usePaymentContext();
 
   const handlePrint = () => {
     window.print();
   };
-
-  if (!paymentData) {
-    return <div>No payment data available. Please submit a payment first.</div>;
-  }
 
   return (
     <div>

@@ -8,17 +8,11 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Skeleton from "@mui/material/Skeleton";
 import Grid from "@mui/material/Grid";
-
 import DropDown from "@/components/generic/dropdown";
-
 import AddExpense from "../../components/stock/addExpense";
-
 import { banks, expenseCat, expense } from "../../networkApi/Constants";
-
 import APICall from "../../networkApi/APICall";
-
 import Swal from "sweetalert2"; 
-
 import { useRouter } from "next/navigation";
 
 const ExpensePayments = () => {
@@ -41,14 +35,12 @@ const ExpensePayments = () => {
   const [activeTab, setActiveTab] = useState("tab1");
   const [error, setError] = useState(null);
   const [tableExpenseData, setTableExpenseData] = useState([]);
-
   const [openExpense, setOpenExpense] = useState(false);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [selectedExpenseCategory, setSelectedExpenseCategory] = useState(null);
+
   const handleOpenExpense = () => setOpenExpense(true);
   const handleCloseExpense = () => setOpenExpense(false);
-
-  const [loadingSubmit, setLoadingSubmit] = useState(false);
-
-  const [selectedExpenseCategory, setSelectedExpenseCategory] = useState(null);
 
   useEffect(() => {
     fetchBankData();
@@ -139,7 +131,7 @@ const ExpensePayments = () => {
     } = formData;
 
     if (!expense_category_id) {
-      Swal.fire("Error", "Expense Category is required", "error");
+      Swal.fire("Error", "Expense category is required", "error");
       return false;
     }
 
@@ -155,11 +147,7 @@ const ExpensePayments = () => {
 
     if (payment_type === "cheque" || payment_type === "both") {
       if (!bank_id) {
-        Swal.fire(
-          "Error",
-          "Bank selection is required for cheque payment",
-          "error"
-        );
+        Swal.fire("Error", "Bank selection is required for cheque payment", "error");
         return false;
       }
       if (!cheque_no) {
@@ -174,7 +162,6 @@ const ExpensePayments = () => {
         Swal.fire("Error", "Cheque amount is required", "error");
         return false;
       }
-
       if (!description) {
         Swal.fire("Error", "Description is required", "error");
         return false;
@@ -192,7 +179,7 @@ const ExpensePayments = () => {
     try {
       const response = await api.postDataWithToken(expense, formData);
       console.log("Success:", response);
-      alert("Expenses Added!");
+      Swal.fire("Success", "Expenses Added!", "success");
       router.push("/outflow");
     } catch (error) {
       console.error("Error:", error);
@@ -204,7 +191,7 @@ const ExpensePayments = () => {
   return (
     <div>
       <Grid container spacing={2} className="mt-10">
-        <Grid className="" item xs={12} md={6}>
+        <Grid item xs={12} md={6}>
           {loading ? (
             <Skeleton variant="rectangular" width="100%" height={56} />
           ) : (

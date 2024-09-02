@@ -8,29 +8,20 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Skeleton from "@mui/material/Skeleton";
 import Grid from "@mui/material/Grid";
-import Swal from "sweetalert2"; // Import SweetAlert2
-
-import PaymentReceipt from "../paymentReciept/page";
-
-
+import Swal from "sweetalert2";
 
 import {
-  buyer,
   banks,
-  buyerLedger,
-  bankCheque,
+  companyLedger,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
 import { useRouter } from "next/navigation";
 
 const Page = () => {
-
   const api = new APICall();
-  const router = useRouter();
 
   const [formData, setFormData] = useState({
-    buyer_id: "",
     payment_type: "",
     description: "",
     cash_amount: "",
@@ -44,32 +35,10 @@ const Page = () => {
   const [loading, setLoading] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [activeTab, setActiveTab] = useState("cash");
-  const [tablePartyData, setPartyData] = useState([]);
 
   useEffect(() => {
-    fetchData();
     fetchBankData();
   }, []);
-
-  const fetchData = async () => {
-    try {
-      const response = await api.getDataWithToken(buyer);
-      const data = response.data;
-      if (Array.isArray(data)) {
-        const formattedData = data.map((supplier) => ({
-          label: supplier.person_name,
-          id: supplier.id,
-        }));
-        setPartyData(formattedData);
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchBankData = async () => {
     try {
@@ -107,12 +76,12 @@ const Page = () => {
     }));
   };
 
-  const handleDropdownChange = (name, selectedOption) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: selectedOption.id,
-    }));
-  };
+//   const handleDropdownChange = (name, selectedOption) => {
+//     setFormData((prevState) => ({
+//       ...prevState,
+//       [name]: selectedOption.id,
+//     }));
+//   };
 
   const handleBankSelect = (_, value) => {
     setFormData((prevState) => ({
@@ -123,7 +92,6 @@ const Page = () => {
 
   const validateForm = () => {
     const {
-      buyer_id,
       payment_type,
       cash_amount,
       cheque_no,
@@ -131,11 +99,6 @@ const Page = () => {
       cheque_amount,
       bank_id,
     } = formData;
-
-    if (!buyer_id) {
-      Swal.fire("Validation Error", "Buyer is required", "error");
-      return false;
-    }
 
     if (payment_type === "cash") {
       if (!cash_amount || isNaN(cash_amount) || parseFloat(cash_amount) <= 0) {
@@ -179,11 +142,6 @@ const Page = () => {
     return true;
   };
 
-  const [responseData, setResponseData] = useState();
-  console.log(responseData);
-  
-  
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -191,16 +149,7 @@ const Page = () => {
     setLoadingSubmit(true);
     try {
       let response;
-      if (formData.payment_type === "cash") {
-        response = await api.postDataWithToken(buyerLedger, formData);
-      } else if (formData.payment_type === "cheque") {
-        response = await api.postDataWithToken(bankCheque, formData);
-      } else {
-        throw new Error("Invalid payment type");
-      }
-
-      setPaymentData(response);
-      router.push("/paymentReceipt");
+        response = await api.postDataWithToken(companyLedger, formData);
 
       Swal.fire("Success", "Your data has been added!", "success");
     } catch (error) {
@@ -217,42 +166,8 @@ const Page = () => {
 
   return (
     <div>
-      <div className={styles.recievesHead}>Add Amount Receives</div>
+      <div className={styles.recievesHead}>Add Company Ledger</div>
       <div>
-        <Grid container spacing={2} className="mt-10">
-          <Grid item xs={12} md={6}>
-            {loading ? (
-              <Skeleton variant="rectangular" width="100%" height={56} />
-            ) : (
-              <div className="mt-5">
-                <DropDown
-                  title="Select Buyer"
-                  options={tablePartyData}
-                  onChange={handleDropdownChange}
-                  value={
-                    tablePartyData.find(
-                      (option) => option.id === formData.buyer_id
-                    ) || null
-                  }
-                  name="buyer_id"
-                />
-              </div>
-            )}
-          </Grid>
-          <Grid item xs={12} md={6}>
-            {activeTab === "cash" && (
-              <InputWithTitle
-                title="Amount"
-                type="text"
-                placeholder="Amount"
-                value={formData.cash_amount}
-                name="cash_amount"
-                onChange={handleInputChange}
-              />
-            )}
-          </Grid>
-        </Grid>
-
         <div className="mt-10">
           <div className={styles.tabPaymentContainer}>
             <button
@@ -274,6 +189,19 @@ const Page = () => {
           </div>
 
           <div className={styles.tabPaymentContent}>
+            <Grid item lg={4} xs={4} md={6}>
+              {activeTab === "cash" && (
+                <InputWithTitle
+                  title="Amount"
+                  type="text"
+                  placeholder="Amount"
+                  value={formData.cash_amount}
+                  name="cash_amount"
+                  onChange={handleInputChange}
+                />
+              )}
+            </Grid>
+
             {(activeTab === "cheque" || activeTab === "both") && (
               <Grid container spacing={2} className="mt-10">
                 <Grid item xs={12} md={4} className="mt-5">
@@ -341,12 +269,11 @@ const Page = () => {
             onClick={handleSubmit}
             disabled={loadingSubmit}
           >
-            {loadingSubmit ? "Submitting..." : "Submit Payments"}
+            {loadingSubmit ? "Submitting..." : "Submit Ledger"}
           </button>
         </div>
       </div>
 
-      {responseData && <PaymentReceipt data={responseData} />}
     </div>
   );
 };

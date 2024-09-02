@@ -1,9 +1,18 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
-const nextPWA = require("next-pwa");
-
 /** @type {import('next').NextConfig} */
+import withPWAInit from "@ducanh2912/next-pwa";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  swcMinify: true,
+  disable: false,
+  workboxOptions: {
+    disableDevLogs: true,
+  }
+});
+
 const nextConfig = {
   output: "export",
   // distDir: "oust",
@@ -34,11 +43,6 @@ const nextConfig = {
   },
 };
 
-const withPWA = nextPWA({
-  dest: ".",
-  disable: process.env.NODE_ENV === "development",
-  register: true,
-  skipWaiting: true,
-});
-
 export default withPWA(nextConfig);
+  
+// export default nextConfig;
