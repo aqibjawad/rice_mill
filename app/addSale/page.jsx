@@ -324,7 +324,7 @@ const Page = () => {
             <InputWithTitle
               title={"Bill Reference No"}
               defaultValue={`${refList.next_ref_no}`}
-              value={formData.id}
+              value={formData.next_ref_no}
               name="id"
               readOnly
             />

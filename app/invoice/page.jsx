@@ -92,24 +92,44 @@ const Invoice = () => {
               0300-7971654, 0300 5061234
             </div>
           </Grid>
+
           <Grid item xs={12} lg={6} sm={6}>
-            <img className={styles.img} src="/logo.png" alt="Company Logo" />
+            <div className="flex">
+              <div className="flex-grow"></div>
+
+              <div>
+                <img
+                  className={styles.img}
+                  src="/logo.png"
+                  alt="Company Logo"
+                />
+              </div>
+            </div>
           </Grid>
         </Grid>
 
         <div className="mt-10">
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} lg={6} sm={6}>
               <div className={styles.issueDate}>Issued</div>
               <div className={styles.buyerName}> {rowData?.date} </div>
             </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <div className={styles.buyerName}>
-                {rowData?.buyer?.person_name}
+            <Grid item xs={12} lg={6} sm={6}>
+              <div className="flex">
+                <div className="flex-grow"></div>
+                <div>
+                  <div className={styles.issueDate}>
+                    {rowData?.buyer?.person_name}
+                  </div>
+                  <div className={styles.buyerName}>
+                    {rowData?.buyer?.address}
+                  </div>
+                  <div className={styles.buyerName}>
+                    {rowData?.buyer?.contact}{" "}
+                  </div>
+                </div>
               </div>
-              <div className={styles.buyerName}> {rowData?.buyer?.address} </div>
-              <div className={styles.buyerName}> {rowData?.buyer?.contact} </div>
             </Grid>
           </Grid>
         </div>
