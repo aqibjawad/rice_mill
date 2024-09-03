@@ -12,7 +12,7 @@ import DropDown from "@/components/generic/dropdown";
 import AddExpense from "../../components/stock/addExpense";
 import { banks, expenseCat, expense } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
-import Swal from "sweetalert2"; 
+import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 
 const ExpensePayments = () => {
@@ -38,6 +38,9 @@ const ExpensePayments = () => {
   const [openExpense, setOpenExpense] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [selectedExpenseCategory, setSelectedExpenseCategory] = useState(null);
+
+  console.log(selectedExpenseCategory);
+  
 
   const handleOpenExpense = () => setOpenExpense(true);
   const handleCloseExpense = () => setOpenExpense(false);
@@ -71,6 +74,7 @@ const ExpensePayments = () => {
     try {
       const response = await api.getDataWithToken(expenseCat);
       const data = response.data;
+      
       if (Array.isArray(data)) {
         const formattedData = data.map((expense) => ({
           label: expense.expense_category,
@@ -108,7 +112,6 @@ const ExpensePayments = () => {
       ...prevState,
       [name]: selectedOption.id,
     }));
-    setSelectedExpenseCategory(selectedOption);
   };
 
   const handleBankSelect = (_, value) => {
@@ -130,11 +133,6 @@ const ExpensePayments = () => {
       description,
     } = formData;
 
-    if (!expense_category_id) {
-      Swal.fire("Error", "Expense category is required", "error");
-      return false;
-    }
-
     if (payment_type === "cash" && !cash_amount) {
       Swal.fire("Error", "Cash amount is required for cash payment", "error");
       return false;
@@ -147,7 +145,11 @@ const ExpensePayments = () => {
 
     if (payment_type === "cheque" || payment_type === "both") {
       if (!bank_id) {
-        Swal.fire("Error", "Bank selection is required for cheque payment", "error");
+        Swal.fire(
+          "Error",
+          "Bank selection is required for cheque payment",
+          "error"
+        );
         return false;
       }
       if (!cheque_no) {
@@ -180,7 +182,7 @@ const ExpensePayments = () => {
       const response = await api.postDataWithToken(expense, formData);
       console.log("Success:", response);
       Swal.fire("Success", "Expenses Added!", "success");
-      router.push("/outflow");
+      // router.push("/outflow");
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -207,10 +209,12 @@ const ExpensePayments = () => {
               <DropDown
                 title="Select Expense Category"
                 options={tableExpenseData}
-                onChange={(selectedOption) =>
-                  handleDropdownChange("expense_category_id", selectedOption)
+                onChange={handleDropdownChange}
+                value={
+                  tableExpenseData.find(
+                    (option) => option.id === formData.expense_category_id
+                  ) || null
                 }
-                value={selectedExpenseCategory}
                 name="expense_category_id"
               />
             </>
