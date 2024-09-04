@@ -26,7 +26,7 @@ const Page = () => {
   const [tableData, setTableData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(null); // State for action loading
+  const [actionLoading, setActionLoading] = useState(); // State for action loading
 
   const [openBankCheque, setOpenBankCheque] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -148,15 +148,17 @@ const Page = () => {
                     <TableCell>{row.status}</TableCell>
                     <TableCell>
                       {actionLoading === row.id ? (
-                        <CircularProgress size={24} />
+                        <>
+                          <CircularProgress size={24} />
+                        </>
                       ) : (
-                        <Button
+                        <div
                           onClick={() => handleStatusUpdate(row.id)}
                           className={styles.cash}
                           variant="contained"
                         >
                           Cash
-                        </Button>
+                        </div>
                       )}
                     </TableCell>
                   </TableRow>

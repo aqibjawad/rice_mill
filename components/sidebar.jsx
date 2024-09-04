@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import styles from "../styles/sidebar.module.css";
 import { useRouter } from "next/navigation";
 import MobileMenuButton from "./MobileMenuButton";
@@ -38,22 +38,17 @@ const SideBar = () => {
   };
 
   // const userInfoString = localStorage.getItem("user");
-  
+
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: <FaHome /> },
-
-    { name: "Supplier", href: "/supplier", icon: <FaTruck /> },
+    { name: "Sale", href: "/sale", icon: <FaUserTie /> },
     { name: "Purchase", href: "/purchase", icon: <FaShoppingBag /> },
     { name: "Payments", href: "/outflow", icon: <FaArrowLeft /> },
-    // { name: "Payments", href: "/payments", icon: <FaCreditCard /> },
-
-    { name: "Buyer", href: "/buyer", icon: <FaUserTie /> },
-    { name: "Sale", href: "/sale", icon: <FaUserTie /> },
+    { name: "Supplier", href: "/supplier", icon: <FaTruck /> },
+    { name: "Buyer", href: "/Buyer", icon: <FaUserTie /> },
     { name: "Recieves", href: "/inflow", icon: <FaArrowRight /> },
-
     { name: "Expenses", href: "/expenses", icon: <FaMoneyBill /> },
     { name: "Company Ledger", href: "/companyLedger", icon: <FaMoneyBill /> },
-
     { name: "Bank Cheque", href: "/bankCheque", icon: <FaArrowRight /> },
     { name: "Banks", href: "/banks", icon: <FaArrowRight /> },
     { name: "Product", href: "/product", icon: <FaShoppingCart /> },
@@ -110,4 +105,5 @@ const SideBar = () => {
   );
 };
 
-export default SideBar;
+const MemoizedSideBar = memo(SideBar);
+export default MemoizedSideBar;

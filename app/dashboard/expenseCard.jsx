@@ -52,7 +52,7 @@ const Dashboard = () => {
   console.log("Outflow:", outflow);
 
   // Step 1: Perform addition
-  const sum = openingBalance + inflow;
+  const sum = inflow;
 
   // Step 2: Perform subtraction
   const result = sum - outflow;

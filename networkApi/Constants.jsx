@@ -36,6 +36,8 @@ export const bankCheque = apiPrefix + "/advance_cheque";
 export const companyLedger = apiPrefix + "/company_ledger";
 
 export const dashboard = apiPrefix + "/dashboard";
+export const getAmountReceives = apiPrefix + "/received_buyer_amount";
+export const getSupplierPaidAmounts = apiPrefix + "/get_supplier_paid_amount";
 
 export const getLocalStorage = (key) => {
   if (typeof window !== "undefined") {

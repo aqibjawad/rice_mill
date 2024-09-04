@@ -2,8 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
-import { expense, supplierLedger } from "../../networkApi/Constants";
-
+import {
+  expense,
+  supplierLedger,
+  getSupplierPaidAmounts,
+} from "../../networkApi/Constants";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -45,17 +49,16 @@ const Page = () => {
         queryParams.push(`start_date=${currentDate}`);
         queryParams.push(`end_date=${currentDate}`);
       }
-
-      // Create the query string from the queryParams array
       const queryString = queryParams.join("&");
 
       // Fetch data from both endpoints with the date filter
       const [expenseResponse, supplierResponse] = await Promise.all([
         api.getDataWithToken(`${expense}?${queryString}`),
-        api.getDataWithToken(`${supplierLedger}?${queryString}`),
+        api.getDataWithToken(`${getSupplierPaidAmounts}?${queryString}`),
       ]);
 
       const expenseData = expenseResponse.data;
+      console.log(`${expense}?${queryString}`);
       const supplierData = supplierResponse.data;
 
       // Check if both responses are arrays
@@ -80,7 +83,7 @@ const Page = () => {
 
   const calculateTotalAmount = () => {
     const total = tableData.reduce(
-      (total, row) => total + parseFloat(row.balance || 0),
+      (total, row) => total + parseFloat(row.cash_amount || 0),
       0
     );
     return total.toLocaleString("en-IN", {
