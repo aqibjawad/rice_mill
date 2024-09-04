@@ -96,9 +96,9 @@ const SideBar = () => {
           </div>
 
           {/* <div className={styles.userName}>{userInfoString?.name}</div> */}
-
-          <div className={styles.userEmail}>sarahweb456@gmail.com</div>
-
+          <div className="m-5">
+          <div className={styles.userEmail}>Admin</div>
+          </div>
           <div className={styles.logoutCont}>
             <div onClick={logOut} className={styles.logoutBtn}>
               Logout
