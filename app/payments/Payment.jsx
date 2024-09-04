@@ -196,40 +196,6 @@ const Page = () => {
 
   return (
     <div>
-      <Grid container spacing={2} className="mt-10">
-        <Grid item xs={12} md={6}>
-          {loading ? (
-            <Skeleton variant="rectangular" width="100%" height={56} />
-          ) : (
-            <div className="mt-5">
-              <DropDown
-                title="Select Supplier"
-                options={tablePartyData}
-                onChange={handleDropdownChange}
-                value={
-                  tablePartyData.find(
-                    (option) => option.id === formData.sup_id
-                  ) || null
-                }
-                name="sup_id"
-              />
-            </div>
-          )}
-        </Grid>
-        <Grid item xs={12} md={6}>
-          {activeTab === "cash" || activeTab === "both" ? (
-            <InputWithTitle
-              title="Amount"
-              type="text"
-              placeholder="Amount"
-              value={formData.cash_amount}
-              name="cash_amount"
-              onChange={handleInputChange}
-            />
-          ) : null}
-        </Grid>
-      </Grid>
-
       <div className="mt-10">
         <div className={styles.tabPaymentContainer}>
           <button
@@ -265,7 +231,43 @@ const Page = () => {
             Online
           </button>
         </div>
+      </div>
 
+      <Grid container spacing={2} className="mt-10">
+        <Grid item xs={12} md={6}>
+          {loading ? (
+            <Skeleton variant="rectangular" width="100%" height={56} />
+          ) : (
+            <div className="mt-5">
+              <DropDown
+                title="Select Supplier"
+                options={tablePartyData}
+                onChange={handleDropdownChange}
+                value={
+                  tablePartyData.find(
+                    (option) => option.id === formData.sup_id
+                  ) || null
+                }
+                name="sup_id"
+              />
+            </div>
+          )}
+        </Grid>
+        <Grid item xs={12} md={6}>
+          {activeTab === "cash" || activeTab === "both" ? (
+            <InputWithTitle
+              title="Amount"
+              type="text"
+              placeholder="Amount"
+              value={formData.cash_amount}
+              name="cash_amount"
+              onChange={handleInputChange}
+            />
+          ) : null}
+        </Grid>
+      </Grid>
+
+      <div className="mt-10">
         <div className={styles.tabPaymentContent}>
           {activeTab === "cheque" || activeTab === "both" ? (
             <Grid container spacing={2} className="mt-10">

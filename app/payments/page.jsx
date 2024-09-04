@@ -35,14 +35,14 @@ const Page = () => {
           Expenses
         </button>
 
-        <button
+        {/* <button
           className={`${styles.tabPaymentButton} ${
             activeTab === "tab3" ? styles.active : ""
           }`}
           onClick={() => handleTabClick("tab3")}
         >
           Online
-        </button>
+        </button> */}
       </div>
 
       <div className={styles.tabContent}>
@@ -55,12 +55,6 @@ const Page = () => {
         {activeTab === "tab2" && (
           <div>
             <ExpensePayments />
-          </div>
-        )}
-
-        {activeTab === "tab3" && (
-          <div>
-            <Online />
           </div>
         )}
       </div>

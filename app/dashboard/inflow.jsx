@@ -80,7 +80,7 @@ const Page = () => {
     <div>
       <Buttons
         leftSectionText="Amount Receives"
-        addButtonLink="/paymentReceives"
+        addButtonLink="/paymentRecieves"
         onDateChange={handleDateChange} // Pass the handler
       />
 

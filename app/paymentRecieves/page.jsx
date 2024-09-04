@@ -188,6 +188,7 @@ const Page = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     // if (!validateForm()) return;
 
     setLoadingSubmit(true);
@@ -205,7 +206,7 @@ const Page = () => {
       }
 
       setResponseData(response);
-      router.push("/paymentReceipt");
+      // router.push("/paymentReceipt");
 
       Swal.fire("Success", "Your data has been added!", "success");
     } finally {
@@ -216,6 +217,37 @@ const Page = () => {
   return (
     <div>
       <div className={styles.recievesHead}>Add Amount Receives</div>
+
+      <div className="mt-10">
+        <div className={styles.tabPaymentContainer}>
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "cash" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("cash")}
+          >
+            Cash
+          </button>
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "cheque" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("cheque")}
+          >
+            Cheque
+          </button>
+
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "online" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("online")}
+          >
+            Online
+          </button>
+        </div>
+      </div>
+
       <div>
         <Grid container spacing={2} className="mt-10">
           <Grid item xs={12} md={6}>
@@ -252,34 +284,6 @@ const Page = () => {
         </Grid>
 
         <div className="mt-10">
-          <div className={styles.tabPaymentContainer}>
-            <button
-              className={`${styles.tabPaymentButton} ${
-                activeTab === "cash" ? styles.active : ""
-              }`}
-              onClick={() => handleTabClick("cash")}
-            >
-              Cash
-            </button>
-            <button
-              className={`${styles.tabPaymentButton} ${
-                activeTab === "cheque" ? styles.active : ""
-              }`}
-              onClick={() => handleTabClick("cheque")}
-            >
-              Cheque
-            </button>
-
-            <button
-              className={`${styles.tabPaymentButton} ${
-                activeTab === "online" ? styles.active : ""
-              }`}
-              onClick={() => handleTabClick("online")}
-            >
-              Online
-            </button>
-          </div>
-
           <div className={styles.tabPaymentContent}>
             {(activeTab === "cheque" || activeTab === "both") && (
               <Grid container spacing={2} className="mt-10">

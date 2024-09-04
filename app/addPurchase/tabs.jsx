@@ -37,6 +37,15 @@ const Tabs = ({ activeTab, setActiveTab }) => {
         >
           Both
         </div>
+
+        <div
+          className={`${styles.tabPaymentButton} ${
+            currentTab === "online" ? styles.active : ""
+          }`}
+          onClick={() => handleTabClick("online")}
+        >
+          Online
+        </div>
       </div>
     </div>
   );

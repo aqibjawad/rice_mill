@@ -6,6 +6,8 @@ import styles from "../../styles/dashboard.module.css";
 import APICall from "../../networkApi/APICall";
 import { dashboard } from "../../networkApi/Constants";
 
+import { format } from "date-fns";
+
 const Dashboard = () => {
   const api = new APICall();
 
@@ -13,22 +15,47 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(dashboard);
+      setLoading(true);
+      const queryParams = [];
+
+      const currentDate = format(new Date(), "yyyy-MM-dd");
+      queryParams.push(`date=${currentDate}`);
+
+      const apiUrl = `${dashboard}?${queryParams.join("&")}`;
+
+      const response = await api.getDataWithToken(apiUrl);
+
       setTableData(response.data);
     } catch (error) {
+      console.error("Error fetching data:", error);
       setError(error.message);
     } finally {
       setLoading(false);
     }
   };
+  const openingBalance = Number(tableData?.opening_balance) || 0;
+  const inflow = Number(tableData?.inflow) || 0;
+  const outflow = Number(tableData?.outflow) || 0;
 
-const addition = (tableData?.opening_balance || 0) + (tableData?.inflow || 0) - (tableData?.outflow || 0);
+  // Debugging: Log the values to verify they are numbers
+  console.log("Opening Balance:", openingBalance);
+  console.log("Inflow:", inflow);
+  console.log("Outflow:", outflow);
+
+  // Step 1: Perform addition
+  const sum = openingBalance + inflow;
+
+  // Step 2: Perform subtraction
+  const result = sum - outflow;
 
   return (
     <Grid container spacing={2}>
@@ -36,11 +63,11 @@ const addition = (tableData?.opening_balance || 0) + (tableData?.inflow || 0) - 
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
-                <img
-                  src="/opening.png"
-                  className={styles.cardImage}
-                  alt="Opening Balance"
-                />
+              <img
+                src="/opening.png"
+                className={styles.cardImage}
+                alt="Opening Balance"
+              />
             </div>
             <div className={styles.cardAmount}>
               {loading ? (
@@ -58,7 +85,11 @@ const addition = (tableData?.opening_balance || 0) + (tableData?.inflow || 0) - 
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
-              <img src="/amount.png" className={styles.cardImage} alt="Inflow" />
+              <img
+                src="/amount.png"
+                className={styles.cardImage}
+                alt="Inflow"
+              />
             </div>
             <div className={styles.cardAmount}>
               {loading ? (
@@ -76,7 +107,11 @@ const addition = (tableData?.opening_balance || 0) + (tableData?.inflow || 0) - 
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
-              <img src="/epxense.png" className={styles.cardImage} alt="Outflow" />
+              <img
+                src="/epxense.png"
+                className={styles.cardImage}
+                alt="Outflow"
+              />
             </div>
             <div className={styles.cardAmount}>
               {loading ? (
@@ -97,7 +132,7 @@ const addition = (tableData?.opening_balance || 0) + (tableData?.inflow || 0) - 
               <img src="/total.png" className={styles.cardImage} alt="Total" />
             </div>
             <div className={styles.cardAmount}>
-              {loading ? <Skeleton width={100} height={30} /> : addition}
+              {loading ? <Skeleton width={100} height={30} /> : result}
             </div>
             <div className={styles.cardTitle}>Total</div>
           </CardContent>
