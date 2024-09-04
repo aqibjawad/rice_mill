@@ -180,8 +180,13 @@ const Page = () => {
     try {
       const response = await api.postDataWithToken(supplierLedger, formData);
       console.log("Success:", response);
-      Swal.fire("Success", "Payments Added!", "success");
-      // router.push("/outflow");
+      if (response.status === "success") {
+        Swal.fire("Success", `Payment added`, "success");
+        router.push("/outflow");
+      } else {
+        Swal.fire("Error", `${response?.error?.message}`, "error");
+      }
+
     } catch (error) {
       console.error("Error:", error);
       Swal.fire(
