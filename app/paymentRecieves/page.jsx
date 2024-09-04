@@ -12,8 +12,6 @@ import Swal from "sweetalert2"; // Import SweetAlert2
 
 import PaymentReceipt from "../paymentReciept/page";
 
-
-
 import {
   buyer,
   banks,
@@ -25,7 +23,6 @@ import DropDown from "@/components/generic/dropdown";
 import { useRouter } from "next/navigation";
 
 const Page = () => {
-
   const api = new APICall();
   const router = useRouter();
 
@@ -38,6 +35,7 @@ const Page = () => {
     cheque_no: "",
     cheque_date: "",
     cheque_amount: "",
+    transection_id: "",
   });
 
   const [tableBankData, setTableBankData] = useState([]);
@@ -121,77 +119,84 @@ const Page = () => {
     }));
   };
 
-  const validateForm = () => {
-    const {
-      buyer_id,
-      payment_type,
-      cash_amount,
-      cheque_no,
-      cheque_date,
-      cheque_amount,
-      bank_id,
-    } = formData;
+  // const validateForm = () => {
+  //   const {
+  //     buyer_id,
+  //     payment_type,
+  //     cash_amount,
+  //     cheque_no,
+  //     cheque_date,
+  //     cheque_amount,
+  //     bank_id,
+  //     transection_id,
+  //   } = formData;
 
-    if (!buyer_id) {
-      Swal.fire("Validation Error", "Buyer is required", "error");
-      return false;
-    }
+  //   if (!buyer_id) {
+  //     Swal.fire("Validation Error", "Buyer is required", "error");
+  //     return false;
+  //   }
 
-    if (payment_type === "cash") {
-      if (!cash_amount || isNaN(cash_amount) || parseFloat(cash_amount) <= 0) {
-        Swal.fire("Validation Error", "Valid cash amount is required", "error");
-        return false;
-      }
-    } else if (payment_type === "cheque") {
-      if (!bank_id) {
-        Swal.fire(
-          "Validation Error",
-          "Bank selection is required for cheque payment",
-          "error"
-        );
-        return false;
-      }
-      if (!cheque_no) {
-        Swal.fire("Validation Error", "Cheque number is required", "error");
-        return false;
-      }
-      if (!cheque_date) {
-        Swal.fire("Validation Error", "Cheque date is required", "error");
-        return false;
-      }
-      if (
-        !cheque_amount ||
-        isNaN(cheque_amount) ||
-        parseFloat(cheque_amount) <= 0
-      ) {
-        Swal.fire(
-          "Validation Error",
-          "Valid cheque amount is required",
-          "error"
-        );
-        return false;
-      }
-    } else {
-      Swal.fire("Validation Error", "Invalid payment type", "error");
-      return false;
-    }
+  //   if (!transection_id) {
+  //     Swal.fire("Validation Error", "Transaction Number", "error");
+  //     return false;
+  //   }
 
-    return true;
-  };
+  //   if (payment_type === "cash") {
+  //     if (!cash_amount || isNaN(cash_amount) || parseFloat(cash_amount) <= 0) {
+  //       Swal.fire("Validation Error", "Valid cash amount is required", "error");
+  //       return false;
+  //     }
+  //   }
+  //   else if (payment_type === "cheque") {
+  //     if (!bank_id) {
+  //       Swal.fire(
+  //         "Validation Error",
+  //         "Bank selection is required for cheque payment",
+  //         "error"
+  //       );
+  //       return false;
+  //     }
+  //     if (!cheque_no) {
+  //       Swal.fire("Validation Error", "Cheque number is required", "error");
+  //       return false;
+  //     }
+  //     if (!cheque_date) {
+  //       Swal.fire("Validation Error", "Cheque date is required", "error");
+  //       return false;
+  //     }
+  //     if (
+  //       !cheque_amount ||
+  //       isNaN(cheque_amount) ||
+  //       parseFloat(cheque_amount) <= 0
+  //     ) {
+  //       Swal.fire(
+  //         "Validation Error",
+  //         "Valid cheque amount is required",
+  //         "error"
+  //       );
+  //       return false;
+  //     }
+  //   } else {
+  //     Swal.fire("Validation Error", "Invalid payment type", "error");
+  //     return false;
+  //   }
+
+  //   return true;
+  // };
 
   const [responseData, setResponseData] = useState();
-  console.log(responseData);
-  
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    // if (!validateForm()) return;
 
     setLoadingSubmit(true);
     try {
       let response;
-      if (formData.payment_type === "cash") {
+      if (
+        formData.payment_type === "cash" ||
+        formData.payment_type === "online"
+      ) {
         response = await api.postDataWithToken(buyerLedger, formData);
       } else if (formData.payment_type === "cheque") {
         response = await api.postDataWithToken(bankCheque, formData);
@@ -199,17 +204,10 @@ const Page = () => {
         throw new Error("Invalid payment type");
       }
 
-      setPaymentData(response);
+      setResponseData(response);
       router.push("/paymentReceipt");
 
       Swal.fire("Success", "Your data has been added!", "success");
-    } catch (error) {
-      console.error("Error:", error);
-      Swal.fire(
-        "Error",
-        "An error occurred while submitting the payment",
-        "error"
-      );
     } finally {
       setLoadingSubmit(false);
     }
@@ -271,6 +269,15 @@ const Page = () => {
             >
               Cheque
             </button>
+
+            <button
+              className={`${styles.tabPaymentButton} ${
+                activeTab === "online" ? styles.active : ""
+              }`}
+              onClick={() => handleTabClick("online")}
+            >
+              Online
+            </button>
           </div>
 
           <div className={styles.tabPaymentContent}>
@@ -317,6 +324,44 @@ const Page = () => {
                     placeholder="Cheque Amount"
                     name="cheque_amount"
                     value={formData.cheque_amount}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+              </Grid>
+            )}
+
+            {activeTab === "online" && (
+              <Grid container spacing={2} className="mt-10">
+                <Grid item xs={12} md={4} className="mt-5">
+                  <Autocomplete
+                    disablePortal
+                    id="combo-box-demo"
+                    options={tableBankData}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Select Bank" />
+                    )}
+                    onChange={handleBankSelect}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <InputWithTitle
+                    title="Transaction Number"
+                    type="text"
+                    placeholder="Transaction Number"
+                    name="transection_id"
+                    value={formData.transection_id}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <InputWithTitle
+                    title="Transaction Amount"
+                    type="text"
+                    placeholder="Transaction Amount"
+                    name="cash_amount"
+                    value={formData.cash_amount}
                     onChange={handleInputChange}
                   />
                 </Grid>
