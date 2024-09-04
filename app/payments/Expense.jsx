@@ -28,6 +28,7 @@ const ExpensePayments = () => {
     cheque_no: "",
     cheque_date: "",
     cheque_amount: "",
+    transection_id: "",
   });
 
   const [tableBankData, setTableBankData] = useState([]);
@@ -38,9 +39,6 @@ const ExpensePayments = () => {
   const [openExpense, setOpenExpense] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [selectedExpenseCategory, setSelectedExpenseCategory] = useState(null);
-
-  console.log(selectedExpenseCategory);
-  
 
   const handleOpenExpense = () => setOpenExpense(true);
   const handleCloseExpense = () => setOpenExpense(false);
@@ -74,7 +72,7 @@ const ExpensePayments = () => {
     try {
       const response = await api.getDataWithToken(expenseCat);
       const data = response.data;
-      
+
       if (Array.isArray(data)) {
         const formattedData = data.map((expense) => ({
           label: expense.expense_category,
@@ -103,7 +101,7 @@ const ExpensePayments = () => {
     setActiveTab(tab);
     setFormData((prevState) => ({
       ...prevState,
-      payment_type: tab === "tab1" ? "cash" : "cheque",
+      payment_type: tab,
     }));
   };
 
@@ -175,14 +173,14 @@ const ExpensePayments = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    // if (!validateForm()) return;
 
     setLoadingSubmit(true);
     try {
       const response = await api.postDataWithToken(expense, formData);
       console.log("Success:", response);
       Swal.fire("Success", "Expenses Added!", "success");
-      // router.push("/outflow");
+      router.push("/outflow");
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -220,16 +218,19 @@ const ExpensePayments = () => {
             </>
           )}
         </Grid>
-        <Grid item xs={12} md={6}>
-          <InputWithTitle
-            title="Amount"
-            type="text"
-            placeholder="Amount"
-            value={formData.cash_amount}
-            name="cash_amount"
-            onChange={handleInputChange}
-          />
-        </Grid>
+
+        {activeTab === "cash" ? (
+          <Grid item xs={12} md={6}>
+            <InputWithTitle
+              title="Amount"
+              type="text"
+              placeholder="Amount"
+              value={formData.cash_amount}
+              name="cash_amount"
+              onChange={handleInputChange}
+            />
+          </Grid>
+        ) : null}
       </Grid>
 
       <div className="mt-10">
@@ -249,6 +250,15 @@ const ExpensePayments = () => {
             onClick={() => handleTabClick("tab2")}
           >
             Cheque
+          </button>
+
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "online" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("online")}
+          >
+            Online
           </button>
         </div>
 
@@ -301,6 +311,43 @@ const ExpensePayments = () => {
               </Grid>
             </Grid>
           )}
+
+          {activeTab === "online" ? (
+            <Grid container spacing={2} className="mt-10">
+              <Grid item xs={12} md={4} className="mt-5">
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={tableBankData}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Select Bank" />
+                  )}
+                  onChange={handleBankSelect}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <InputWithTitle
+                  title="Transaction Number"
+                  type="text"
+                  placeholder="Transaction Number"
+                  name="transection_id" // Changed from "cheque_no" to "transection_id"
+                  value={formData.transection_id}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <InputWithTitle
+                  title="Transaction Amount"
+                  type="text"
+                  placeholder="Transaction Amount"
+                  name="cash_amount"
+                  value={formData.cash_amount}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+            </Grid>
+          ) : null}
         </div>
       </div>
 

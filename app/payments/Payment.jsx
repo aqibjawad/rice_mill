@@ -28,6 +28,7 @@ const Page = () => {
     cheque_no: "",
     cheque_date: "",
     cheque_amount: "",
+    transection_id: "",
   });
 
   const [tableBankData, setTableBankData] = useState([]);
@@ -180,7 +181,7 @@ const Page = () => {
       const response = await api.postDataWithToken(supplierLedger, formData);
       console.log("Success:", response);
       Swal.fire("Success", "Payments Added!", "success");
-      router.push("/outflow");
+      // router.push("/outflow");
     } catch (error) {
       console.error("Error:", error);
       Swal.fire(
@@ -255,6 +256,14 @@ const Page = () => {
           >
             Both
           </button>
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "online" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("online")}
+          >
+            Online
+          </button>
         </div>
 
         <div className={styles.tabPaymentContent}>
@@ -301,6 +310,43 @@ const Page = () => {
                   placeholder="Cheque Amount"
                   name="cheque_amount"
                   value={formData.cheque_amount}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+            </Grid>
+          ) : null}
+
+          {activeTab === "online" ? (
+            <Grid container spacing={2} className="mt-10">
+              <Grid item xs={12} md={4} className="mt-5">
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={tableBankData}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Select Bank" />
+                  )}
+                  onChange={handleBankSelect}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <InputWithTitle
+                  title="Transaction Number"
+                  type="text"
+                  placeholder="Transaction Number"
+                  name="transection_id" // Changed from "cheque_no" to "transection_id"
+                  value={formData.transection_id}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <InputWithTitle
+                  title="Transaction Amount"
+                  type="text"
+                  placeholder="Transaction Amount"
+                  name="cash_amount"
+                  value={formData.cash_amount}
                   onChange={handleInputChange}
                 />
               </Grid>
