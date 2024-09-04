@@ -206,7 +206,7 @@ const Page = () => {
       }
 
       setResponseData(response);
-      // router.push("/paymentReceipt");
+      router.push("/buyer");
 
       Swal.fire("Success", "Your data has been added!", "success");
     } finally {

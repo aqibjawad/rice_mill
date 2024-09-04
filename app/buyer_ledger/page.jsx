@@ -20,7 +20,6 @@ import APICall from "@/networkApi/APICall";
 import { buyerLedger, getLocalStorage } from "../../networkApi/Constants";
 
 const Page = () => {
-  
   const api = new APICall();
   const [tableData, setTableData] = useState([]);
 
@@ -35,7 +34,7 @@ const Page = () => {
 
   useEffect(() => {
     fetchData();
-  }, []); 
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -84,6 +83,7 @@ const Page = () => {
               <TableCell> Description </TableCell>
               <TableCell> Credit Amount </TableCell>
               <TableCell> Debit Amount </TableCell>
+              <TableCell> Naam / Jama </TableCell>
               <TableCell> Balance </TableCell>
             </TableRow>
           </TableHead>
@@ -111,6 +111,7 @@ const Page = () => {
                   <TableCell>{row.description}</TableCell>
                   <TableCell>{row.cr_amount}</TableCell>
                   <TableCell>{row.dr_amount}</TableCell>
+                  <TableCell>{row.balance < 0 ? "Jama" : "Naam"}</TableCell>
                   <TableCell>{row.balance}</TableCell>
                 </TableRow>
               ))
@@ -142,20 +143,53 @@ const Page = () => {
             Details
           </Typography>
           {modalData && (
-            <div>
-              <Typography id="modal-description" sx={{ mt: 2 }}>
-                <strong>Name:</strong> {modalData.balance}
-                <br />
-                <strong>Cash Amount:</strong> {modalData.cash_amount}
-                <br />
-                <strong>Credit Amount:</strong> {modalData.cr_amount}
-                <br />
-                <strong>Debit Amount:</strong> {modalData.dr_amount}
-                <br />
-                <strong>Payment Type:</strong> {modalData.payment_type}
-                <br />
-              </Typography>
-            </div>
+            <TableContainer component={Paper} sx={{ mt: 2 }}>
+              <Table>
+                <TableHead>
+                  {/* <TableRow>
+                    <TableCell>
+                      <strong>Product:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.payment_type}</TableCell>
+                  </TableRow> */}
+
+                  <TableRow>
+                    <TableCell>
+                      <strong>Field</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Value</strong>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Cash Amount:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.cash_amount}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Credit Amount:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.cr_amount}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Debit Amount:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.dr_amount}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Payment Type:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.payment_type}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </Box>
       </Modal>

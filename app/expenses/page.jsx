@@ -11,11 +11,13 @@ import {
   TableRow,
   Paper,
   Skeleton,
-  Grid,
   Button,
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
+
+import Buttons from "@/components/buttons";
+import { format } from "date-fns";
 
 const Page = () => {
   const api = new APICall();
@@ -24,15 +26,33 @@ const Page = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [startDate, endDate]); // Add dependencies here
 
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(expenseCat);
+      setLoading(true);
+      const queryParams = [];
+
+      if (startDate && endDate) {
+        queryParams.push(`start_date=${startDate}`);
+        queryParams.push(`end_date=${endDate}`);
+      } else {
+        const currentDate = format(new Date(), "yyyy-MM-dd");
+        queryParams.push(`start_date=${currentDate}`);
+        queryParams.push(`end_date=${currentDate}`);
+      }
+
+      const response = await api.getDataWithToken(
+        `${expenseCat}?${queryParams.join("&")}`
+      );
 
       const data = response.data;
+
       if (Array.isArray(data)) {
         setTableData(data);
       } else {
@@ -45,7 +65,11 @@ const Page = () => {
     }
   };
 
-  // New function to handle saving ID to local storage
+  const handleDateChange = (start, end) => {
+    setStartDate(start);
+    setEndDate(end);
+  };
+
   const handleViewDetails = (id) => {
     localStorage.setItem("expenseId", id);
     router.push("/expenseDetails");
@@ -53,7 +77,13 @@ const Page = () => {
 
   return (
     <>
-      <h2> Expenses </h2>
+      <div className={styles.container}>
+        <Buttons
+          leftSectionText="Expenses"
+          addButtonLink="/payments"
+          onDateChange={handleDateChange} // Ensure this handler is connected properly
+        />
+      </div>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -66,18 +96,16 @@ const Page = () => {
           </TableHead>
           <TableBody>
             {loading
-              ? // Skeleton loader
-                [...Array(5)].map((_, index) => (
+              ? [...Array(5)].map((_, index) => (
                   <TableRow key={index}>
-                    {[...Array(7)].map((_, cellIndex) => (
+                    {[...Array(4)].map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
                         <Skeleton variant="text" />
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
-              : // Actual data
-                tableData.map((row) => (
+              : tableData.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>{row.id}</TableCell>
                     <TableCell>{row.expense_category}</TableCell>

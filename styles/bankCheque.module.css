@@ -78,3 +78,18 @@
   text-align: center;
   color: white;
 }
+
+.tableTotalRow {
+  height: 50px;
+  top: 1222px;
+  left: 293px;
+  background: #0E7669;
+  font-family: "regular";
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29.05px;
+  text-align: end;
+  color: white;
+  padding-top: 0.5rem;
+  padding-right: 10rem;
+}

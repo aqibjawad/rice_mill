@@ -311,7 +311,7 @@ const Page = () => {
             )}
           </Grid>
 
-          <Grid item lg={6} xs={6}>
+          <Grid item lg={4} xs={6}>
             <InputWithTitle
               title={"Enter Truck Number"}
               name="truck_no"
@@ -320,7 +320,16 @@ const Page = () => {
             />
           </Grid>
 
-          <Grid item lg={6} xs={6}>
+          <Grid item lg={4} xs={12}>
+            <InputWithTitle
+              title={"Bill Reference Number"}
+              name="reference_no"
+              value={formData.reference_no}
+              onChange={handleInputChange}
+            />
+          </Grid>
+
+          <Grid item lg={4} xs={6}>
             <InputWithTitle
               title={"Bill Reference No"}
               defaultValue={`${refList.next_ref_no}`}
@@ -380,18 +389,9 @@ const Page = () => {
 
               <Grid item lg={6} xs={12}>
                 <InputWithTitle
-                  title={"Calculated Price"}
+                  title={"Price Per Munds"}
                   name="price_mann"
                   value={formData.price_mann}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-
-              <Grid item lg={6} xs={12}>
-                <InputWithTitle
-                  title={"Bill Reference Number"}
-                  name="reference_no"
-                  value={formData.reference_no}
                   onChange={handleInputChange}
                 />
               </Grid>

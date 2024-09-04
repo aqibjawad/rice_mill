@@ -24,6 +24,8 @@ import "jspdf-autotable";
 
 import logo from "../../public/logo.png";
 
+import withAuth from '@/utils/withAuth'; 
+
 const Page = () => {
   const supplierId = getLocalStorage("supplerId");
 
@@ -97,55 +99,43 @@ const Page = () => {
     });
   };
 
-const generatePDF = async () => {
-  if (!tableRef.current) return;
+  const generatePDF = async () => {
+    if (!tableRef.current) return;
 
-  const pdf = new jsPDF("p", "mm", "a4");
+    const pdf = new jsPDF("p", "mm", "a4");
 
-  // Set margins
-  const margin = 10; // in mm
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const contentWidth = pageWidth - 2 * margin;
+    // Set margins
+    const margin = 10; // in mm
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const contentWidth = pageWidth - 2 * margin;
 
-  // Add logo and name at the top
-  const name = rowData?.person_name || "Supplier Name";
-  
-  // Use the local image import directly
-  // const logoUrl = logo; // This is an imported local image
+    // Add logo and name at the top
+    const name = rowData?.person_name || "Supplier Name";
 
-  // // Add logo
-  // if (logoUrl) {
-  //   try {
-  //     const logoImg = await convertImageToBase64(logoUrl);
-  //     pdf.addImage(logoImg, "PNG", margin, margin, 30, 30); // Adjust size and position
-  //   } catch (error) {
-  //     console.error("Error adding logo image:", error);
-  //   }
-  // }
+    // Add name
+    pdf.setFontSize(16);
+    pdf.text(name, margin + 40, margin + 15); // Adjust position
 
-  // Add name
-  pdf.setFontSize(16);
-  pdf.text(name, margin + 40, margin + 15); // Adjust position
+    // Add a line below the header
+    pdf.setDrawColor(0, 0, 0);
+    pdf.setLineWidth(0.5);
+    pdf.line(margin, margin + 35, pageWidth - margin, margin + 35);
 
-  // Add a line below the header
-  pdf.setDrawColor(0, 0, 0);
-  pdf.setLineWidth(0.5);
-  pdf.line(margin, margin + 35, pageWidth - margin, margin + 35);
+    // Capture the table content as an image
+    const canvas = await html2canvas(tableRef.current, {
+      backgroundColor: null, // This will ensure the background is transparent
+    });
+    const imgData = canvas.toDataURL("image/png");
 
-  // Capture the table content as an image
-  const canvas = await html2canvas(tableRef.current);
-  const imgData = canvas.toDataURL("image/png");
+    // Calculate image size to fit within the PDF page
+    const imgWidth = contentWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  // Calculate image size to fit within the PDF page
-  const imgWidth = contentWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    // Add the image to the PDF
+    pdf.addImage(imgData, "PNG", margin, margin + 40, imgWidth, imgHeight);
 
-  // Add the image to the PDF
-  pdf.addImage(imgData, "PNG", margin, margin + 40, imgWidth, imgHeight);
-
-  return pdf;
-};
-
+    return pdf;
+  };
 
   // Helper function to load image from URL
   const loadImage = (url) => {
@@ -166,7 +156,7 @@ const generatePDF = async () => {
       const pdfBlob = pdf.output("blob");
 
       console.log("Creating File object...");
-      const file = new File([pdfBlob], "supplier_ledger.pdf", {
+      const file = new File([pdfBlob], `${rowData?.person_name} ledger.pdf`, {
         type: "application/pdf",
       });
 
@@ -174,7 +164,7 @@ const generatePDF = async () => {
         console.log("Using Web Share API...");
         await navigator.share({
           files: [file],
-          title: "Supplier Ledger",
+          title: `${rowData?.person_name} ledger.pdf`,
           text: "Check out this supplier ledger data",
         });
       } else {
@@ -202,7 +192,7 @@ const generatePDF = async () => {
   const testPDFGeneration = async () => {
     try {
       const pdf = await generatePDF();
-      pdf.save("test.pdf");
+      pdf.save(`${rowData?.person_name}.pdf`);
       console.log("PDF generated and saved successfully");
     } catch (error) {
       console.error("Error in PDF generation test:", error);
@@ -220,7 +210,7 @@ const generatePDF = async () => {
           Share on WhatsApp
         </Button>
         <Button variant="contained" color="primary" onClick={testPDFGeneration}>
-          Test PDF Generation
+          PDF Generate
         </Button>
       </div>
       <div className={styles.leftContact}>{rowData?.contact}</div>
@@ -233,6 +223,7 @@ const generatePDF = async () => {
               <TableCell>Description</TableCell>
               <TableCell>Credit Amount</TableCell>
               <TableCell>Debit Amount</TableCell>
+              <TableCell> Naam / Jama </TableCell>
               <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
@@ -257,9 +248,10 @@ const generatePDF = async () => {
               tableData.map((row, index) => (
                 <TableRow onClick={() => handleViewDetails(row)} key={index}>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.description}</TableCell>
+                  <TableCell>{row.description || "Purchase"}</TableCell>
                   <TableCell>{row.cr_amount}</TableCell>
                   <TableCell>{row.dr_amount}</TableCell>
+                  <TableCell>{row.balance < 0 ? "Naam" : "Jama"}</TableCell>
                   <TableCell>{row.balance}</TableCell>
                 </TableRow>
               ))
@@ -291,20 +283,53 @@ const generatePDF = async () => {
             Details
           </Typography>
           {modalData && (
-            <div>
-              <Typography id="modal-description" sx={{ mt: 2 }}>
-                <strong>Name:</strong> {modalData.balance}
-                <br />
-                <strong>Cash Amount:</strong> {modalData.cash_amount}
-                <br />
-                <strong>Credit Amount:</strong> {modalData.cr_amount}
-                <br />
-                <strong>Debit Amount:</strong> {modalData.dr_amount}
-                <br />
-                <strong>Payment Type:</strong> {modalData.payment_type}
-                <br />
-              </Typography>
-            </div>
+            <TableContainer component={Paper} sx={{ mt: 2 }}>
+              <Table>
+                <TableHead>
+                  {/* <TableRow>
+                    <TableCell>
+                      <strong>Product:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.payment_type}</TableCell>
+                  </TableRow> */}
+
+                  <TableRow>
+                    <TableCell>
+                      <strong>Field</strong>
+                    </TableCell>
+                    <TableCell>
+                      <strong>Value</strong>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Cash Amount:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.cash_amount}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Credit Amount:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.cr_amount}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Debit Amount:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.dr_amount}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <strong>Payment Type:</strong>
+                    </TableCell>
+                    <TableCell>{modalData.payment_type}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </Box>
       </Modal>
@@ -312,4 +337,4 @@ const generatePDF = async () => {
   );
 };
 
-export default Page;
+export default withAuth(Page);

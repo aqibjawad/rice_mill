@@ -23,8 +23,9 @@ const style = {
 
 const AddProduct = ({ open, handleClose, editData = null }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [responseMessage, setResponseMessage] = useState(""); // State for storing response message
+
   const api = new APICall();
-  const [sendingData, setSendingData] = useState(false);
   const [formData, setFormData] = useState({
     product_name: "",
     product_description: "",
@@ -57,31 +58,10 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
       [name]: selectedOption ? selectedOption.value : "",
     }));
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    if (!formData.product_name.trim()) {
-      Swal.fire({
-        title: "Error!",
-        text: "Please enter a product name.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!formData.product_description.trim()) {
-      Swal.fire({
-        title: "Error!",
-        text: "Please enter a product description.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-      setIsSubmitting(false);
-      return;
-    }
 
     const data = new FormData();
     for (const key in formData) {
@@ -96,23 +76,30 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
       } else {
         const url = products;
         response = await api.postFormDataWithToken(url, formData);
+        console.log(response);
+        
       }
 
-      Swal.fire({
-        title: "Success!",
-        text: `Product has been ${
-          editData ? "updated" : "added"
-        } successfully.`,
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-
+      setResponseMessage(
+        response.data.message || "Product has been successfully saved."
+      );
       handleClose(); // Close modal after success
     } catch (error) {
       console.error("An error occurred", error);
+
+      // Extract error message from the response
+      const errorMessage =
+        error.error?.message ;
+
+        console.log(errorMessage);
+        
+
+      // Save the error message in state for later use
+      setResponseMessage(errorMessage);
+
       Swal.fire({
         title: "Error!",
-        text: "An error occurred while processing your request.",
+        text: errorMessage === "The product name has already been taken.",
         icon: "error",
         confirmButtonText: "OK",
       });

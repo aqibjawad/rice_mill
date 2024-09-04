@@ -14,8 +14,9 @@ import {
   Skeleton,
   Grid,
   Button,
+  CircularProgress,
 } from "@mui/material";
-
+import Swal from "sweetalert2";
 import APICall from "../../networkApi/APICall";
 
 const Page = () => {
@@ -25,6 +26,7 @@ const Page = () => {
   const [tableData, setTableData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null); // State for action loading
 
   const [openBankCheque, setOpenBankCheque] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -52,6 +54,8 @@ const Page = () => {
   };
 
   const handleStatusUpdate = async (id) => {
+    setActionLoading(id); // Start loading
+
     try {
       const response = await api.getDataWithToken(
         `${bankCheque}/is_deferred/${id}/0`,
@@ -81,6 +85,8 @@ const Page = () => {
         icon: "error",
         confirmButtonText: "OK",
       });
+    } finally {
+      setActionLoading(null); // End loading
     }
   };
 
@@ -141,12 +147,17 @@ const Page = () => {
                     <TableCell>{row.cheque_amount}</TableCell>
                     <TableCell>{row.status}</TableCell>
                     <TableCell>
-                      <button
-                        onClick={() => handleStatusUpdate(row.id)}
-                        className={styles.cash}
-                      >
-                        Cash
-                      </button>
+                      {actionLoading === row.id ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <Button
+                          onClick={() => handleStatusUpdate(row.id)}
+                          className={styles.cash}
+                          variant="contained"
+                        >
+                          Cash
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

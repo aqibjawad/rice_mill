@@ -66,7 +66,8 @@ const Page = () => {
               <TableCell>Sr No</TableCell>
               <TableCell>Bank Name</TableCell>
               <TableCell>No of Cheque</TableCell>
-              <TableCell>Amount</TableCell>
+              <TableCell>Advance Cheque Amount</TableCell>
+              <TableCell>Total Balance</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -91,7 +92,7 @@ const Page = () => {
                     <TableCell>
                       {row.advance_cheques_sum_cheque_amount || 0}
                     </TableCell>
-                    <TableCell>{/* Result content */}</TableCell>
+                    <TableCell>{row.balance}</TableCell>
                     <TableCell>
                       <Button onClick={() => handleViewDetails(row.id)}>
                         View Details

@@ -15,32 +15,46 @@ import {
   Grid,
   Button,
 } from "@mui/material";
+import { format } from "date-fns";
 
 import APICall from "../../networkApi/APICall";
+import Buttons from "@/components/buttons";
 
 const Page = () => {
   const api = new APICall();
 
   const [tableData, setTableData] = useState([]);
-
-  const [rowData, setRowData] = useState();
-
+  const [rowData, setRowData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [startDate, endDate]);
 
-  
   const fetchData = async () => {
     const expenseId = getLocalStorage("expenseId");
-
     try {
-      const response = await api.getDataWithToken(`${expenseCat}/${expenseId}`);
+      setLoading(true);
+      const queryParams = [];
+
+      if (startDate && endDate) {
+        queryParams.push(`start_date=${startDate}`);
+        queryParams.push(`end_date=${endDate}`);
+      } else {
+        const currentDate = format(new Date(), "yyyy-MM-dd");
+        queryParams.push(`start_date=${currentDate}`);
+        queryParams.push(`end_date=${currentDate}`);
+      }
+
+      const response = await api.getDataWithToken(
+        `${expenseCat}/${expenseId}?${queryParams.join("&")}`
+      );
 
       const data = response.data;
-
       setRowData(data);
 
       if (Array.isArray(data.expenses)) {
@@ -55,17 +69,31 @@ const Page = () => {
     }
   };
 
+  const handleDateChange = (start, end) => {
+    setStartDate(start);
+    setEndDate(end);
+  };
 
-
+  const calculateTotalAmount = () => {
+    const total = tableData.reduce(
+      (total, row) => total + parseFloat(row.total_amount || 0),
+      0
+    );
+    return total.toLocaleString("en-IN", {
+      maximumFractionDigits: 2,
+      style: "currency",
+      currency: "PKR",
+    });
+  };
 
   return (
     <div>
       <div className={styles.container}>
-        <Grid container spacing={2}>
-          <Grid item lg={8} sm={12} xs={12} md={4}>
-            <div className={styles.leftSection}> {rowData?.expense_category} </div>
-          </Grid>
-        </Grid>
+        <Buttons
+          leftSectionText={rowData?.expense_category}
+          addButtonLink="/payments"
+          onDateChange={handleDateChange} // Pass the handler
+        />
       </div>
 
       <TableContainer component={Paper} className={styles.tableContainer}>
@@ -94,8 +122,8 @@ const Page = () => {
               : tableData.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>{row.id}</TableCell>
-                    <TableCell>{row.cash_amount}</TableCell>
-                    <TableCell>{row.cheque_amount || 0 }</TableCell>
+                    <TableCell>{row.cash_amount || 0}</TableCell>
+                    <TableCell>{row.cheque_amount || 0}</TableCell>
                     <TableCell>{row.description}</TableCell>
                     <TableCell>{row.total_amount}</TableCell>
                     <TableCell>{row.payment_type}</TableCell>
@@ -104,6 +132,12 @@ const Page = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <div className={styles.tableTotalRow}>
+        Total: {calculateTotalAmount()}
+      </div>
+
+      {error && <div className={styles.error}>Error: {error}</div>}
     </div>
   );
 };

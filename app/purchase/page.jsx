@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import styles from "../../styles/purchase.module.css";
 import APICall from "../../networkApi/APICall";
 import { purchaseBook } from "@/networkApi/Constants";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 import {
   Table,
   TableBody,
@@ -15,9 +15,11 @@ import {
   Skeleton,
 } from "@mui/material";
 
-import Buttons from "../../components/buttons"
+import Buttons from "../../components/buttons";
 
 import { MdDelete, MdEdit } from "react-icons/md";
+
+import withAuth from '@/utils/withAuth'; 
 
 const Page = () => {
   const api = new APICall();
@@ -40,7 +42,7 @@ const Page = () => {
       if (Array.isArray(data)) {
         setTableData(data);
       } else {
-        throw new Error('Fetched data is not an array');
+        throw new Error("Fetched data is not an array");
       }
     } catch (error) {
       setError(error.message);
@@ -57,30 +59,29 @@ const Page = () => {
   const handleDelete = async (id) => {
     try {
       const response = await api.deleteDataWithToken(`${purchaseBook}/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete Purchase Book item');
+        throw new Error("Failed to delete Purchase Book item");
       }
 
-      setTableData(tableData.filter(item => item.id !== id));
+      setTableData(tableData.filter((item) => item.id !== id));
 
       Swal.fire({
-        title: 'Deleted!',
-        text: 'The purchase item has been deleted successfully.',
-        icon: 'success',
-        confirmButtonText: 'OK'
+        title: "Deleted!",
+        text: "The purchase item has been deleted successfully.",
+        icon: "success",
+        confirmButtonText: "OK",
       });
-
     } catch (error) {
-      console.error('Error deleting Purchase:', error);
+      console.error("Error deleting Purchase:", error);
 
       Swal.fire({
-        title: 'Error!',
-        text: 'Failed to delete the purchase item.',
-        icon: 'error',
-        confirmButtonText: 'OK'
+        title: "Error!",
+        text: "Failed to delete the purchase item.",
+        icon: "error",
+        confirmButtonText: "OK",
       });
     }
   };
@@ -98,36 +99,32 @@ const Page = () => {
               <TableCell> Party </TableCell>
               <TableCell> Weight </TableCell>
               <TableCell> Amount </TableCell>
-
+              <TableCell> Action </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading ? (
-              // Show skeletons while loading
-              Array.from(new Array(5)).map((_, index) => (
-                <TableRow key={index}>
-                  {Array.from(new Array(22)).map((_, cellIndex) => (
-                    <TableCell key={cellIndex}><Skeleton /></TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              // Display data
-              tableData.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.product.product_name}</TableCell>
-                  <TableCell>{row.supplier.person_name}</TableCell>
-                  <TableCell>{row.net_weight}</TableCell>
-                  <TableCell>{row.total_amount}</TableCell>
-                  <TableCell>
-                    <div className={styles.iconContainer}>
-                      View Details
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+            {loading
+              ? // Show skeletons while loading
+                Array.from(new Array(5)).map((_, index) => (
+                  <TableRow key={index}>
+                    {Array.from(new Array(22)).map((_, cellIndex) => (
+                      <TableCell key={cellIndex}>
+                        <Skeleton />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              : // Display data
+                tableData.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{row.product?.product_name}</TableCell>
+                    <TableCell>{row.supplier?.person_name}</TableCell>
+                    <TableCell>{row.net_weight}</TableCell>
+                    <TableCell>{row.total_amount}</TableCell>
+                    <TableCell>View Details</TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -135,4 +132,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default withAuth(Page);

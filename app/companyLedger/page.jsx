@@ -178,14 +178,14 @@ const Page = () => {
             >
               Cash
             </button>
-            <button
+            {/* <button
               className={`${styles.tabPaymentButton} ${
                 activeTab === "cheque" ? styles.active : ""
               }`}
               onClick={() => handleTabClick("cheque")}
             >
               Cheque
-            </button>
+            </button> */}
           </div>
 
           <div className={styles.tabPaymentContent}>

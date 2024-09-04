@@ -33,7 +33,9 @@ const ExpensePayments = () => {
 
   const [tableBankData, setTableBankData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("tab1");
+  const [activeTab, setActiveTab] = useState("cash");
+
+  
   const [error, setError] = useState(null);
   const [tableExpenseData, setTableExpenseData] = useState([]);
   const [openExpense, setOpenExpense] = useState(false);
@@ -237,9 +239,9 @@ const ExpensePayments = () => {
         <div className={styles.tabPaymentContainer}>
           <button
             className={`${styles.tabPaymentButton} ${
-              activeTab === "tab1" ? styles.active : ""
+              activeTab === "cash" ? styles.active : ""
             }`}
-            onClick={() => handleTabClick("tab1")}
+            onClick={() => handleTabClick("cash")}
           >
             Cash
           </button>
