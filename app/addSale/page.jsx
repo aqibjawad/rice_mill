@@ -75,6 +75,7 @@ const Page = () => {
   const [price, setPrice] = useState("");
   const [munds, setMunds] = useState(""); // State to store calculated Munds
   const [kgs, setKgs] = useState(""); // State to store calculated Munds
+  const [totalAmount, setTotalAmount] = useState(""); // State to store calculated total amount
 
   useEffect(() => {
     fetchSuppliers();
@@ -153,6 +154,9 @@ const Page = () => {
       setWeight(value);
       calculateMunds(value);
       calculatePrice(value);
+      calculateTotalAmount(); // Update total amount when weight changes
+    } else if (name === "price_mann") {
+      calculateTotalAmount(); // Update total amount when price per mund changes
     }
   };
 
@@ -199,6 +203,12 @@ const Page = () => {
     setPrice((fullMundPrice + remainderMundPrice).toFixed(2));
   };
 
+  const calculateTotalAmount = () => {
+    const pricePerKillo = formData.price_mann / 40;
+    const totalAmount = pricePerKillo * formData.weight;
+    setTotalAmount(totalAmount.toFixed(2)); // Update state with total amount
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoadingSubmit(true);
@@ -241,8 +251,6 @@ const Page = () => {
     try {
       const response = await api.postFormDataWithToken(`${saleBook}`, bilObj);
 
-      // localStorage.setItem('saleBookId', response.data.id);
-
       Swal.fire({
         title: "Success!",
         text: "Your Bill is Updated.",
@@ -276,18 +284,6 @@ const Page = () => {
     } finally {
       setLoadingCompleteBill(false); // Set loading state to false when done
     }
-  };
-
-  const calculateTotalAmount = () => {
-    const total = saleData.reduce(
-      (total, row) => total + parseFloat(row.total_amount),
-      0
-    );
-    return total.toLocaleString("en-IN", {
-      maximumFractionDigits: 2,
-      style: "currency",
-      currency: "PKR",
-    });
   };
 
   return (
@@ -396,6 +392,14 @@ const Page = () => {
                 />
               </Grid>
 
+              <Grid item lg={6} xs={6}>
+                <InputWithTitle
+                  title={"Amount"}
+                  value={totalAmount}
+                  readOnly
+                />
+              </Grid>
+
               <Grid className="mt-5" item xs={12}>
                 <InputWithTitle
                   title={"Enter Description"}
@@ -446,7 +450,7 @@ const Page = () => {
         </TableContainer>
 
         <div className={styles.tableTotalRow}>
-          Total: {calculateTotalAmount()}
+          Total: {totalAmount}
         </div>
 
         <button
