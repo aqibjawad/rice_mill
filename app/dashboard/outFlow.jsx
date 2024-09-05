@@ -121,6 +121,7 @@ const Page = () => {
               <TableCell>Person</TableCell>
               <TableCell> Expense Category </TableCell>
               <TableCell>Description</TableCell>
+              <TableCell>Bank Name</TableCell>
               <TableCell>Cheque No</TableCell>
               <TableCell>Cheque Date</TableCell>
               <TableCell>Credit Amount</TableCell>
@@ -150,6 +151,7 @@ const Page = () => {
                       {row.expense_category?.expense_category || "N/A"}
                     </TableCell>
                     <TableCell>{row.description || "N/A"}</TableCell>
+                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>{" "}
                     <TableCell>{row.cheque_no || "N/A"}</TableCell>
                     <TableCell>{row.cheque_date || "N/A"}</TableCell>
                     <TableCell>{row.cr_amount || row.cash_amount}</TableCell>

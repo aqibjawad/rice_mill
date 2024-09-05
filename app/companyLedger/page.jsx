@@ -10,19 +10,23 @@ import Skeleton from "@mui/material/Skeleton";
 import Grid from "@mui/material/Grid";
 import Swal from "sweetalert2";
 
+import { useRouter } from "next/navigation";
+
 import {
   banks,
   companyLedger,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
-import { useRouter } from "next/navigation";
 
 const Page = () => {
+
   const api = new APICall();
+  const router = useRouter();
+
 
   const [formData, setFormData] = useState({
-    payment_type: "",
+    payment_type: "cash",
     description: "",
     cash_amount: "",
     bank_id: "",
@@ -152,6 +156,7 @@ const Page = () => {
         response = await api.postDataWithToken(companyLedger, formData);
 
       Swal.fire("Success", "Your data has been added!", "success");
+      router.push("/dashboard");
     } catch (error) {
       console.error("Error:", error);
       Swal.fire(

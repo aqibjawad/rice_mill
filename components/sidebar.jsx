@@ -45,7 +45,7 @@ const SideBar = () => {
     { name: "Purchase", href: "/purchase", icon: <FaShoppingBag /> },
     { name: "Payments", href: "/outflow", icon: <FaArrowLeft /> },
     { name: "Supplier", href: "/supplier", icon: <FaTruck /> },
-    { name: "Buyer", href: "/Buyer", icon: <FaUserTie /> },
+    { name: "Buyer", href: "/buyer", icon: <FaUserTie /> },
     { name: "Recieves", href: "/inflow", icon: <FaArrowRight /> },
     { name: "Expenses", href: "/expenses", icon: <FaMoneyBill /> },
     { name: "Company Ledger", href: "/companyLedger", icon: <FaMoneyBill /> },

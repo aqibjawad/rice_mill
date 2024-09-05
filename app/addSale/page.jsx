@@ -110,13 +110,11 @@ const Page = () => {
   };
 
   const fetchProducts = async () => {
-    try {
+    try { 
       setLoadingProducts(true);
 
       const response = await api.getDataWithToken(products);
-      const filteredProducts = response.data
-        .filter((item) => item.product_type === "other")
-        .map((item, index) => ({
+      const filteredProducts = response.data.map((item, index) => ({
           label: `${item.product_name}`,
           index: index,
           id: item.id,

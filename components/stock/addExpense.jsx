@@ -86,6 +86,7 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
       const response = await api.postFormDataWithToken(url, formData);
       alert("Expense saved successfully!");
       fetchData(); // Refresh the table data
+      handleCloseExpense();
     } catch (error) {
       console.error("An error occurred", error);
     } finally {
@@ -146,33 +147,6 @@ const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {
                     "Save"
                   )}
                 </button>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ flex: 1, marginRight: "10px" }}>
-            <div className={styles.bankList}>Expense Category List</div>
-
-            <div className={styles.contentContainer}>
-              <div className={styles.tableSection}>
-                <>
-                  <div className={styles.tableHeader}>
-                    <div>Sr.</div>
-                    <div>Name</div>
-                    <div>Action</div>
-                  </div>
-                  <div className={styles.tableBody}>
-                    {tableData.map((item, index) => (
-                      <div key={item.id} className={styles.tableRowData}>
-                        <div>{index + 1}</div>
-                        <div>{item.expense_category}</div>
-                        <div>
-                          {/* Action buttons like Edit/Delete can be added here */}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
               </div>
             </div>
           </div>

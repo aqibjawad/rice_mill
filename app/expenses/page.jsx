@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import styles from "../../styles/bankCheque.module.css";
+import styles from "../../styles/expenses.module.css";
 import { expenseCat } from "../../networkApi/Constants";
 import {
   Table,
@@ -12,12 +12,15 @@ import {
   Paper,
   Skeleton,
   Button,
+  Grid
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
 
 import Buttons from "@/components/buttons";
 import { format } from "date-fns";
+
+import AddExpense from "@/components/stock/addExpense";
 
 const Page = () => {
   const api = new APICall();
@@ -28,6 +31,10 @@ const Page = () => {
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+
+  const [openExpense, setOpenExpense] = useState(false);
+  const handleOpenExpense = () => setOpenExpense(true);
+  const handleCloseExpense = () => setOpenExpense(false);
 
   useEffect(() => {
     fetchData();
@@ -78,11 +85,30 @@ const Page = () => {
   return (
     <>
       <div className={styles.container}>
-        <Buttons
-          leftSectionText="Expenses"
-          addButtonLink="/payments"
-          onDateChange={handleDateChange} // Ensure this handler is connected properly
-        />
+        <Grid container spacing={2}>
+          <Grid item lg={6} sm={12} xs={12} md={4}>
+            <div className={styles.leftSection}>Stock</div>
+          </Grid>
+          <Grid item lg={6} sm={12} xs={12} md={8}>
+            <div className={styles.rightSection}>
+              <Grid container spacing={2}>
+                <Grid lg={3} item xs={6} sm={6} md={3}>
+                  <div onClick={handleOpenExpense} className={styles.rightItem}>
+                    Expenses Categories
+                  </div>
+                </Grid>
+
+                <Grid lg={3} item xs={6} sm={6} md={3}>
+                  <div className={styles.rightItem}>Add Expense</div>
+                </Grid>
+
+                <Grid item lg={3} xs={6} sm={6} md={3}>
+                  <div className={styles.rightItem}>Date</div>
+                </Grid>
+              </Grid>
+            </div>
+          </Grid>
+        </Grid>
       </div>
       <TableContainer component={Paper}>
         <Table>
@@ -120,6 +146,11 @@ const Page = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <AddExpense
+        openExpense={openExpense}
+        handleCloseExpense={handleCloseExpense}
+      />
     </>
   );
 };
