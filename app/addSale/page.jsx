@@ -203,11 +203,9 @@ const Page = () => {
         confirmButtonText: "OK",
       }).then(() => {
         // Clear form fields
-        setFormData({
-          weight: "",
-          product_description: "",
-          price_mann: 0,
-        });
+        updateFormData("weight", "");
+        updateFormData("product_description", "");
+        updateFormData("price_mann", 0);
         setWeight("");
         setMunds("");
         setKgs("");
@@ -267,6 +265,13 @@ const Page = () => {
       setLoadingCompleteBill(false); // Set loading state to false when done
     }
   };
+
+  const updateFormData = (field, value) => {
+  setFormData(prevState => ({
+    ...prevState,
+    [field]: value
+  }));
+};
 
   return (
     <Grid container spacing={2} style={{ marginTop: "2rem" }}>
@@ -395,7 +400,7 @@ const Page = () => {
                 {loadingSubmit ? (
                   <CircularProgress color="inherit" size={24} />
                 ) : (
-                  "Save"
+                  "Add Sale to Item"
                 )}
               </button>
             </Grid>
