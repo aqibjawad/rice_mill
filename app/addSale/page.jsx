@@ -212,10 +212,6 @@ const Page = () => {
         setMunds("");
         setKgs("");
         steTotalAmounts("");
-        setDropdownValues({
-          buyer_id: null,
-          pro_id: null,
-        });
       });
     } catch (error) {
       console.error("Error:", error.message);
