@@ -204,14 +204,9 @@ const Page = () => {
       }).then(() => {
         // Clear form fields
         setFormData({
-          id: "",
-          buyer_id: "",
-          pro_id: "",
           weight: "",
-          truck_no: "",
           product_description: "",
-          reference_no: "",
-          price_mann: 0, // Reset price_mann as well
+          price_mann: 0,
         });
         setWeight("");
         setMunds("");

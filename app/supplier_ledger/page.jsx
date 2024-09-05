@@ -24,7 +24,7 @@ import "jspdf-autotable";
 
 import logo from "../../public/logo.png";
 
-import withAuth from '@/utils/withAuth'; 
+import withAuth from "@/utils/withAuth";
 
 const Page = () => {
   const supplierId = getLocalStorage("supplerId");
@@ -99,42 +99,8 @@ const Page = () => {
     });
   };
 
-  const generatePDF = async () => {
-    if (!tableRef.current) return;
-
-    const pdf = new jsPDF("p", "mm", "a4");
-
-    // Set margins
-    const margin = 10; // in mm
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const contentWidth = pageWidth - 2 * margin;
-
-    // Add logo and name at the top
-    const name = rowData?.person_name || "Supplier Name";
-
-    // Add name
-    pdf.setFontSize(16);
-    pdf.text(name, margin + 40, margin + 15); // Adjust position
-
-    // Add a line below the header
-    pdf.setDrawColor(0, 0, 0);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, margin + 35, pageWidth - margin, margin + 35);
-
-    // Capture the table content as an image
-    const canvas = await html2canvas(tableRef.current, {
-      backgroundColor: null, // This will ensure the background is transparent
-    });
-    const imgData = canvas.toDataURL("image/png");
-
-    // Calculate image size to fit within the PDF page
-    const imgWidth = contentWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    // Add the image to the PDF
-    pdf.addImage(imgData, "PNG", margin, margin + 40, imgWidth, imgHeight);
-
-    return pdf;
+  const handlePrint = () => {
+    window.print();
   };
 
   // Helper function to load image from URL
@@ -203,13 +169,14 @@ const Page = () => {
       <div className={styles.container}>
         <div className={styles.leftSection}>{rowData?.person_name}</div>
         <Button
+        className={styles.hideOnPrint}
           variant="contained"
           color="secondary"
           onClick={handleWhatsAppShare}
         >
           Share on WhatsApp
         </Button>
-        <Button variant="contained" color="primary" onClick={testPDFGeneration}>
+        <Button className={styles.hideOnPrint}  variant="contained" color="primary" onClick={handlePrint}>
           PDF Generate
         </Button>
       </div>
@@ -286,13 +253,6 @@ const Page = () => {
             <TableContainer component={Paper} sx={{ mt: 2 }}>
               <Table>
                 <TableHead>
-                  {/* <TableRow>
-                    <TableCell>
-                      <strong>Product:</strong>
-                    </TableCell>
-                    <TableCell>{modalData.payment_type}</TableCell>
-                  </TableRow> */}
-
                   <TableRow>
                     <TableCell>
                       <strong>Field</strong>

@@ -159,3 +159,10 @@
   text-align: center;
   justify-content: center;
 }
+
+
+@media print {
+  .hide-on-print {
+    display: none !important;
+  }
+}
