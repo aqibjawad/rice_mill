@@ -16,6 +16,9 @@ import {
   FaMoneyBill,
 } from "react-icons/fa";
 
+import Link from "next/link";
+
+
 const SideBar = () => {
   const router = useRouter();
   const [activeItem, setActiveItem] = useState("Dashboard");
@@ -29,9 +32,9 @@ const SideBar = () => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, []); 
 
-  const logOut = () => {
+  const logOut = () => { 
     localStorage.removeItem("access_token");
     localStorage.removeItem("user");
     window.location.href = "/";
@@ -65,11 +68,11 @@ const SideBar = () => {
           <img className={styles.logo} src="/logo.png" alt="Logo" />
         </div>
         {menuItems.map((item, index) => (
-          <div
+          <Link
             onClick={() => {
               setActiveItem(item.name);
-              router.push(item.href);
             }}
+            href={item.href}
             key={index}
           >
             <div
@@ -81,7 +84,7 @@ const SideBar = () => {
               <span className={styles.icon}>{item.icon}</span>
               <span className={styles.itemName}>{item.name}</span>
             </div>
-          </div>
+          </Link>
         ))}
 
         <div>

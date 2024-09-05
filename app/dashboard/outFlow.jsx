@@ -82,15 +82,20 @@ const Page = () => {
   };
 
   const calculateTotalAmount = () => {
-    const total = tableData.reduce((total, row) => {
-      const cashAmount = parseFloat(row.cash_amount) || 0;
-      const crAmount = parseFloat(row.cr_amount) || 0;
+      var allCRS = 0;
+      var allCash = 0;
+    tableData.map((row, index) => {
+      if (row.cr_amount) {
+        allCRS += parseFloat(row.cr_amount) || 0;
+      } else {
+        allCash += parseFloat(row.cash_amount) || 0;
+      }
+    },);
 
-      // Sum the amounts
-      return total + cashAmount + crAmount;
-    }, 0);
+    var sum = allCRS + allCash;
+    
 
-    return total.toLocaleString("en-IN", {
+    return sum.toLocaleString("en-IN", {
       maximumFractionDigits: 2,
       style: "currency",
       currency: "PKR",

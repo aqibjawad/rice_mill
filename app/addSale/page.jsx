@@ -38,7 +38,7 @@ const Page = () => {
     reference_no: "",
     price_mann: 0, // Added price_mann here for demonstration
   });
-  
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const [productList, setProducts] = useState([]);
@@ -65,7 +65,7 @@ const Page = () => {
   const [kgs, setKgs] = useState(""); // State to store calculated Kilograms
 
   const [totalAmount, steTotalAmounts] = useState("");
-  
+
   useEffect(() => {
     fetchSuppliers();
     fetchProducts();
@@ -110,15 +110,15 @@ const Page = () => {
   };
 
   const fetchProducts = async () => {
-    try { 
+    try {
       setLoadingProducts(true);
 
       const response = await api.getDataWithToken(products);
       const filteredProducts = response.data.map((item, index) => ({
-          label: `${item.product_name}`,
-          index: index,
-          id: item.id,
-        }));
+        label: `${item.product_name}`,
+        index: index,
+        id: item.id,
+      }));
 
       setProducts(filteredProducts);
     } catch (error) {
@@ -174,7 +174,9 @@ const Page = () => {
 
     const totalAmount = price_per_munds * formData.weight;
 
-    steTotalAmounts(totalAmount);
+    const roundedAmount = totalAmount.toFixed(2);
+
+    steTotalAmounts(roundedAmount);
   };
 
   useEffect(() => {
@@ -188,7 +190,7 @@ const Page = () => {
     try {
       const response = await api.postFormDataWithToken(`${saleBook}/add_item`, {
         ...formData,
-        weight: weight, // Removed price calculation
+        weight: weight,
       });
 
       setSaleDetails(response.data.details);
@@ -199,6 +201,26 @@ const Page = () => {
         text: "Data Added.",
         icon: "success",
         confirmButtonText: "OK",
+      }).then(() => {
+        // Clear form fields
+        setFormData({
+          id: "",
+          buyer_id: "",
+          pro_id: "",
+          weight: "",
+          truck_no: "",
+          product_description: "",
+          reference_no: "",
+          price_mann: 0, // Reset price_mann as well
+        });
+        setWeight("");
+        setMunds("");
+        setKgs("");
+        steTotalAmounts("");
+        setDropdownValues({
+          buyer_id: null,
+          pro_id: null,
+        });
       });
     } catch (error) {
       console.error("Error:", error.message);
