@@ -6,17 +6,17 @@ import Inflow from "./inflow";
 import ExpenseCard from "./expenseCard";
 import OutFlow from "./outFlow";
 import Stock from "./stock";
+import Purchase from "./purchase";
 
-import withAuth from '@/utils/withAuth'; 
-import { useRouter } from 'next/navigation';
+import withAuth from "@/utils/withAuth";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
-
- const router = useRouter();
+  const router = useRouter();
 
   return (
     <Grid container spacing={3}>
-      <Grid item lg={12} xs={12} sm={12} md={12}> 
+      <Grid item lg={12} xs={12} sm={12} md={12}>
         <ExpenseCard />
       </Grid>
 
@@ -26,6 +26,10 @@ const Page = () => {
 
       <Grid item xs={12}>
         <OutFlow />
+      </Grid>
+
+      <Grid item xs={12}>
+        <Purchase />
       </Grid>
 
       <Grid item lg={12} xs={12} sm={6} md={4}>

@@ -74,26 +74,25 @@ const Page = () => {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete stock item");
-      }
+      if ((response.status = "success")) {
+        setTableData((prevData) => prevData.filter((item) => item.id !== id));
 
-      setTableData((prevData) => prevData.filter((item) => item.id !== id));
-
-      Swal.fire({
-        title: "Deleted!",
-        text: "The stock item has been deleted successfully.",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-    } catch (error) {
-      console.error("Error deleting Stock:", error);
-      Swal.fire({
+        Swal.fire({
+          title: "Deleted!",
+          text: "The stock item has been deleted successfully.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      } else{
+        Swal.fire({
         title: "Error!",
         text: "Failed to delete the stock item.",
         icon: "error",
         confirmButtonText: "OK",
       });
+      }
+    } catch (error) {
+      console.error("Error deleting Stock:", error);
     }
   };
 

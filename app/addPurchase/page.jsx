@@ -324,6 +324,8 @@ const AddPurchaseContent = () => {
 
   return (
     <form>
+      <div>Add Purchase</div>
+
       <Grid container spacing={2}>
         <Grid className="mt-10" item xs={12} lg={4} sm={4}>
           {loadingSuppliers ? (
@@ -466,10 +468,6 @@ const AddPurchaseContent = () => {
           />
         </Grid> */}
 
-        <Grid className="mt-6" item xs={12} lg={12} md={12} sm={12}>
-          <Tabs activeTab={activeTab} setActiveTab={handleTabChange} />
-        </Grid>
-
         <Grid className="mt-5" item xs={12} sm={4}>
           <TableContainer component={Paper}>
             <Table>
@@ -501,10 +499,6 @@ const AddPurchaseContent = () => {
           </TableContainer>
         </Grid>
 
-        <Grid className="mt-10" item lg={4} xs={6}>
-          <InputWithTitle title={"Amount"} value={totalAmount} readOnly />
-        </Grid>
-
         <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
             title={"Freight"}
@@ -513,6 +507,14 @@ const AddPurchaseContent = () => {
             value={formData.freight}
             onChange={handleInputChange}
           />
+        </Grid>
+
+        <Grid className="mt-10" item lg={4} xs={6}>
+          <InputWithTitle title={"Amount"} value={totalAmount} readOnly />
+        </Grid>
+
+        <Grid className="mt-6" item xs={12} lg={12} md={12} sm={12}>
+          <Tabs activeTab={activeTab} setActiveTab={handleTabChange} />
         </Grid>
 
         {activeTab === "cash" && (
