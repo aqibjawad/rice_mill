@@ -66,7 +66,7 @@ const Page = () => {
 
   const calculateTotalAmount = () => {
     const total = tableData.reduce(
-      (total, row) => total + parseFloat(row.balance),
+      (total, row) => total + parseFloat(row.cr_amount),
       0
     );
     return total.toLocaleString("en-IN", {
@@ -92,11 +92,11 @@ const Page = () => {
               <TableCell>Payment Type</TableCell>
               <TableCell>Person</TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Cash Amount</TableCell>
               <TableCell>Bank Id</TableCell>
               <TableCell>Bank Name</TableCell>
               <TableCell>Cheque No</TableCell>
               <TableCell>Cheque Date</TableCell>
+              <TableCell>Credit Amount</TableCell>
               <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
@@ -117,11 +117,11 @@ const Page = () => {
                     <TableCell>{row.payment_type}</TableCell>
                     <TableCell>{row.customer?.person_name}</TableCell>
                     <TableCell>{row.description}</TableCell>
-                    <TableCell>{row.cash_amount}</TableCell>
                     <TableCell>{row.bank_id || "N/A"}</TableCell>
                     <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
                     <TableCell>{row.cheque_no || "N/A"}</TableCell>
                     <TableCell>{row.cheque_date || "N/A"}</TableCell>
+                    <TableCell>{row.cr_amount}</TableCell>
                     <TableCell>{row.balance}</TableCell>
                   </TableRow>
                 ))}

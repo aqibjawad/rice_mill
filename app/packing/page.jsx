@@ -97,24 +97,19 @@ const Page = () => {
           </Grid>
           <Grid item lg={4} sm={12} xs={12} md={8}>
             <div className={styles.rightSection}>
+
               <Grid container spacing={2}>
-                <Grid lg={3} item xs={6} sm={6} md={3}>
+
+                <Grid lg={6} item xs={6} sm={6} md={6}>
                   <div onClick={handleOpen} className={styles.rightItem}>
                     Add
                   </div>
                 </Grid>
 
-                <Grid lg={3} item xs={6} sm={6} md={3}>
+                <Grid lg={6} item xs={6} sm={6} md={6}>
                   <div className={styles.rightItem}>date</div>
                 </Grid>
 
-                <Grid item lg={3} xs={6} sm={6} md={3}>
-                  <div className={styles.rightItem}>view</div>
-                </Grid>
-
-                <Grid item lg={3} xs={6} sm={6} md={3}>
-                  <div className={styles.rightItemExp}>export</div>
-                </Grid>
               </Grid>
             </div>
           </Grid>

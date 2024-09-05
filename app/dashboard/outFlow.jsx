@@ -82,16 +82,27 @@ const Page = () => {
   };
 
   const calculateTotalAmount = () => {
-    const total = tableData.reduce(
-      (total, row) => total + parseFloat(row.cash_amount || 0),
-      0
-    );
+    const total = tableData.reduce((total, row) => {
+      const cashAmount = parseFloat(row.cash_amount) || 0;
+      const crAmount = parseFloat(row.cr_amount) || 0;
+
+      // Sum the amounts
+      return total + cashAmount + crAmount;
+    }, 0);
+
     return total.toLocaleString("en-IN", {
       maximumFractionDigits: 2,
       style: "currency",
       currency: "PKR",
     });
   };
+
+  //   return total.toLocaleString("en-IN", {
+  //     maximumFractionDigits: 2,
+  //     style: "currency",
+  //     currency: "PKR",
+  //   });
+  // };
 
   return (
     <div>
@@ -110,12 +121,13 @@ const Page = () => {
               <TableCell>Person</TableCell>
               <TableCell> Expense Category </TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Cash Amount</TableCell>
 
               <TableCell>Bank Id</TableCell>
               <TableCell>Bank Name</TableCell>
               <TableCell>Cheque No</TableCell>
               <TableCell>Cheque Date</TableCell>
+              <TableCell>Credit Amount</TableCell>
+
               <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
@@ -141,11 +153,11 @@ const Page = () => {
                       {row.expense_category?.expense_category || "N/A"}
                     </TableCell>
                     <TableCell>{row.description || "N/A"}</TableCell>
-                    <TableCell>{row.cash_amount}</TableCell>
                     <TableCell>{row.bank_id || "N/A"}</TableCell>
                     <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>{" "}
                     <TableCell>{row.cheque_no || "N/A"}</TableCell>
                     <TableCell>{row.cheque_date || "N/A"}</TableCell>
+                    <TableCell>{row.cr_amount || row.cash_amount}</TableCell>
                     <TableCell>{row.balance || "Expense"}</TableCell>
                   </TableRow>
                 ))}

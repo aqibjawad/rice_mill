@@ -208,12 +208,12 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
           className="mt-5"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
-          <div style={{ flex: 1, marginRight: "10px" }}>
+          <div style={{ flex: 1, marginRight: "10px", cursor:"pointer" }}>
             <div className={styles.editBtn} onClick={handleClose}>
               Cancel
             </div>
           </div>
-          <div style={{ flex: 1, marginLeft: "10px" }}>
+          <div style={{ flex: 1, marginLeft: "10px" , cursor:"pointer" }}>
             <div className={styles.saveBtn} onClick={handleSubmit}>
               {sendingData ? (
                 <CircularProgress color="inherit" size={20} />

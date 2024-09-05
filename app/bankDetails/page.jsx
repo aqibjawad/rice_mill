@@ -62,18 +62,15 @@ const Page = () => {
         { status: "Cash" }
       );
 
-      if (response.status === 200) {
-        setTableData((prevData) =>
-          prevData.map((row) =>
-            row.id === id ? { ...row, status: "Cash" } : row
-          )
-        );
-
+      if (response.status === "success") {
         Swal.fire({
           title: "Success!",
           text: "Cheque status updated to Cash.",
           icon: "success",
           confirmButtonText: "OK",
+        }).then(() => {
+          // Refetch data after the alert is confirmed
+          fetchData();
         });
       }
     } catch (error) {
@@ -124,7 +121,6 @@ const Page = () => {
               <TableCell>Date</TableCell>
               <TableCell>Party</TableCell>
               <TableCell>Amount</TableCell>
-              <TableCell>Result</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
@@ -145,7 +141,6 @@ const Page = () => {
                     <TableCell>{row.cheque_date}</TableCell>
                     <TableCell>{row.customer.person_name}</TableCell>
                     <TableCell>{row.cheque_amount}</TableCell>
-                    <TableCell>{row.status}</TableCell>
                     <TableCell>
                       {actionLoading === row.id ? (
                         <>

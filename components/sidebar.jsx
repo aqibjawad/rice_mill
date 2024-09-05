@@ -31,13 +31,18 @@ const SideBar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const handleNavigation = (item) => {
+    setActiveItem(item.name);
+    setTimeout(() => {
+      router.push(item.href);
+    }, 100); // Delay navigation to allow state update
+  };
+
   const logOut = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user");
     window.location.href = "/";
   };
-
-  // const userInfoString = localStorage.getItem("user");
 
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: <FaHome /> },
@@ -45,16 +50,16 @@ const SideBar = () => {
     { name: "Purchase", href: "/purchase", icon: <FaShoppingBag /> },
     { name: "Payments", href: "/outflow", icon: <FaArrowLeft /> },
     { name: "Supplier", href: "/supplier", icon: <FaTruck /> },
-    { name: "Buyer", href: "/Buyer", icon: <FaUserTie /> },
+    { name: "Buyer", href: "/buyer", icon: <FaUserTie /> },
     { name: "Recieves", href: "/inflow", icon: <FaArrowRight /> },
     { name: "Expenses", href: "/expenses", icon: <FaMoneyBill /> },
     { name: "Company Ledger", href: "/companyLedger", icon: <FaMoneyBill /> },
     { name: "Bank Cheque", href: "/bankCheque", icon: <FaArrowRight /> },
-    { name: "Banks", href: "/banks", icon: <FaArrowRight /> },
     { name: "Product", href: "/product", icon: <FaShoppingCart /> },
     { name: "Packing", href: "/packing", icon: <FaBox /> },
     { name: "Stock", href: "/stock", icon: <FaBoxes /> },
   ];
+
   return (
     <>
       {isMobile && (
@@ -65,13 +70,7 @@ const SideBar = () => {
           <img className={styles.logo} src="/logo.png" alt="Logo" />
         </div>
         {menuItems.map((item, index) => (
-          <div
-            onClick={() => {
-              setActiveItem(item.name);
-              router.push(item.href);
-            }}
-            key={index}
-          >
+          <div onClick={() => handleNavigation(item)} key={index}>
             <div
               className={`${styles.sideBarItem} ${
                 activeItem === item.name ? styles.active : ""
@@ -83,16 +82,13 @@ const SideBar = () => {
             </div>
           </div>
         ))}
-
         <div>
           <div className={styles.profileHead}>Profile</div>
           <div className={styles.picCont}>
             <img className={styles.userPic} src="/userPic.png" />
           </div>
-
-          {/* <div className={styles.userName}>{userInfoString?.name}</div> */}
           <div className="m-5">
-          <div className={styles.userEmail}>Admin</div>
+            <div className={styles.userEmail}>Admin</div>
           </div>
           <div className={styles.logoutCont}>
             <div onClick={logOut} className={styles.logoutBtn}>

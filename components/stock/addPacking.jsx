@@ -122,12 +122,12 @@ const AddPacking = ({ open, handleClose, editData = null }) => {
 
                 <div className='mt-5' style={{ display: 'flex', justifyContent: 'space-between' }}>
 
-                    <div style={{ flex: 1, marginRight: '10px' }}>
+                    <div style={{ flex: 1, marginRight: '10px', cursor:"pointer" }}>
                         <div className={styles.editBtn} onClick={handleClose}>
                             Cancel
                         </div>
                     </div>
-                    <div style={{ flex: 1, marginRight: '10px' }}>
+                    <div style={{ flex: 1, marginRight: '10px', cursor:"pointer" }}>
                         <div className={styles.saveBtn} onClick={handleSubmit}>
                             {sendingData ? (
                                 <CircularProgress color="inherit" size={20} />

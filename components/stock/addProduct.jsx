@@ -124,7 +124,6 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
         handleClose();
         // router.push("/purchase/");
       } else {
-        console.error("Error:", error);
         Swal.fire({
           icon: "error",
           title: "Error",
