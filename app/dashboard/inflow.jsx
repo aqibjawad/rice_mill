@@ -19,6 +19,8 @@ const Page = () => {
   const api = new APICall();
 
   const [tableData, setTableData] = useState([]);
+  
+
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState(null);
@@ -45,8 +47,11 @@ const Page = () => {
       const response = await api.getDataWithToken(
         `${getAmountReceives}?${queryParams.join("&")}`
       );
+      
 
       const data = response.data;
+      
+
       if (Array.isArray(data)) {
         setTableData(data);
       } else {
@@ -92,7 +97,6 @@ const Page = () => {
               <TableCell>Payment Type</TableCell>
               <TableCell>Person</TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Bank Name</TableCell>
               <TableCell>Cheque No</TableCell>
               <TableCell>Cheque Date</TableCell>
               <TableCell>Credit Amount</TableCell>
@@ -116,7 +120,6 @@ const Page = () => {
                     <TableCell>{row.payment_type}</TableCell>
                     <TableCell>{row.customer?.person_name}</TableCell>
                     <TableCell>{row.description}</TableCell>
-                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
                     <TableCell>{row.cheque_no || "N/A"}</TableCell>
                     <TableCell>{row.cheque_date || "N/A"}</TableCell>
                     <TableCell>{row.cr_amount}</TableCell>
