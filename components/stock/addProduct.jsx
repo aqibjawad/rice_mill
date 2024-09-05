@@ -59,50 +59,79 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
     }));
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
+
+  //   const data = new FormData();
+  //   for (const key in formData) {
+  //     data.append(key, formData[key]);
+  //   }
+
+  //   try {
+  //     let response;
+  //     if (editData) {
+  //       const url = `${products}/${editData.id}`;
+  //       response = await api.updateFormDataWithToken(url, formData);
+  //     } else {
+  //       const url = products;
+  //       response = await api.postFormDataWithToken(url, formData);
+  //       console.log(response);
+
+  //     }
+
+  //     setResponseMessage(
+  //       response.data.message || "Product has been successfully saved."
+  //     );
+  //     handleClose(); // Close modal after success
+  //   } catch (error) {
+  //     console.error("An error occurred", error);
+
+  //     // Extract error message from the response
+  //     const errorMessage =
+  //       error.error?.message ;
+
+  //       console.log(errorMessage);
+
+  //     // Save the error message in state for later use
+  //     setResponseMessage(errorMessage);
+
+  //     Swal.fire({
+  //       title: "Error!",
+  //       text: errorMessage === "The product name has already been taken.",
+  //       icon: "error",
+  //       confirmButtonText: "OK",
+  //     });
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setIsSubmitting(true);
 
-    const data = new FormData();
-    for (const key in formData) {
-      data.append(key, formData[key]);
-    }
-
     try {
-      let response;
-      if (editData) {
-        const url = `${products}/${editData.id}`;
-        response = await api.updateFormDataWithToken(url, formData);
+      const response = await api.postDataWithToken(products, formData);
+
+      if (response.status === "success") {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Data has been added successfully!",
+        });
+        handleClose();
+        // router.push("/purchase/");
       } else {
-        const url = products;
-        response = await api.postFormDataWithToken(url, formData);
-        console.log(response);
-        
+        console.error("Error:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "The product name has already been taken",
+        });
+        handleClose();
       }
-
-      setResponseMessage(
-        response.data.message || "Product has been successfully saved."
-      );
-      handleClose(); // Close modal after success
-    } catch (error) {
-      console.error("An error occurred", error);
-
-      // Extract error message from the response
-      const errorMessage =
-        error.error?.message ;
-
-        console.log(errorMessage);
-        
-
-      // Save the error message in state for later use
-      setResponseMessage(errorMessage);
-
-      Swal.fire({
-        title: "Error!",
-        text: errorMessage === "The product name has already been taken.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -148,7 +177,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
           />
         </div>
 
-        <div className="mt-10">
+        {/* <div className="mt-10">
           <DropDown
             title="Select Product Type"
             options={typeList}
@@ -156,7 +185,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
             value={formData.product_type}
             onChange={handleDropDownChange}
           />
-        </div>
+        </div> */}
 
         <div
           className="mt-5"
