@@ -28,7 +28,7 @@ const Page = () => {
 
   const [formData, setFormData] = useState({
     buyer_id: "",
-    payment_type: "",
+    payment_type: "cash",
     description: "",
     cash_amount: "",
     bank_id: "",

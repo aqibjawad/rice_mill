@@ -134,7 +134,7 @@ const Dashboard = () => {
             <div className={styles.cardAmount}>
               {loading ? <Skeleton width={100} height={30} /> : result}
             </div>
-            <div className={styles.cardTitle}>Total</div>
+            <div className={styles.cardTitle}>Balance</div>
           </CardContent>
         </Card>
       </Grid>

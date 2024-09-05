@@ -70,7 +70,7 @@ const Page = () => {
   };
 
   const filteredData = tableData.filter((row) =>
-    row.buyer.person_name.toLowerCase().includes(searchTerm.toLowerCase())
+    row.buyer?.person_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

@@ -52,6 +52,7 @@ const Page = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
 
   const [saleData, setSaleDetails] = useState([]);
+  const [billTotal, setBilTotal] = useState("");
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [loadingCompleteBill, setLoadingCompleteBill] = useState(false); // New loading state
 
@@ -194,6 +195,7 @@ const Page = () => {
       });
 
       setSaleDetails(response.data.details);
+      setBilTotal(response.data.total_amount);
       localStorage.setItem("saleBookId", response.data.id);
 
       Swal.fire({
@@ -209,7 +211,6 @@ const Page = () => {
         setWeight("");
         setMunds("");
         setKgs("");
-        steTotalAmounts("");
       });
     } catch (error) {
       console.error("Error:", error.message);
@@ -267,11 +268,11 @@ const Page = () => {
   };
 
   const updateFormData = (field, value) => {
-  setFormData(prevState => ({
-    ...prevState,
-    [field]: value
-  }));
-};
+    setFormData((prevState) => ({
+      ...prevState,
+      [field]: value,
+    }));
+  };
 
   return (
     <Grid container spacing={2} style={{ marginTop: "2rem" }}>
@@ -400,7 +401,7 @@ const Page = () => {
                 {loadingSubmit ? (
                   <CircularProgress color="inherit" size={24} />
                 ) : (
-                  "Add Sale to Item"
+                  "Add Item in Bill"
                 )}
               </button>
             </Grid>
@@ -430,9 +431,7 @@ const Page = () => {
           </Table>
         </TableContainer>
 
-        <div className={styles.tableTotalRow}>
-          Total: {/* Removed total amount calculation */}
-        </div>
+        <div className={styles.tableTotalRow}>Total: {billTotal}</div>
 
         <button
           type="submit"

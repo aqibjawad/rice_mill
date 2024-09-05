@@ -18,9 +18,11 @@ import {
 } from "@mui/material";
 import APICall from "@/networkApi/APICall";
 import { buyerLedger, getLocalStorage } from "../../networkApi/Constants";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
   const api = new APICall();
+  const router = useRouter();
   const [tableData, setTableData] = useState([]);
 
   const [rowData, setRowData] = useState();
@@ -60,13 +62,43 @@ const Page = () => {
   };
 
   const handleViewDetails = (row) => {
-    setModalData(row);
-    setModalOpen(true);
+    if (row.book_id) {
+      localStorage.setItem("saleBookId", row.book_id);
+      router.push("/invoice");
+    }
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
     setModalData(null);
+  };
+
+  const getDescriction = (row) => {
+    if (row.description === "Opening Balance") {
+      return "Opening Balance";
+    } else if (row.entry_type === "dr") {
+      return "Bill - " + row.book_id;
+    } else if (row.entry_type === "cr") {
+      if (row.payment_type === "cheque") {
+        return (
+          row.payment_type +
+          " - " +
+          row.bank.bank_name +
+          " - " +
+          row.cheque_date
+        );
+      } else if (row.payment_type === "online") {
+        return (
+          row.payment_type +
+          " - " +
+          row.bank.bank_name +
+          " - " +
+          row.transection_id
+        );
+      } else {
+        return row.payment_type;
+      }
+    }
   };
 
   return (
@@ -108,7 +140,7 @@ const Page = () => {
               tableData.map((row, index) => (
                 <TableRow onClick={() => handleViewDetails(row)} key={index}>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.description}</TableCell>
+                  <TableCell>{getDescriction(row)}</TableCell>
                   <TableCell>{row.cr_amount}</TableCell>
                   <TableCell>{row.dr_amount}</TableCell>
                   <TableCell>{row.balance < 0 ? "Jama" : "Naam"}</TableCell>
