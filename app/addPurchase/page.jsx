@@ -9,7 +9,12 @@ import styles from "../../styles/addPurchase.module.css";
 import APICall from "../../networkApi/APICall";
 import Tabs from "./tabs";
 import Swal from "sweetalert2";
-import { purchaseBook, suppliers, products } from "../../networkApi/Constants";
+import {
+  purchaseBook,
+  suppliers,
+  products,
+  banks,
+} from "../../networkApi/Constants";
 
 import {
   Table,
@@ -22,7 +27,6 @@ import {
 } from "@mui/material";
 
 const MUND_TO_KG = 40; // 1 mund equals 40 kg
-const PRICE_PER_MUND = 2000; // Price for 1 mund
 
 const AddPurchaseContent = () => {
   const router = useRouter();
@@ -48,6 +52,8 @@ const AddPurchaseContent = () => {
     bardaana_deduction: "",
     final_weight: "",
     payment_type: "cash",
+    transection_id: "",
+    bank_id: "",
   });
 
   const validateForm = () => {
@@ -64,6 +70,7 @@ const AddPurchaseContent = () => {
       "freight",
       "price_mann",
       "cash_amount",
+      "bank_id",
     ];
 
     const missingFields = requiredFields.filter((field) => !formData[field]);
@@ -95,23 +102,34 @@ const AddPurchaseContent = () => {
     sup_id: null,
     pro_id: null,
     bardaana_type: null,
+    bank_id: null,
   });
 
   const [productList, setProducts] = useState([]);
+
   const [supplierList, setSuppliers] = useState([]);
+  const [bank, setBank] = useState([]);
+
   const [error, setError] = useState("");
-  const [selectedBardaana, setSelectedBardaana] = useState(null);
   const [activeTab, setActiveTab] = useState("cash");
+
+  console.log(activeTab);
 
   // Loading states
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
+
   const [loadingProducts, setLoadingProducts] = useState(true);
+
+  const [loadingBanks, setLoadingBanks] = useState(true);
+
   const [loadingSubmit, setLoadingSubmit] = useState(false);
 
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [remainingAmount, setRemainingAmount] = useState("0.00");
   const [munds, setMunds] = useState("");
   const [kgs, setKgs] = useState("");
+
+  const [totalAmount, steTotalAmounts] = useState(0);
+
+  const [selectedBardaanaId, setSelectedBardaanaId] = useState(1);
 
   const bardaanaList = [
     { id: 1, label: "add" },
@@ -122,29 +140,8 @@ const AddPurchaseContent = () => {
   useEffect(() => {
     fetchSuppliers();
     fetchProducts();
+    fetchBanks();
   }, []);
-
-  useEffect(() => {
-    const quantity = parseFloat(formData.quantity) || 0;
-    const price = parseFloat(formData.price) || 0;
-    const cashAmount = parseFloat(formData.cash_amount) || 0;
-    const total = quantity * price;
-
-    // Update total amount
-    setTotalAmount(total);
-
-    // Calculate remaining amount
-    const remaining = total - cashAmount;
-
-    // Set remaining amount (allow negative values)
-    setRemainingAmount(remaining.toFixed(2));
-  }, [
-    formData.quantity,
-    formData.price,
-    formData.cash_amount,
-    setTotalAmount,
-    setRemainingAmount,
-  ]);
 
   const calculateMunds = (weight) => {
     const weightInKg = parseFloat(weight);
@@ -193,6 +190,18 @@ const AddPurchaseContent = () => {
     formData.bardaana_quantity,
   ]);
 
+  const calculatAmount = () => {
+    const price_per_munds = formData.price_mann / 40;
+
+    const totalAmount = price_per_munds * formData.weight;
+
+    steTotalAmounts(totalAmount);
+  };
+
+  useEffect(() => {
+    calculatAmount();
+  }, [formData]);
+
   const fetchSuppliers = async () => {
     try {
       const response = await api.getDataWithToken(suppliers);
@@ -207,6 +216,23 @@ const AddPurchaseContent = () => {
       setError("Failed to fetch suppliers. Please try again.");
     } finally {
       setLoadingSuppliers(false);
+    }
+  };
+
+  const fetchBanks = async () => {
+    try {
+      const response = await api.getDataWithToken(banks);
+      const list = response.data.map((item, index) => ({
+        label: `${item.bank_name}`,
+        index: index,
+        id: item.id,
+      }));
+      setBank(list);
+    } catch (error) {
+      console.error("Error fetching banks:", error);
+      setError("Failed to fetch banks. Please try again.");
+    } finally {
+      setLoadingBanks(false);
     }
   };
 
@@ -298,7 +324,11 @@ const AddPurchaseContent = () => {
   return (
     <form>
       <Grid container spacing={2}>
-        <Grid className="mt-10" item xs={12} sm={4}>
+        <Grid className="mt-6" item xs={12} lg={12} md={12} sm={12}>
+          <Tabs activeTab={activeTab} setActiveTab={handleTabChange} />
+        </Grid>
+
+        <Grid className="mt-10" item xs={12} lg={4} sm={4}>
           {loadingSuppliers ? (
             <Skeleton variant="rectangular" width="100%" height={56} />
           ) : (
@@ -312,7 +342,7 @@ const AddPurchaseContent = () => {
           )}
         </Grid>
 
-        <Grid className="mt-3" item xs={12} sm={5}>
+        <Grid className="mt-3" item xs={12} lg={4} sm={5}>
           <InputWithTitle
             title={"Select Date"}
             type="date"
@@ -321,10 +351,6 @@ const AddPurchaseContent = () => {
             value={formData.date}
             onChange={handleInputChange}
           />
-        </Grid>
-
-        <Grid className="mt-6" item xs={12} sm={3}>
-          <Tabs activeTab={activeTab} setActiveTab={handleTabChange} />
         </Grid>
 
         <Grid className="mt-10" item xs={12} sm={4}>
@@ -341,7 +367,7 @@ const AddPurchaseContent = () => {
           )}
         </Grid>
 
-        <Grid className="mt-10" item xs={12} sm={4}>
+        <Grid style={{ marginTop: "4rem" }} item xs={12} sm={4}>
           <DropDown
             title="Select Bardaana"
             options={bardaanaList}
@@ -351,19 +377,111 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        {activeTab !== "cash" && (
-          <Grid className="mt-10" item xs={12} sm={4}>
-            <InputWithTitle
-              title={"Cheque Number"}
-              placeholder={"Cheque Number"}
-              name="chequeNumber"
-              value={formData.chequeNumber}
-              onChange={handleInputChange}
-            />
-          </Grid>
+        {activeTab === "cheque" && (
+          <>
+            <Grid style={{ marginTop: "4rem" }} item xs={12} sm={4}>
+              {loadingBanks ? (
+                <Skeleton variant="rectangular" width="100%" height={56} />
+              ) : (
+                <DropDown
+                  title="Select Banks"
+                  options={bank}
+                  onChange={handleDropdownChange}
+                  value={dropdownValues.bank_id}
+                  name="bank_id"
+                />
+              )}
+            </Grid>
+
+            <Grid className="mt-10" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Cheque Number"}
+                placeholder={"Cheque Number"}
+                name="chequeNumber"
+                value={formData.chequeNumber}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid className="mt-10" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bank Tax"}
+                placeholder={"Bank Tax"}
+                name="bank_tax"
+                value={formData.bank_tax}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </>
         )}
 
-        <Grid className="mt-5" item xs={12} sm={4}>
+        {activeTab === "both" && (
+          <>
+            <Grid style={{ marginTop: "4rem" }} item xs={12} sm={4}>
+              {loadingBanks ? (
+                <Skeleton variant="rectangular" width="100%" height={56} />
+              ) : (
+                <DropDown
+                  title="Select Banks"
+                  options={bank}
+                  onChange={handleDropdownChange}
+                  value={dropdownValues.bank_id}
+                  name="bank_id"
+                />
+              )}
+            </Grid>
+
+            <Grid className="mt-10" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Cheque Number"}
+                placeholder={"Cheque Number"}
+                name="chequeNumber"
+                value={formData.chequeNumber}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid className="mt-10" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bank Tax"}
+                placeholder={"Bank Tax"}
+                name="bank_tax"
+                value={formData.bank_tax}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </>
+        )}
+
+        {activeTab === "online" && (
+          <>
+            <Grid style={{ marginTop: "4rem" }} item xs={12} sm={4}>
+              {loadingBanks ? (
+                <Skeleton variant="rectangular" width="100%" height={56} />
+              ) : (
+                <DropDown
+                  title="Select Banks"
+                  options={bank}
+                  onChange={handleDropdownChange}
+                  value={dropdownValues.bank_id}
+                  name="bank_id"
+                />
+              )}
+            </Grid>
+
+            <Grid className="mt-10" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Transaction Number"}
+                placeholder={"Transaction Number"}
+                name="transection_id"
+                value={formData.transection_id}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </>
+        )}
+
+        <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
             title={"Truck Number"}
             placeholder={"Enter Truck Number"}
@@ -423,15 +541,17 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        <Grid className="mt-5" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Bardaana Quantity"}
-            placeholder={"Enter Bardaana Quantity"}
-            name="bardaana_quantity"
-            value={formData.bardaana_quantity}
-            onChange={handleInputChange}
-          />
-        </Grid>
+        {selectedBardaanaId === 1 && (
+          <Grid className="mt-5" item xs={12} sm={4}>
+            <InputWithTitle
+              title={"Bardaana Quantity"}
+              placeholder={"Enter Bardaana Quantity"}
+              name="bardaana_quantity"
+              value={formData.bardaana_quantity}
+              onChange={handleInputChange}
+            />
+          </Grid>
+        )}
 
         <Grid className="mt-5" item xs={12} sm={4}>
           <InputWithTitle
@@ -494,35 +614,33 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Bank Tax"}
-            placeholder={"Bank Tax"}
-            name="bank_tax"
-            value={formData.bank_tax}
-            onChange={handleInputChange}
-          />
-        </Grid>
+        {activeTab === "cash" && (
+          <Grid className="mt-10" item lg={6} xs={12} sm={4}>
+            <InputWithTitle
+              title={"Cash Amount"}
+              placeholder={"Cash Amount"}
+              name="cash_amount"
+              value={formData.cash_amount}
+              onChange={handleInputChange}
+            />
+          </Grid>
+        )}
 
-        <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Cash Amount"}
-            placeholder={"Cash Amount"}
-            name="cash_amount"
-            value={formData.cash_amount}
-            onChange={handleInputChange}
-          />
-        </Grid>
+        {activeTab === "both" && (
+          <Grid className="mt-10" item lg={6} xs={12} sm={4}>
+            <InputWithTitle
+              title={"Cash Amount"}
+              placeholder={"Cash Amount"}
+              name="cash_amount"
+              value={formData.cash_amount}
+              onChange={handleInputChange}
+            />
+          </Grid>
+        )}
 
-        {/* <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Remaining Amount"}
-            placeholder={"Remaining Amount"}
-            name="remainingAmount"
-            value={remainingAmount} // Display only
-            disable
-          />
-        </Grid> */}
+        <Grid className="mt-10" item lg={6} xs={6}>
+          <InputWithTitle title={"Amount"} value={totalAmount} readOnly />
+        </Grid>
       </Grid>
 
       <div className={styles.button_container}>

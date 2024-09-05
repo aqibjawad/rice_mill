@@ -26,42 +26,37 @@
   display: flex;
 }
 
-.tabButton {
-  width: 120px;
-  height: 50px;
-  border-radius: 30px;
-  background: #fefefe;
-  font-family: "regular";
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 18.75px;
-  text-align: center;
-}
-
-.tabButton:hover {
-  background-color: #ddd;
-}
-
-.tabButton.active {
-  width: 120px;
-  height: 50px;
-  top: 1937px;
-  left: -4208px;
-  border-radius: 30px;
-  background: #316aff;
-  color: white;
-}
-
-.tabContent {
-  padding: 20px;
-  border-top: none;
-}
-
-.tabPaymentContainer {
-  display: flex;
-}
-
 .tabPaymentButton {
+  width: 30%;
+  height: 60px;
+  border-radius: 14px;
+  border: 1px;
+  background: #e4e4e466;
+  margin-right: 10px;
+  font-family: "regular";
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: #8c8c8c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tabPaymentButton.active {
+  width: 30%;
+  height: 60px;
+  border-radius: 14px;
+  border: 1px;
+  background: #0e7669;
+  font-family: "regular";
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: #ffffff;
+}
+
+/* .tabPaymentButton {
   width: 120px;
   height: 50px;
   top: 1937px;
@@ -79,9 +74,9 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-}
+} */
 
-.tabPaymentButton.active {
+/* .tabPaymentButton.active {
   width: 120px;
   height: 50px;
   top: 1937px;
@@ -89,7 +84,7 @@
   border-radius: 30px;
   background: #316aff;
   color: white;
-}
+} */
 
 .tabPaymentContent {
   padding: 20px 0;

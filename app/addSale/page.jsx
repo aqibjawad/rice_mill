@@ -65,9 +65,7 @@ const Page = () => {
   const [kgs, setKgs] = useState(""); // State to store calculated Kilograms
 
   const [totalAmount, steTotalAmounts] = useState("");
-
-  console.log(totalAmount);
-
+  
   useEffect(() => {
     fetchSuppliers();
     fetchProducts();

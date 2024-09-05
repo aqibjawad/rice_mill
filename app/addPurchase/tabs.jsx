@@ -12,7 +12,7 @@ const Tabs = ({ activeTab, setActiveTab }) => {
 
   return (
     <div>
-      <div className={styles.tabPaymentContainer}>
+      <div className={styles.tabContainer}>
         <div
           className={`${styles.tabPaymentButton} ${
             currentTab === "cash" ? styles.active : ""
