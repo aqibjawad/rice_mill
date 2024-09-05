@@ -6,12 +6,7 @@ import styles from "../../styles/addSale.module.css";
 import DropDown from "@/components/generic/dropdown";
 import InputWithTitle from "@/components/generic/InputWithTitle";
 import { Skeleton, CircularProgress } from "@mui/material";
-import {
-  buyer,
-  products,
-  packings,
-  saleBook,
-} from "../../networkApi/Constants";
+import { buyer, products, saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
@@ -28,41 +23,35 @@ import {
 
 // Define the conversion constants
 const MUND_TO_KG = 40; // 1 mund equals 40 kg
-const PRICE_PER_MUND = 2000; // Price for 1 mund
 
 const Page = () => {
   const router = useRouter();
-
   const api = new APICall();
 
   const [formData, setFormData] = useState({
     id: "",
     buyer_id: "",
     pro_id: "",
-    price_mann: "",
     weight: "",
     truck_no: "",
     product_description: "",
     reference_no: "",
+    price_mann: 0, // Added price_mann here for demonstration
   });
-
+  
   const [searchTerm, setSearchTerm] = useState("");
 
   const [productList, setProducts] = useState([]);
   const [supplierList, setSuppliers] = useState([]);
-  const [packingList, setPacking] = useState([]);
   const [refList, setRef] = useState({ id: "", next_ref_no: "" });
 
   const [items, setItems] = useState([]);
-
   const [error, setError] = useState("");
 
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [loadingPackings, setLoadingPackings] = useState(true);
 
   const [saleData, setSaleDetails] = useState([]);
-
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [loadingCompleteBill, setLoadingCompleteBill] = useState(false); // New loading state
 
@@ -72,10 +61,12 @@ const Page = () => {
   });
 
   const [weight, setWeight] = useState("");
-  const [price, setPrice] = useState("");
   const [munds, setMunds] = useState(""); // State to store calculated Munds
-  const [kgs, setKgs] = useState(""); // State to store calculated Munds
-  const [totalAmount, setTotalAmount] = useState(""); // State to store calculated total amount
+  const [kgs, setKgs] = useState(""); // State to store calculated Kilograms
+
+  const [totalAmount, steTotalAmounts] = useState("");
+
+  console.log(totalAmount);
 
   useEffect(() => {
     fetchSuppliers();
@@ -88,7 +79,6 @@ const Page = () => {
       const response = await api.getDataWithToken(
         `${saleBook}/get_next_ref_no`
       );
-
       setRef({
         id: response.next_id,
         next_ref_no: response.next_ref_no || "",
@@ -153,10 +143,6 @@ const Page = () => {
     if (name === "weight") {
       setWeight(value);
       calculateMunds(value);
-      calculatePrice(value);
-      calculateTotalAmount(); // Update total amount when weight changes
-    } else if (name === "price_mann") {
-      calculateTotalAmount(); // Update total amount when price per mund changes
     }
   };
 
@@ -187,27 +173,17 @@ const Page = () => {
     setKgs(`${remainderKg}`);
   };
 
-  const calculatePrice = (weight) => {
-    const weightInKg = parseFloat(weight);
-    if (isNaN(weightInKg)) {
-      setPrice("");
-      return;
-    }
+  const calculatAmount = () => {
+    const price_per_munds = formData.price_mann / 40;
 
-    const fullMunds = Math.floor(weightInKg / MUND_TO_KG);
-    const remainderKg = weightInKg % MUND_TO_KG;
+    const totalAmount = price_per_munds * formData.weight;
 
-    const fullMundPrice = fullMunds * PRICE_PER_MUND;
-    const remainderMundPrice = (remainderKg / MUND_TO_KG) * PRICE_PER_MUND;
-
-    setPrice((fullMundPrice + remainderMundPrice).toFixed(2));
+    steTotalAmounts(totalAmount);
   };
 
-  const calculateTotalAmount = () => {
-    const pricePerKillo = formData.price_mann / 40;
-    const totalAmount = pricePerKillo * formData.weight;
-    setTotalAmount(totalAmount.toFixed(2)); // Update state with total amount
-  };
+  useEffect(() => {
+    calculatAmount();
+  }, [formData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -216,11 +192,10 @@ const Page = () => {
     try {
       const response = await api.postFormDataWithToken(`${saleBook}/add_item`, {
         ...formData,
-        price: price,
+        weight: weight, // Removed price calculation
       });
 
       setSaleDetails(response.data.details);
-
       localStorage.setItem("saleBookId", response.data.id);
 
       Swal.fire({
@@ -267,11 +242,9 @@ const Page = () => {
         ...prevData,
         buyer_id: "",
         pro_id: "",
-        packing_id: "",
-        quantity: "",
-        price: "",
         truck_no: "",
         product_description: "",
+        weight: "",
       }));
     } catch (error) {
       console.error("Error:", error);
@@ -393,11 +366,7 @@ const Page = () => {
               </Grid>
 
               <Grid item lg={6} xs={6}>
-                <InputWithTitle
-                  title={"Amount"}
-                  value={totalAmount}
-                  readOnly
-                />
+                <InputWithTitle title={"Amount"} value={totalAmount} readOnly />
               </Grid>
 
               <Grid className="mt-5" item xs={12}>
@@ -432,7 +401,6 @@ const Page = () => {
               <TableRow>
                 <TableCell>Product</TableCell>
                 <TableCell>Weight</TableCell>
-                <TableCell>Price</TableCell>
                 <TableCell>Amount</TableCell>
               </TableRow>
             </TableHead>
@@ -441,7 +409,6 @@ const Page = () => {
                 <TableRow key={index}>
                   <TableCell>{item.product_name}</TableCell>
                   <TableCell>{`${item.weight}`}</TableCell>
-                  <TableCell>{item.price}</TableCell>
                   <TableCell>{item.total_amount}</TableCell>
                 </TableRow>
               ))}
@@ -450,7 +417,7 @@ const Page = () => {
         </TableContainer>
 
         <div className={styles.tableTotalRow}>
-          Total: {totalAmount}
+          Total: {/* Removed total amount calculation */}
         </div>
 
         <button
