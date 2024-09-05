@@ -119,76 +119,11 @@ const Page = () => {
     }));
   };
 
-  // const validateForm = () => {
-  //   const {
-  //     buyer_id,
-  //     payment_type,
-  //     cash_amount,
-  //     cheque_no,
-  //     cheque_date,
-  //     cheque_amount,
-  //     bank_id,
-  //     transection_id,
-  //   } = formData;
-
-  //   if (!buyer_id) {
-  //     Swal.fire("Validation Error", "Buyer is required", "error");
-  //     return false;
-  //   }
-
-  //   if (!transection_id) {
-  //     Swal.fire("Validation Error", "Transaction Number", "error");
-  //     return false;
-  //   }
-
-  //   if (payment_type === "cash") {
-  //     if (!cash_amount || isNaN(cash_amount) || parseFloat(cash_amount) <= 0) {
-  //       Swal.fire("Validation Error", "Valid cash amount is required", "error");
-  //       return false;
-  //     }
-  //   }
-  //   else if (payment_type === "cheque") {
-  //     if (!bank_id) {
-  //       Swal.fire(
-  //         "Validation Error",
-  //         "Bank selection is required for cheque payment",
-  //         "error"
-  //       );
-  //       return false;
-  //     }
-  //     if (!cheque_no) {
-  //       Swal.fire("Validation Error", "Cheque number is required", "error");
-  //       return false;
-  //     }
-  //     if (!cheque_date) {
-  //       Swal.fire("Validation Error", "Cheque date is required", "error");
-  //       return false;
-  //     }
-  //     if (
-  //       !cheque_amount ||
-  //       isNaN(cheque_amount) ||
-  //       parseFloat(cheque_amount) <= 0
-  //     ) {
-  //       Swal.fire(
-  //         "Validation Error",
-  //         "Valid cheque amount is required",
-  //         "error"
-  //       );
-  //       return false;
-  //     }
-  //   } else {
-  //     Swal.fire("Validation Error", "Invalid payment type", "error");
-  //     return false;
-  //   }
-
-  //   return true;
-  // };
-
   const [responseData, setResponseData] = useState();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // if (!validateForm()) return;
 
     setLoadingSubmit(true);
@@ -206,7 +141,7 @@ const Page = () => {
       }
 
       setResponseData(response);
-      router.push("/buyer");
+      router.push("/Buyer");
 
       Swal.fire("Success", "Your data has been added!", "success");
     } finally {

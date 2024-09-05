@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import styles from "../../styles/ledger1.module.css";
-import { buyerLedger } from "../../networkApi/Constants";
+import { buyerLedger, getAmountReceives } from "../../networkApi/Constants";
 import {
   Table,
   TableBody,
@@ -43,7 +43,7 @@ const Page = () => {
       }
 
       const response = await api.getDataWithToken(
-        `${buyerLedger}?${queryParams.join("&")}`
+        `${getAmountReceives}?${queryParams.join("&")}`
       );
 
       const data = response.data;

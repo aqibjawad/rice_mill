@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
-import { buyerLedger } from "../../networkApi/Constants";
+import { buyerLedger, getAmountReceives } from "../../networkApi/Constants";
 import {
   Table,
   TableBody,
@@ -31,7 +31,7 @@ const Page = () => {
 
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(`${buyerLedger}`);
+      const response = await api.getDataWithToken(`${getAmountReceives}`);
 
       const data = response.data;
       if (Array.isArray(data)) {
@@ -60,7 +60,10 @@ const Page = () => {
 
   return (
     <div>
-      <Buttons leftSectionText="Amount Recieves" addButtonLink="/paymentRecieves" />
+      <Buttons
+        leftSectionText="Amount Recieves"
+        addButtonLink="/paymentRecieves"
+      />
 
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -71,7 +74,6 @@ const Page = () => {
               <TableCell>Person</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Cash Amount</TableCell>
-
               <TableCell>Bank Id</TableCell>
               <TableCell>Bank Name</TableCell>
               <TableCell>Cheque No</TableCell>
@@ -99,7 +101,6 @@ const Page = () => {
                     <TableCell>{row.customer?.person_name}</TableCell>
                     <TableCell>{row.description}</TableCell>
                     <TableCell>{row.cash_amount}</TableCell>
-
                     <TableCell>{row.bank_id || "N/A"}</TableCell>
                     <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>{" "}
                     <TableCell>{row.cheque_no || "N/A"}</TableCell>

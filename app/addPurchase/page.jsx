@@ -277,12 +277,12 @@ const AddPurchaseContent = () => {
 
     try {
       const response = await api.postDataWithToken(purchaseBook, formData);
-      // Show success alert
       Swal.fire({
         icon: "success",
         title: "Success",
         text: "Data has been added successfully!",
       });
+      router.push("/purchase/");
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
