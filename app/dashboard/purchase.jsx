@@ -87,7 +87,7 @@ const Purchase = () => {
   };
 
   return (
-    <div>
+    <div className={styles.container}>
       <Buttons leftSectionText="Purchase" addButtonLink="/addPurchase" />
 
       <TableContainer component={Paper} className={styles.tableSection}>

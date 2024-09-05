@@ -12,11 +12,7 @@
 }
 
 .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    height: 100px;
+    height: 50%;
 }
 
 .leftSection {
@@ -78,8 +74,6 @@
     overflow: hidden;
     background-color: #FFFFFF;
     border-radius: 30px 30px;
-    padding: 20px;
-    height: 100vh;
 }
 
 .tableHeader,
@@ -152,7 +146,7 @@
 
 .expenseCard {
     width: Fill (225px)px;
-    height: Fixed (130px)px;
+    height: Fixed (130px)px; 
     padding: 11px 11px 8px 11px;
     gap: 8px;
     border-radius: 25px;

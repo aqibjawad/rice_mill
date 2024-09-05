@@ -19,8 +19,12 @@ import { saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Link from "next/link";
 
+import { useRouter } from "next/navigation";
+
 const Page = () => {
   const api = new APICall();
+
+  const router = useRouter();
 
   const [tableData, setTableData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,8 +56,8 @@ const Page = () => {
   };
 
   const handleViewDetails = (row) => {
-    setModalData(row);
-    setModalOpen(true);
+    localStorage.setItem("saleBookId", row.id);
+    router.push("/invoice");
   };
 
   const handleCloseModal = () => {
@@ -74,7 +78,6 @@ const Page = () => {
       <div className={styles.container}>
         <div className={styles.leftSection}>Sale</div>
         <div className={styles.rightSection}>
-          
           <div className={styles.searchContainer}>
             <input
               type="text"
@@ -145,38 +148,6 @@ const Page = () => {
           </Table>
         </TableContainer>
       </div>
-
-      <Modal
-        open={modalOpen}
-        onClose={handleCloseModal}
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: 4,
-            outline: "none",
-          }}
-        >
-          <Typography id="modal-title" variant="h6" component="h2">
-            Details
-          </Typography>
-          {modalData && (
-            <div>
-              <Typography id="modal-description" sx={{ mt: 2 }}>
-                test
-              </Typography>
-            </div>
-          )}
-        </Box>
-      </Modal>
     </div>
   );
 };
