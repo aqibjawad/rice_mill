@@ -18,15 +18,18 @@ import {
 } from "@mui/material";
 import APICall from "@/networkApi/APICall";
 import { supplierLedger, getLocalStorage } from "../../networkApi/Constants";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 import logo from "../../public/logo.png";
 
 import withAuth from "@/utils/withAuth";
 
+import { useRouter } from "next/navigation";
+
 const Page = () => {
+
+  const router = useRouter();
+
   const supplierId = getLocalStorage("supplerId");
 
   const api = new APICall();
@@ -76,107 +79,35 @@ const Page = () => {
     setModalData(null);
   };
 
-  const convertImageToBase64 = (url) => {
-    return new Promise((resolve, reject) => {
-      console.log(`Attempting to load image from URL: ${url}`);
-      const img = new Image();
-      img.crossOrigin = "Anonymous"; // Allow cross-origin image loading
-      img.src = url;
-      img.onload = () => {
-        console.log("Image loaded successfully");
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        const dataURL = canvas.toDataURL("image/png");
-        resolve(dataURL);
-      };
-      img.onerror = (error) => {
-        console.error("Error loading image:", error);
-        reject(new Error("Failed to convert image to base64"));
-      };
-    });
-  };
 
   const handlePrint = () => {
-    window.print();
+    // window.print();
+    router.push("/supplier_invoice")
   };
 
-  // Helper function to load image from URL
-  const loadImage = (url) => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.src = url;
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error("Failed to load image"));
-    });
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(); // Formats date as MM/DD/YYYY by default, adjust as needed
   };
 
-  const handleWhatsAppShare = async () => {
-    try {
-      console.log("Starting PDF generation...");
-      const pdf = await generatePDF();
-
-      console.log("PDF generated. Creating blob...");
-      const pdfBlob = pdf.output("blob");
-
-      console.log("Creating File object...");
-      const file = new File([pdfBlob], `${rowData?.person_name} ledger.pdf`, {
-        type: "application/pdf",
-      });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        console.log("Using Web Share API...");
-        await navigator.share({
-          files: [file],
-          title: `${rowData?.person_name} ledger.pdf`,
-          text: "Check out this supplier ledger data",
-        });
-      } else {
-        console.log("Web Share API not supported. Using fallback...");
-        const pdfUrl = URL.createObjectURL(file);
-        const whatsappMessage = encodeURIComponent(
-          "Check out this supplier ledger data: " + pdfUrl
-        );
-        const whatsappUrl = `https://api.whatsapp.com/send?text=${whatsappMessage}`;
-
-        window.open(whatsappUrl, "_blank");
-
-        setTimeout(() => URL.revokeObjectURL(pdfUrl), 10000);
-      }
-
-      console.log("Share process completed successfully");
-    } catch (error) {
-      console.error("Detailed error in handleWhatsAppShare:", error);
-      alert(
-        "Error generating or sharing PDF. Please check the console for more details and try again."
-      );
-    }
-  };
-
-  const testPDFGeneration = async () => {
-    try {
-      const pdf = await generatePDF();
-      pdf.save(`${rowData?.person_name}.pdf`);
-      console.log("PDF generated and saved successfully");
-    } catch (error) {
-      console.error("Error in PDF generation test:", error);
-    }
-  };
   return (
     <div>
       <div className={styles.container}>
         <div className={styles.leftSection}>{rowData?.person_name}</div>
-        <Button
-        className={styles.hideOnPrint}
+        {/* <Button
+          className={styles.hideOnPrint}
           variant="contained"
           color="secondary"
           onClick={handleWhatsAppShare}
         >
           Share on WhatsApp
-        </Button>
-        <Button className={styles.hideOnPrint}  variant="contained" color="primary" onClick={handlePrint}>
+        </Button> */}
+        <Button
+          className={styles.hideOnPrint}
+          variant="contained"
+          color="primary"
+          onClick={handlePrint}
+        >
           PDF Generate
         </Button>
       </div>
@@ -187,7 +118,8 @@ const Page = () => {
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
-              <TableCell>Description</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Details</TableCell>
               <TableCell>Credit Amount</TableCell>
               <TableCell>Debit Amount</TableCell>
               <TableCell> Naam / Jama </TableCell>
@@ -215,6 +147,7 @@ const Page = () => {
               tableData.map((row, index) => (
                 <TableRow onClick={() => handleViewDetails(row)} key={index}>
                   <TableCell>{row.id}</TableCell>
+                  <TableCell>{formatDate(row.created_at)}</TableCell>
                   <TableCell>{row.description || "Purchase"}</TableCell>
                   <TableCell>{row.cr_amount}</TableCell>
                   <TableCell>{row.dr_amount}</TableCell>

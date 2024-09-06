@@ -168,11 +168,11 @@ const Page = () => {
                           </Link> */}
                         </div>
 
-                        <MdEdit
+                        {/* <MdEdit
                           onClick={() => handleEdit(row)}
                           className={styles.editButton}
                           style={{ cursor: "pointer", color: "#316AFF" }}
-                        />
+                        /> */}
                         <MdDelete
                           onClick={() => handleDelete(row.id)}
                           className={styles.deleteButton}

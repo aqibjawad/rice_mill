@@ -17,11 +17,13 @@ import {
 
 import Buttons from "../../components/buttons";
 
-import { MdDelete, MdEdit } from "react-icons/md";
+import withAuth from "@/utils/withAuth";
 
-import withAuth from '@/utils/withAuth'; 
+import { useRouter } from "next/navigation";
 
 const Purchase = () => {
+
+  const router = useRouter();
   const api = new APICall();
 
   const [openAddToStockModal, setOpenAddToStockModal] = useState(false);
@@ -86,6 +88,11 @@ const Purchase = () => {
     }
   };
 
+  const handleViewDetails = (row) => {
+    localStorage.setItem("purchaseBookId", row.id);
+    router.push("/purchase_details");
+  }
+
   return (
     <div className={styles.container}>
       <Buttons leftSectionText="Purchase" addButtonLink="/addPurchase" />
@@ -122,7 +129,9 @@ const Purchase = () => {
                     <TableCell>{row.supplier?.person_name}</TableCell>
                     <TableCell>{row.net_weight}</TableCell>
                     <TableCell>{row.total_amount}</TableCell>
-                    <TableCell>View Details</TableCell>
+                    <TableCell onClick={() => handleViewDetails(row)}>
+                      View Details
+                    </TableCell>
                   </TableRow>
                 ))}
           </TableBody>

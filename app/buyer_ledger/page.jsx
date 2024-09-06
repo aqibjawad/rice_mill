@@ -101,6 +101,11 @@ const Page = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(); // Formats date as MM/DD/YYYY by default, adjust as needed
+  };
+
   return (
     <div>
       <div className={styles.container}>
@@ -111,8 +116,9 @@ const Page = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Sr No</TableCell>
-              <TableCell> Description </TableCell>
+              <TableCell> Sr No </TableCell>
+              <TableCell> Dare </TableCell>
+              <TableCell> Details </TableCell>
               <TableCell> Credit Amount </TableCell>
               <TableCell> Debit Amount </TableCell>
               <TableCell> Naam / Jama </TableCell>
@@ -140,6 +146,7 @@ const Page = () => {
               tableData.map((row, index) => (
                 <TableRow onClick={() => handleViewDetails(row)} key={index}>
                   <TableCell>{row.id}</TableCell>
+                  <TableCell>{formatDate(row.created_at)}</TableCell>
                   <TableCell>{getDescriction(row)}</TableCell>
                   <TableCell>{row.cr_amount}</TableCell>
                   <TableCell>{row.dr_amount}</TableCell>
