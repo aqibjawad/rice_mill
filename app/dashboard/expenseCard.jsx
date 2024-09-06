@@ -15,9 +15,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -46,11 +43,6 @@ const Dashboard = () => {
   const inflow = Number(tableData?.inflow) || 0;
   const outflow = Number(tableData?.outflow) || 0;
 
-  // Debugging: Log the values to verify they are numbers
-  console.log("Opening Balance:", openingBalance);
-  console.log("Inflow:", inflow);
-  console.log("Outflow:", outflow);
-
   // Step 1: Perform addition
   const sum = inflow;
 
@@ -59,7 +51,8 @@ const Dashboard = () => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12} sm={6} md={3}>
+      {/* Opening Balance */}
+      <Grid item xs={12} sm={6} md={2}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
@@ -81,7 +74,8 @@ const Dashboard = () => {
         </Card>
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
+      {/* Inflow */}
+      <Grid item xs={12} sm={6} md={2}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
@@ -98,11 +92,34 @@ const Dashboard = () => {
                 tableData?.inflow
               )}
             </div>
-            <div className={styles.cardTitle}>Inflow</div>
+            <div className={styles.cardTitle}> Cash Inflow</div>
           </CardContent>
         </Card>
       </Grid>
 
+      <Grid item xs={12} sm={6} md={2}>
+        <Card className={styles.card} variant="outlined">
+          <CardContent>
+            <div className={styles.imageCont}>
+              <img
+                src="/bank.png"
+                className={styles.cardImage}
+                alt="Inflow"
+              />
+            </div>
+            <div className={styles.cardAmount}>
+              {loading ? (
+                <Skeleton width={100} height={30} />
+              ) : (
+                tableData?.inflow
+              )}
+            </div>
+            <div className={styles.cardTitle}> Bank Inflow</div>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* outflow */}
       <Grid item xs={12} sm={6} md={3}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
@@ -125,6 +142,7 @@ const Dashboard = () => {
         </Card>
       </Grid>
 
+      {/* Balance */}
       <Grid item xs={12} sm={6} md={3}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
