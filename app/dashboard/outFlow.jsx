@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
 import {
   expense,
-  supplierLedger,
   getSupplierPaidAmounts,
 } from "../../networkApi/Constants";
 import { format } from "date-fns";

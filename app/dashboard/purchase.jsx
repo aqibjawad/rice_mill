@@ -21,28 +21,63 @@ import withAuth from "@/utils/withAuth";
 
 import { useRouter } from "next/navigation";
 
-const Purchase = () => {
+import { format } from "date-fns";
 
+const Purchase = () => {
   const router = useRouter();
   const api = new APICall();
 
-  const [openAddToStockModal, setOpenAddToStockModal] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  // const fetchData = async () => {
+  //   try {
+  //     const response = await api.getDataWithToken(purchaseBook);
+
+  //     const data = response.data;
+
+  //     if (Array.isArray(data)) {
+  //       setTableData(data);
+  //     } else {
+  //       throw new Error("Fetched data is not an array");
+  //     }
+  //   } catch (error) {
+  //     setError(error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(purchaseBook);
+      setLoading(true);
+      const queryParams = [];
 
-      const data = response.data;
+      if (startDate && endDate) {
+        queryParams.push(`start_date=${startDate}`);
+        queryParams.push(`end_date=${endDate}`);
+      } else {
+        const currentDate = format(new Date(), "yyyy-MM-dd");
+        queryParams.push(`start_date=${currentDate}`);
+        queryParams.push(`end_date=${currentDate}`);
+      }
+      const queryString = queryParams.join("&");
 
-      if (Array.isArray(data)) {
-        setTableData(data);
+      const response = await api.getDataWithToken(
+        `${purchaseBook}?${queryString}`
+      );
+
+      // Check if response.data is an array
+      if (Array.isArray(response.data)) {
+        setTableData(response.data);
       } else {
         throw new Error("Fetched data is not an array");
       }
@@ -53,49 +88,19 @@ const Purchase = () => {
     }
   };
 
-  const handleEdit = (row) => {
-    const encodedData = encodeURIComponent(JSON.stringify(row));
-    window.location.href = `/addPurchase?editData=${encodedData}`;
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      const response = await api.deleteDataWithToken(`${purchaseBook}/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete Purchase Book item");
-      }
-
-      setTableData(tableData.filter((item) => item.id !== id));
-
-      Swal.fire({
-        title: "Deleted!",
-        text: "The purchase item has been deleted successfully.",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-    } catch (error) {
-      console.error("Error deleting Purchase:", error);
-
-      Swal.fire({
-        title: "Error!",
-        text: "Failed to delete the purchase item.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    }
+  const handleDateChange = (start, end) => {
+    setStartDate(start);
+    setEndDate(end);
   };
 
   const handleViewDetails = (row) => {
     localStorage.setItem("purchaseBookId", row.id);
     router.push("/purchase_details");
-  }
+  };
 
   return (
     <div className={styles.container}>
-      <Buttons leftSectionText="Purchase" addButtonLink="/addPurchase" />
+      <Buttons leftSectionText="Purchase" addButtonLink="/addPurchase"  onDateChange={handleDateChange} />
 
       <TableContainer component={Paper} className={styles.tableSection}>
         <Table>

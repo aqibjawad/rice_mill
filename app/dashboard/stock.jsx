@@ -131,13 +131,6 @@ const Page = () => {
                   <DateFilters onDateChange={handleDateChange} />
                 </Grid>
 
-                <Grid item lg={3} xs={6} sm={6} md={3}>
-                  <div className={styles.rightItem}>view</div>
-                </Grid>
-
-                <Grid item lg={3} xs={6} sm={6} md={3}>
-                  <div className={styles.rightItemExp}>export</div>
-                </Grid>
               </Grid>
             </div>
           </Grid>

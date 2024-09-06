@@ -92,8 +92,6 @@ const Page = () => {
             <Link href="/addSale">+ Add</Link>
           </div>
           <div className={styles.rightItem}>date</div>
-          <div className={styles.rightItem}>view all</div>
-          <div className={styles.rightItemExp}>export</div>
         </div>
       </div>
 

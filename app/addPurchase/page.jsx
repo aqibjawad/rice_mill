@@ -55,6 +55,7 @@ const AddPurchaseContent = () => {
     payment_type: "cash",
     transection_id: "",
     bank_id: "",
+    bardaana_amount: 0,
   });
 
   const validateForm = () => {
@@ -113,8 +114,6 @@ const AddPurchaseContent = () => {
 
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("cash");
-
-  console.log(activeTab);
 
   // Loading states
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
@@ -296,12 +295,17 @@ const AddPurchaseContent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // If validation is required, uncomment the following line
     // if (!validateForm()) return;
 
     setLoadingSubmit(true);
 
     try {
-      const response = await api.postDataWithToken(purchaseBook, formData);
+      // Add hardcoded value to formData
+      const payload = { ...formData, bardaana_amount: 0 };
+
+      const response = await api.postDataWithToken(purchaseBook, payload);
 
       if (response.status === "success") {
         Swal.fire({
