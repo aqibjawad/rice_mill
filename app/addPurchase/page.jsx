@@ -324,7 +324,7 @@ const AddPurchaseContent = () => {
 
   return (
     <form>
-      <div>Add Purchase</div>
+      <div className={styles.payment}>Payments</div>
 
       <Grid container spacing={2}>
         <Grid className="mt-10" item xs={12} lg={4} sm={4}>

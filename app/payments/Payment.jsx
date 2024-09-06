@@ -201,7 +201,7 @@ const Page = () => {
 
   return (
     <div>
-      <div className="mt-10">
+      <div className="mt-5">
         <div className={styles.tabPaymentContainer}>
           <button
             className={`${styles.tabPaymentButton} ${
@@ -238,7 +238,7 @@ const Page = () => {
         </div>
       </div>
 
-      <Grid container spacing={2} className="mt-10">
+      <Grid container spacing={2} className="mt-5">
         <Grid item xs={12} md={6}>
           {loading ? (
             <Skeleton variant="rectangular" width="100%" height={56} />
@@ -272,10 +272,10 @@ const Page = () => {
         </Grid>
       </Grid>
 
-      <div className="mt-10">
+      <div className="mt-5">
         <div className={styles.tabPaymentContent}>
           {activeTab === "cheque" || activeTab === "both" ? (
-            <Grid container spacing={2} className="mt-10">
+            <Grid container spacing={2} className="mt-5">
               <Grid item xs={12} md={4} className="mt-5">
                 <Autocomplete
                   disablePortal
@@ -324,7 +324,7 @@ const Page = () => {
           ) : null}
 
           {activeTab === "online" ? (
-            <Grid container spacing={2} className="mt-10">
+            <Grid container spacing={2} className="mt-5">
               <Grid item xs={12} md={4} className="mt-5">
                 <Autocomplete
                   disablePortal
