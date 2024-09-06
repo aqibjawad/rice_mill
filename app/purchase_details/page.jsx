@@ -30,7 +30,10 @@ const Page = () => {
   const [salesBook, setSaleBook] = useState([]);
   const [rowData, setRowData] = useState();
 
+  const [isReadyToPrint, setIsReadyToPrint] = useState(false);
+
   const purchaseBookId = getLocalStorage("purchaseBookId");
+
   useEffect(() => {
     fetchPurchaseBook();
   }, []);
@@ -43,29 +46,20 @@ const Page = () => {
 
       const data = response.data;
 
-      setRowData(data);
-
-      if (Array.isArray(data.details)) {
-        setSaleBook(data.details);
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
+      setSaleBook(data);
+      setIsReadyToPrint(true);
     } catch (error) {
       console.error(error.message);
     }
   };
-
-  const calculateTotalAmount = () => {
-    const total = salesBook.reduce(
-      (total, row) => total + parseFloat(row.total_amount),
-      0
-    );
-    return total.toLocaleString("en-IN", {
-      maximumFractionDigits: 2,
-      style: "currency",
-      currency: "PKR",
-    });
-  };
+  useEffect(() => {
+    if (isReadyToPrint) {
+      setTimeout(() => {
+        window.print();
+        setIsReadyToPrint(false); // Reset the flag to prevent repeated print
+      }, 1000); // Adjust timeout as needed
+    }
+  }, [isReadyToPrint]);
 
   return (
     <div className={styles.invoiceContainer}>
