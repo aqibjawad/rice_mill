@@ -29,13 +29,13 @@ const ExpensePayments = () => {
     cheque_date: "",
     cheque_amount: "",
     transection_id: "",
+    bank_tax: "",
   });
 
   const [tableBankData, setTableBankData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("cash");
 
-  
   const [error, setError] = useState(null);
   const [tableExpenseData, setTableExpenseData] = useState([]);
   const [openExpense, setOpenExpense] = useState(false);
@@ -266,7 +266,7 @@ const ExpensePayments = () => {
 
         <div className={styles.tabPaymentContent}>
           {activeTab === "tab2" && (
-            <Grid container spacing={2} className="">
+            <Grid container spacing={2} className="mt-5">
               <Grid className="mt-5" item xs={12} md={4}>
                 <Autocomplete
                   disablePortal
@@ -311,6 +311,16 @@ const ExpensePayments = () => {
                   onChange={handleInputChange}
                 />
               </Grid>
+
+              <Grid className="" item xs={12} sm={4}>
+                <InputWithTitle
+                  title={"Bank Tax"}
+                  placeholder={"Bank Tax"}
+                  name="bank_tax"
+                  value={formData.bank_tax}
+                  onChange={handleInputChange}
+                />
+              </Grid>
             </Grid>
           )}
 
@@ -345,6 +355,16 @@ const ExpensePayments = () => {
                   placeholder="Transaction Amount"
                   name="cash_amount"
                   value={formData.cash_amount}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid className="" item xs={12} sm={4}>
+                <InputWithTitle
+                  title={"Bank Tax"}
+                  placeholder={"Bank Tax"}
+                  name="bank_tax"
+                  value={formData.bank_tax}
                   onChange={handleInputChange}
                 />
               </Grid>

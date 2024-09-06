@@ -21,8 +21,9 @@ import { getLocalStorage, supplierLedger } from "../../networkApi/Constants";
 
 import APICall from "../../networkApi/APICall";
 
-const Invoice = () => {
+import { format } from 'date-fns';
 
+const Invoice = () => {
   const api = new APICall();
   const [tableData, setTableData] = useState([]);
   const [rowData, setRowData] = useState();
@@ -30,7 +31,6 @@ const Invoice = () => {
   const [error, setError] = useState(null);
 
   const [isPrinting, setIsPrinting] = useState(false);
-
 
   const supplierId = getLocalStorage("supplerId");
 
@@ -63,7 +63,7 @@ const Invoice = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString(); // Formats date as MM/DD/YYYY by default, adjust as needed
+    return format(date, "d, MMMM , yyyy"); // e.g., "September 5, 2024"
   };
 
   useEffect(() => {

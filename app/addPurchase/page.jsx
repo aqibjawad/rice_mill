@@ -324,7 +324,7 @@ const AddPurchaseContent = () => {
 
   return (
     <form>
-      <div className={styles.payment}>Payments</div>
+      <div className={styles.payment}>Add Purchase</div>
 
       <Grid container spacing={2}>
         <Grid className="mt-10" item xs={12} lg={4} sm={4}>
@@ -651,6 +651,16 @@ const AddPurchaseContent = () => {
                   name="bank_id"
                 />
               )}
+            </Grid>
+
+            <Grid className="mt-10" item lg={4} xs={12} sm={4}>
+              <InputWithTitle
+                title={"Transaction Amount"}
+                placeholder={"Transaction Amount"}
+                name="cash_amount"
+                value={formData.cash_amount}
+                onChange={handleInputChange}
+              />
             </Grid>
 
             <Grid className="mt-10" item xs={12} sm={4}>

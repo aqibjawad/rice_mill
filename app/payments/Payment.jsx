@@ -29,6 +29,7 @@ const Page = () => {
     cheque_date: "",
     cheque_amount: "",
     transection_id: "",
+    bank_tax:"",
   });
 
   const [tableBankData, setTableBankData] = useState([]);
@@ -186,7 +187,6 @@ const Page = () => {
       } else {
         Swal.fire("Error", `${response?.error?.message}`, "error");
       }
-
     } catch (error) {
       console.error("Error:", error);
       Swal.fire(
@@ -320,6 +320,16 @@ const Page = () => {
                   onChange={handleInputChange}
                 />
               </Grid>
+
+              <Grid className="" item xs={12} sm={4}>
+                <InputWithTitle
+                  title={"Bank Tax"}
+                  placeholder={"Bank Tax"}
+                  name="bank_tax"
+                  value={formData.bank_tax}
+                  onChange={handleInputChange}
+                />
+              </Grid>
             </Grid>
           ) : null}
 
@@ -354,6 +364,16 @@ const Page = () => {
                   placeholder="Transaction Amount"
                   name="cash_amount"
                   value={formData.cash_amount}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid className="" item xs={12} sm={4}>
+                <InputWithTitle
+                  title={"Bank Tax"}
+                  placeholder={"Bank Tax"}
+                  name="bank_tax"
+                  value={formData.bank_tax}
                   onChange={handleInputChange}
                 />
               </Grid>
