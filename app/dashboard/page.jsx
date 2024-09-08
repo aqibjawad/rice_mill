@@ -7,7 +7,7 @@ import ExpenseCard from "./expenseCard";
 import OutFlow from "./outFlow";
 import Stock from "./stock";
 import Purchase from "./purchase";
-import Sale from "../sale/page"
+import Sale from "../sale/page";
 
 import withAuth from "@/utils/withAuth";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,6 @@ const Page = () => {
       <Grid item xs={12}>
         <Sale />
       </Grid>
-
 
       <Grid item lg={12} xs={12} sm={6} md={4}>
         <Stock />

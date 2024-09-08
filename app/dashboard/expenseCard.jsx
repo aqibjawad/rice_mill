@@ -30,7 +30,7 @@ const Dashboard = () => {
       const apiUrl = `${dashboard}?${queryParams.join("&")}`;
 
       const response = await api.getDataWithToken(apiUrl);
-
+      console.log(response.data);
       setTableData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -52,7 +52,7 @@ const Dashboard = () => {
   return (
     <Grid container spacing={2}>
       {/* Opening Balance */}
-      <Grid item xs={12} sm={6} md={2}>
+      <Grid item xs={12} sm={6} md={3}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
@@ -75,7 +75,7 @@ const Dashboard = () => {
       </Grid>
 
       {/* Inflow */}
-      <Grid item xs={12} sm={6} md={2}>
+      <Grid item xs={12} sm={6} md={3}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
@@ -89,32 +89,28 @@ const Dashboard = () => {
               {loading ? (
                 <Skeleton width={100} height={30} />
               ) : (
-                tableData?.inflow
+                tableData?.cash_inflow
               )}
             </div>
-            <div className={styles.cardTitle}> Cash Inflow</div>
+            <div className={styles.cardTitle}> Cash Recevies</div>
           </CardContent>
         </Card>
       </Grid>
 
-      <Grid item xs={12} sm={6} md={2}>
+      <Grid item xs={12} sm={6} md={3}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
-              <img
-                src="/bank.png"
-                className={styles.cardImage}
-                alt="Inflow"
-              />
+              <img src="/bank.png" className={styles.cardImage} alt="Inflow" />
             </div>
             <div className={styles.cardAmount}>
               {loading ? (
                 <Skeleton width={100} height={30} />
               ) : (
-                tableData?.inflow
+                tableData?.bank_inflow
               )}
             </div>
-            <div className={styles.cardTitle}> Bank Inflow</div>
+            <div className={styles.cardTitle}> Bank Receives</div>
           </CardContent>
         </Card>
       </Grid>
@@ -134,16 +130,16 @@ const Dashboard = () => {
               {loading ? (
                 <Skeleton width={100} height={30} />
               ) : (
-                tableData?.outflow
+                tableData?.cash_outflow
               )}
             </div>
-            <div className={styles.cardTitle}>Outflow</div>
+            <div className={styles.cardTitle}>Payments</div>
           </CardContent>
         </Card>
       </Grid>
 
       {/* Balance */}
-      <Grid item xs={12} sm={6} md={3}>
+      {/* <Grid item xs={12} sm={6} md={3}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
@@ -155,7 +151,7 @@ const Dashboard = () => {
             <div className={styles.cardTitle}>Balance</div>
           </CardContent>
         </Card>
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 };

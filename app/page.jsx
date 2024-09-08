@@ -18,14 +18,13 @@ const Home = () => {
     password: "",
   });
 
-  const handleInputChange = (e: any) => {
-    console.log(e);
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
-  }; 
+  };
 
   const api = new APICall();
 
@@ -51,6 +50,12 @@ const Home = () => {
           showErrorAlert("Could not login, Please contact Support");
         }
       }
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      makeLoginCall();
     }
   };
 
@@ -97,6 +102,7 @@ const Home = () => {
                 placeholder="Please enter Password"
                 type={"password"}
                 title={"Your password"}
+                onKeyDown={handleKeyDown}
                 value={formData.password}
               />
             </div>
