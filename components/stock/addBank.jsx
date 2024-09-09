@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Box, Grid } from "@mui/material";
+import { Modal, Box, Grid, CircularProgress } from "@mui/material";
 import styles from "../../styles/paymentss.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import { banks as banksApi } from "../../networkApi/Constants";
@@ -19,15 +19,22 @@ const style = {
   boxShadow: 24,
   p: 4,
   overflow: { xs: "auto", sm: "initial" },
+  outline: "none",
 };
 
-export const AddBank = ({ openBank, handleCloseBank, editData = null, onBankUpdated }) => {
+export const AddBank = ({
+  openBank,
+  handleCloseBank,
+  editData = null,
+  onBankUpdated,
+}) => {
   const api = new APICall();
 
   const [formData, setFormData] = useState({ bank_name: "" });
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
 
   useEffect(() => {
     if (editData) {
@@ -73,6 +80,8 @@ export const AddBank = ({ openBank, handleCloseBank, editData = null, onBankUpda
       return;
     }
 
+    setLoading(true); // Start loading
+
     const data = new FormData();
     for (const key in formData) {
       data.append(key, formData[key]);
@@ -81,10 +90,15 @@ export const AddBank = ({ openBank, handleCloseBank, editData = null, onBankUpda
     try {
       const url = editData ? `${banksApi}/${editData.id}` : banksApi;
 
-      const response = await api.postFormDataWithToken(url, formData);
+      await api.postFormDataWithToken(url, formData);
       alert("Bank saved successfully!");
+      handleCloseBank(); // Close the modal
+      if (onBankUpdated) onBankUpdated(); // Callback to refresh parent data
     } catch (error) {
       console.error("An error occurred", error);
+      alert("An error occurred while saving the bank.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -114,7 +128,7 @@ export const AddBank = ({ openBank, handleCloseBank, editData = null, onBankUpda
           }}
         >
           <Grid container spacing={2} className="mt-10">
-            <Grid item lg={6} xs={12} sm={12}>
+            <Grid item lg={12} xs={12} sm={12}>
               <InputWithTitle
                 title="Add Bank Name"
                 type="text"
@@ -125,41 +139,18 @@ export const AddBank = ({ openBank, handleCloseBank, editData = null, onBankUpda
               />
 
               <div
-                style={{ marginTop: "1rem" }}
+                style={{ marginTop: "1rem", cursor:"pointer" }}
                 className={styles.saveBtn}
                 onClick={handleSubmit}
+                disabled={loading}
               >
-                {editData ? "Update" : "Save"}
-              </div>
-            </Grid>
-
-            <Grid item lg={6} xs={12} sm={12}>
-              <div className={styles.bankList}>Bank Name List</div>
-              <div className={styles.contentContainer}>
-                <div className={styles.tableSection}>
-                  <>
-                    <div className={styles.tableHeader}>
-                      <div>Sr.</div>
-                      <div> Name </div>
-                      <div>Action</div>
-                    </div>
-                    <div className={styles.tableBody}>
-                      {loading ? (
-                        <div>Loading...</div>
-                      ) : error ? (
-                        <div>Error: {error}</div>
-                      ) : (
-                        tableData.map((row) => (
-                          <div key={row.id} className={styles.tableRowData}>
-                            <div>{row.id}</div>
-                            <div>{row.bank_name}</div>
-                            <div>Action</div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </>
-                </div>
+                {loading ? (
+                  <CircularProgress color="inherit" size={24} />
+                ) : editData ? (
+                  "Update"
+                ) : (
+                  "Save"
+                )}
               </div>
             </Grid>
           </Grid>

@@ -17,6 +17,8 @@ import {
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
 
+import { AddBank } from "@/components/stock/addBank";
+
 const Page = () => {
   const api = new APICall();
   const router = useRouter();
@@ -27,6 +29,10 @@ const Page = () => {
 
   const [openBankCheque, setOpenBankCheque] = useState(false);
   const [editData, setEditData] = useState(null);
+
+  const [openBank, setOpenBank] = useState(false);
+  const handleOpenBank = () => setOpenBank(true);
+  const handleCloseBank = () => setOpenBank(false);
 
   useEffect(() => {
     fetchData();
@@ -66,7 +72,11 @@ const Page = () => {
             <div className={styles.rightSection}>
               <Grid container spacing={2}>
                 <Grid lg={3} item xs={6} sm={6} md={3}>
-                  <div className={styles.rightItem}>
+                  <div
+                    style={{ cursor: "pointer" }}
+                    onClick={handleOpenBank}
+                    className={styles.rightItem}
+                  >
                     Add Banks
                   </div>
                 </Grid>
@@ -123,6 +133,8 @@ const Page = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <AddBank openBank={openBank} handleCloseBank={handleCloseBank} />
     </>
   );
 };
