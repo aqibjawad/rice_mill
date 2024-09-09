@@ -78,7 +78,7 @@ const Page = () => {
       <div className={styles.container}>
         <div className={styles.leftSection}>Sale</div>
         <div className={styles.rightSection}>
-          <div className={styles.searchContainer}>
+          {/* <div className={styles.searchContainer}>
             <input
               type="text"
               placeholder="Search..."
@@ -86,7 +86,7 @@ const Page = () => {
               onChange={handleSearch}
               className={styles.searchInput}
             />
-          </div>
+          </div> */}
 
           <div className={styles.rightItemExp}>
             <Link href="/addSale">+ Add</Link>

@@ -42,7 +42,7 @@ const Page = () => {
     khoot: 0,
 
     bardaana_quantity: 0,
-    silai: 0,
+    salai_amt_per_bag: 0,
   });
 
   const [productList, setProducts] = useState([]);
@@ -61,9 +61,11 @@ const Page = () => {
 
   const [total, setTotal] = useState(0);
   const [silaiTotal, setSilaiTotal] = useState(0);
+  console.log("bardaana Total", silaiTotal);
+
   const [netWeight, setNetWeight] = useState(0);
   const [combinedTotal, setCombinedTotal] = useState(0);
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalsAmounts, setTotalAmount] = useState(0);
 
   const [dropdownValues, setDropdownValues] = useState({
     buyer_id: null,
@@ -183,7 +185,7 @@ const Page = () => {
   useEffect(() => {
     // Calculate net weight
     const calculateNetWeight = () => {
-      const netWeight = total - weight;
+      const netWeight = weight - total;
 
       setNetWeight(netWeight);
     };
@@ -226,23 +228,26 @@ const Page = () => {
 
   useEffect(() => {
     const calculateTotal = () => {
-      const { bardaana_quantity, silai } = formData;
-      const total = parseFloat(bardaana_quantity) * parseFloat(silai);
+      const { bardaana_quantity, salai_amt_per_bag } = formData;
+      const total =
+        parseFloat(bardaana_quantity) * parseFloat(salai_amt_per_bag);
 
       setSilaiTotal(total);
     };
 
     calculateTotal();
-  }, [formData.bardaana_quantity, formData.silai]);
+  }, [formData.bardaana_quantity, formData.salai_amt_per_bag]);
 
   useEffect(() => {
-    const calculateCombinedTotal = () => {
-      const combinedTotal = silaiTotal * totalAmount;
-      setCombinedTotal(combinedTotal.toFixed(2) || 0);
-    };
+    const numericSilaiTotal = Number(silaiTotal);
+    const numericTotalAmount = Number(totalsAmounts);
 
-    calculateCombinedTotal();
-  }, [silaiTotal, totalAmount]);
+    const combinedTotal = numericSilaiTotal + numericTotalAmount;
+
+    console.log(combinedTotal);
+
+    setCombinedTotal(combinedTotal);
+  }, [silaiTotal, totalsAmounts]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -284,7 +289,6 @@ const Page = () => {
       setLoadingSubmit(false);
     }
   };
-
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoadingCompleteBill(true); // Set loading state to true when starting
@@ -470,7 +474,7 @@ const Page = () => {
               <Grid item lg={6} xs={6}>
                 <InputWithTitle
                   title={"Sub Total Amount"}
-                  value={totalAmount}
+                  value={totalsAmounts}
                   readOnly
                 />
               </Grid>
@@ -487,8 +491,8 @@ const Page = () => {
               <Grid item lg={4} xs={12}>
                 <InputWithTitle
                   title={"Silai"}
-                  name="silai"
-                  value={formData.silai}
+                  name="salai_amt_per_bag"
+                  value={formData.salai_amt_per_bag}
                   onChange={handleInputChange}
                 />
               </Grid>
@@ -526,7 +530,7 @@ const Page = () => {
         </Grid>
       </Grid>
 
-      <Grid item lg={6} xs={12}>
+      <Grid item lg={6} xs={12} md={6} sm={12}>
         <TableContainer component={Paper} style={{ marginTop: "20px" }}>
           <Table>
             <TableHead>
