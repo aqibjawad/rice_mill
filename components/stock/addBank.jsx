@@ -35,12 +35,11 @@ export const AddBank = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-
   useEffect(() => {
     if (editData) {
       setFormData(editData);
     } else {
-      setFormData({ bank_name: "" });
+      setFormData({ bank_name: "", balance: "" });
     }
   }, [editData]);
 
@@ -138,8 +137,19 @@ export const AddBank = ({
                 onChange={handleInputChange}
               />
 
+              <div className="mt-5">
+                <InputWithTitle
+                  title="Add Balance"
+                  type="text"
+                  placeholder="Add Balance"
+                  name="balance"
+                  value={formData.balance}
+                  onChange={handleInputChange}
+                />
+              </div>
+
               <div
-                style={{ marginTop: "1rem", cursor:"pointer" }}
+                style={{ marginTop: "1rem", cursor: "pointer" }}
                 className={styles.saveBtn}
                 onClick={handleSubmit}
                 disabled={loading}
