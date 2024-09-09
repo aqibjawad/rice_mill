@@ -55,7 +55,7 @@ const AddPurchaseContent = () => {
     payment_type: "cash",
     transection_id: "",
     bank_id: "",
-    bardaana_amount: 0,
+    bardaana_amount: "0",
   });
 
   const validateForm = () => {

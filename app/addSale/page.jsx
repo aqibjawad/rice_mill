@@ -37,15 +37,18 @@ const Page = () => {
     product_description: "",
     reference_no: "",
     price_mann: 0, // Added price_mann here for demonstration
-  });
 
-  const [searchTerm, setSearchTerm] = useState("");
+    bardaana_deduction: 0,
+    khoot: 0,
+
+    bardaana_quantity: 0,
+    silai: 0,
+  });
 
   const [productList, setProducts] = useState([]);
   const [supplierList, setSuppliers] = useState([]);
   const [refList, setRef] = useState({ id: "", next_ref_no: "" });
 
-  const [items, setItems] = useState([]);
   const [error, setError] = useState("");
 
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
@@ -56,6 +59,12 @@ const Page = () => {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [loadingCompleteBill, setLoadingCompleteBill] = useState(false); // New loading state
 
+  const [total, setTotal] = useState(0);
+  const [silaiTotal, setSilaiTotal] = useState(0);
+  const [netWeight, setNetWeight] = useState(0);
+  const [combinedTotal, setCombinedTotal] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
+
   const [dropdownValues, setDropdownValues] = useState({
     buyer_id: null,
     pro_id: null,
@@ -64,8 +73,6 @@ const Page = () => {
   const [weight, setWeight] = useState("");
   const [munds, setMunds] = useState(""); // State to store calculated Munds
   const [kgs, setKgs] = useState(""); // State to store calculated Kilograms
-
-  const [totalAmount, steTotalAmounts] = useState("");
 
   useEffect(() => {
     fetchSuppliers();
@@ -132,14 +139,17 @@ const Page = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Update formData state
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
 
     if (name === "weight") {
-      setWeight(value);
-      calculateMunds(value);
+      const numericValue = parseFloat(value) || 0;
+      setWeight(numericValue);
+      // calculateMunds(numericValue);
     }
   };
 
@@ -155,34 +165,84 @@ const Page = () => {
     }));
   };
 
-  const calculateMunds = (weight) => {
-    const weightInKg = parseFloat(weight);
-    if (isNaN(weightInKg)) {
-      setMunds("");
-      setKgs("");
-      return;
-    }
+  // Use effect for cauclate bardaana and khoot
 
-    const fullMunds = Math.floor(weightInKg / MUND_TO_KG);
-    const remainderKg = weightInKg % MUND_TO_KG;
+  useEffect(() => {
+    const calculateTotal = () => {
+      const { bardaana_deduction, khoot } = formData;
+      const total = parseFloat(bardaana_deduction) + parseFloat(khoot);
 
-    setMunds(`${fullMunds}`);
-    setKgs(`${remainderKg}`);
-  };
+      console.log("Total:", total);
+      setTotal(total);
+    };
 
-  const calculatAmount = () => {
-    const price_per_munds = formData.price_mann / 40;
+    calculateTotal();
+  }, [formData.bardaana_deduction, formData.khoot]);
 
-    const totalAmount = price_per_munds * formData.weight;
+  // Use effect for calculte net weight
+  useEffect(() => {
+    // Calculate net weight
+    const calculateNetWeight = () => {
+      const netWeight = total - weight;
 
+      setNetWeight(netWeight);
+    };
+
+    calculateNetWeight();
+  }, [weight, total]);
+
+  useEffect(() => {
+    // Calculate munds and kgs from net weight
+    const calculateMundsAndKgsFromNetWeight = () => {
+      const weightInKg = parseFloat(netWeight);
+      if (isNaN(weightInKg)) {
+        setMunds("");
+        setKgs("");
+        return;
+      }
+
+      const fullMunds = Math.floor(weightInKg / MUND_TO_KG);
+      const remainderKg = weightInKg % MUND_TO_KG;
+
+      setMunds(`${fullMunds}`);
+      setKgs(`${remainderKg}`);
+    };
+
+    calculateMundsAndKgsFromNetWeight();
+  }, [netWeight]);
+
+  const calculateAmount = () => {
+    // Calculate the amount based on netWeight
+    const price_per_munds = formData.price_mann / MUND_TO_KG;
+    const totalAmount = price_per_munds * netWeight;
     const roundedAmount = totalAmount.toFixed(2);
 
-    steTotalAmounts(roundedAmount);
+    setTotalAmount(roundedAmount);
   };
 
   useEffect(() => {
-    calculatAmount();
-  }, [formData]);
+    calculateAmount();
+  }, [netWeight, formData.price_mann]);
+
+  useEffect(() => {
+    const calculateTotal = () => {
+      const { bardaana_quantity, silai } = formData;
+      const total = parseFloat(bardaana_quantity) * parseFloat(silai);
+
+      setSilaiTotal(total);
+    };
+
+    calculateTotal();
+  }, [formData.bardaana_quantity, formData.silai]);
+
+  useEffect(() => {
+    const calculateCombinedTotal = () => {
+      const combinedTotal = silaiTotal * totalAmount;
+      setCombinedTotal(combinedTotal.toFixed(2) || 0);
+    };
+
+    calculateCombinedTotal();
+  }, [silaiTotal, totalAmount]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -324,7 +384,7 @@ const Page = () => {
           </Grid>
 
           <div className={styles.saleSec}>
-            <div className={styles.itemBill} style={{ marginBottom: "2rem" }}>
+            <div className={styles.itemBill} style={{ marginBottom: "1rem" }}>
               Add Items in bill
             </div>
 
@@ -343,12 +403,38 @@ const Page = () => {
                 )}
               </Grid>
 
-              <Grid item xs={12} sm={6} lg={12}>
+              <Grid item xs={12} sm={6} lg={6}>
                 <InputWithTitle
                   title="Weight (kg)"
                   name="weight"
                   value={weight}
                   onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6} lg={6}>
+                <InputWithTitle
+                  title="Bardaana Deduction"
+                  name="bardaana_deduction"
+                  value={formData.bardaana_deduction}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6} lg={6}>
+                <InputWithTitle
+                  title="Khoot"
+                  name="khoot"
+                  value={formData.khoot}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6} lg={6}>
+                <InputWithTitle
+                  title="Net Weight"
+                  name="netWeight"
+                  value={netWeight}
                 />
               </Grid>
 
@@ -361,6 +447,7 @@ const Page = () => {
                   readOnly
                 />
               </Grid>
+
               <Grid item xs={12} sm={6}>
                 <InputWithTitle
                   title="Weight in Kilograms"
@@ -381,9 +468,39 @@ const Page = () => {
               </Grid>
 
               <Grid item lg={6} xs={6}>
-                <InputWithTitle title={"Amount"} value={totalAmount} readOnly />
+                <InputWithTitle
+                  title={"Sub Total Amount"}
+                  value={totalAmount}
+                  readOnly
+                />
               </Grid>
 
+              <Grid item lg={4} xs={12}>
+                <InputWithTitle
+                  title={"Bardaana Quantity"}
+                  name="bardaana_quantity"
+                  value={formData.bardaana_quantity}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item lg={4} xs={12}>
+                <InputWithTitle
+                  title={"Silai"}
+                  name="silai"
+                  value={formData.silai}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item lg={4} xs={12}>
+                <InputWithTitle
+                  title="Total Amount"
+                  name="total_amount"
+                  value={combinedTotal}
+                  readOnly
+                />
+              </Grid>
               <Grid className="mt-5" item xs={12}>
                 <InputWithTitle
                   title={"Enter Description"}

@@ -12,13 +12,12 @@ import {
   Paper,
   Skeleton,
   Grid,
-  Button
+  Button,
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
 
 const Page = () => {
-  
   const api = new APICall();
   const router = useRouter();
 
@@ -58,7 +57,28 @@ const Page = () => {
 
   return (
     <>
-      <h2>Bank Cheques List</h2>
+      <div className={styles.container}>
+        <Grid container spacing={2}>
+          <Grid item lg={6} sm={12} xs={12} md={4}>
+            <div className={styles.leftSection}>Bank Cheques</div>
+          </Grid>
+          <Grid item lg={6} sm={12} xs={12} md={8}>
+            <div className={styles.rightSection}>
+              <Grid container spacing={2}>
+                <Grid lg={3} item xs={6} sm={6} md={3}>
+                  <div className={styles.rightItem}>
+                    Add Banks
+                  </div>
+                </Grid>
+
+                <Grid item lg={3} xs={6} sm={6} md={3}>
+                  <div className={styles.rightItem}>Date</div>
+                </Grid>
+              </Grid>
+            </div>
+          </Grid>
+        </Grid>
+      </div>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
