@@ -555,10 +555,10 @@ const Page = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {cartData.map((item, index) => (
+              {saleData.map((item, index) => (
                 <TableRow key={index}>
-                  <TableCell>{item.product_name}</TableCell>
-                  <TableCell>{`${item.weight}`}</TableCell>
+                  <TableCell>{item?.product_name}</TableCell>
+                  <TableCell>{`${item.net_weight}`}</TableCell>
                   <TableCell>{item.total_amount}</TableCell>
                 </TableRow>
               ))}

@@ -113,6 +113,9 @@ const Invoice = () => {
             <Grid item xs={12} lg={6} sm={6}>
               <div className={styles.issueDate}>Issued</div>
               <div className={styles.buyerName}> {rowData?.date} </div>
+
+              <div style={{marginTop:"1rem"}} className={styles.issueDate}> Bill Reference Number </div>
+              <div className={styles.buyerName}> {rowData?.ref_no} </div>
             </Grid>
 
             <Grid item xs={12} lg={6} sm={6}>
@@ -148,7 +151,13 @@ const Invoice = () => {
                 <TableRow>
                   <TableCell>Name</TableCell>
                   <TableCell>Description</TableCell>
+                  <TableCell> Bardaana Deduction </TableCell>
+                  <TableCell>Khoot</TableCell>
                   <TableCell>Weight</TableCell>
+
+                  <TableCell>Bardaana Quantity</TableCell>
+                  <TableCell>Silai</TableCell>
+
                   <TableCell>Rate</TableCell>
                   <TableCell>Total Amount</TableCell>
                 </TableRow>
@@ -158,7 +167,13 @@ const Invoice = () => {
                   <TableRow key={index}>
                     <TableCell>{item.product_name}</TableCell>
                     <TableCell>{`${item.product_description}`}</TableCell>
-                    <TableCell>{`${item.weight}`}</TableCell>
+                    <TableCell>{`${item.bardaana_deduction}`}</TableCell>
+                    <TableCell>{`${item.khoot}`}</TableCell>
+                    <TableCell>{`${item.net_weight}`}</TableCell>
+
+                    <TableCell>{`${item.bardaana_quantity}`}</TableCell>
+                    <TableCell>{`${item.salai_amt_per_bag}`}</TableCell>
+
                     <TableCell>{item.price_mann}</TableCell>
                     <TableCell>{item.total_amount}</TableCell>
                   </TableRow>
