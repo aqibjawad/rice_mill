@@ -18,11 +18,19 @@ import {
   Grid,
 } from "@mui/material";
 import APICall from "@/networkApi/APICall";
-import { purchaseBook, getLocalStorage } from "../../networkApi/Constants";
+import {
+  purchaseBook,
+  getLocalStorage,
+  saleBook,
+} from "../../networkApi/Constants";
 
 import "jspdf-autotable";
 
+import moment from "moment";
+
 import withAuth from "@/utils/withAuth";
+
+const MUND_TO_KG = 40;
 
 const Page = () => {
   const api = new APICall();
@@ -52,14 +60,36 @@ const Page = () => {
       console.error(error.message);
     }
   };
+
   useEffect(() => {
     if (isReadyToPrint) {
       setTimeout(() => {
         window.print();
-        setIsReadyToPrint(false); // Reset the flag to prevent repeated print
-      }, 1000); // Adjust timeout as needed
+        setIsReadyToPrint(false);
+      }, 1000);
     }
   }, [isReadyToPrint]);
+
+  const calculateMundsAndKgs = (weight) => {
+    const weightInKg = parseFloat(weight);
+    if (isNaN(weightInKg)) {
+      return { munds: "", kgs: "" };
+    }
+
+    const fullMunds = Math.floor(weightInKg / MUND_TO_KG);
+    const remainderKg = weightInKg % MUND_TO_KG;
+
+    return {
+      munds: fullMunds.toFixed(0),
+      kgs: remainderKg.toFixed(2),
+    };
+  };
+
+  const { munds, kgs } = calculateMundsAndKgs(salesBook?.final_weight || 0);
+
+  const formattedDate = (dateString) => {
+    return moment(dateString).format("MMMM D, YYYY");
+  };
 
   return (
     <div className={styles.invoiceContainer}>
@@ -85,24 +115,27 @@ const Page = () => {
 
       <div className="mt-10">
         <Grid container spacing={2}>
-          <Grid item xs={12} lg={4} sm={6}>
+          <Grid item xs={12} lg={6} sm={6}>
             <div className={styles.issueDate}>Serial Number</div>
-            <div className={styles.buyerName}> 25250 </div>
+            <div className={styles.buyerName}> {salesBook.serial_no} </div>
           </Grid>
 
-          <Grid item xs={12} lg={4} sm={6}>
+          {/* <Grid item xs={12} lg={4} sm={6}>
             <div>
               <div className={styles.issueDate}> Phone No Party </div>
-              <div className={styles.buyerName}> 25250 </div>
+              <div className={styles.buyerName}> {} </div>
             </div>
-          </Grid>
+          </Grid> */}
 
-          <Grid item xs={12} lg={4} sm={6}>
+          <Grid item xs={12} lg={6} sm={6}>
             <div className="flex">
               <div className="flex-grow"></div>
               <div>
-                <div className={styles.issueDate}> Phone No Party </div>
-                <div className={styles.buyerName}> 25250 </div>
+                <div className={styles.issueDate}> Date </div>
+                <div className={styles.buyerName}>
+                  {" "}
+                  {formattedDate(salesBook.created_at)}{" "}
+                </div>
               </div>
             </div>
           </Grid>
@@ -116,73 +149,53 @@ const Page = () => {
               <TableBody>
                 <TableRow>
                   <TableCell>
-                    <strong> Party Type:</strong>
+                    <strong> Bardaana Quantity:</strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {salesBook?.bardaana_quantity} </TableCell>
                 </TableRow>
 
                 <TableRow>
                   <TableCell>
-                    <strong> Party Type:</strong>
+                    <strong> Bardaana Deduction:</strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {salesBook?.bardaana_deduction} </TableCell>
                 </TableRow>
 
                 <TableRow>
                   <TableCell>
-                    <strong> Party Type:</strong>
+                    <strong> Transport No:</strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {saleBook?.truck_no || 0} </TableCell>
                 </TableRow>
 
                 <TableRow>
                   <TableCell>
-                    <strong> Party Type:</strong>
+                    <strong> Total Amount :</strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {salesBook?.total_amount} </TableCell>
                 </TableRow>
 
                 <TableRow>
                   <TableCell>
-                    <strong> Party Type:</strong>
+                    <strong> Bank Tax: </strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {salesBook?.bank_tax || 0} </TableCell>
                 </TableRow>
 
-                <TableRow>
-                  <TableCell>
-                    <strong> Party Type:</strong>
-                  </TableCell>
-                  <TableCell> test </TableCell>
-                </TableRow>
-
-                <TableRow>
-                  <TableCell>
-                    <strong> Party Type:</strong>
-                  </TableCell>
-                  <TableCell> test </TableCell>
-                </TableRow>
-
-                <TableRow>
-                  <TableCell>
-                    <strong> Party Type:</strong>
-                  </TableCell>
-                  <TableCell> test </TableCell>
-                </TableRow>
-
-                <TableRow>
-                  <TableCell>
-                    <strong> Party Type:</strong>
-                  </TableCell>
-                  <TableCell> test </TableCell>
-                </TableRow>
-
-                <TableRow>
-                  <TableCell>
-                    <strong> Party Type:</strong>
-                  </TableCell>
-                  <TableCell> test </TableCell>
-                </TableRow>
+                {salesBook?.payment_type && (
+                  <TableRow>
+                    <TableCell>
+                      <strong>
+                        {salesBook.payment_type === "cash" ? "Cash" : "Cheque"}:
+                      </strong>
+                    </TableCell>
+                    <TableCell>
+                      {salesBook.payment_type === "cash"
+                        ? salesBook.cash_amount
+                        : salesBook.cheque_amount}
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -200,21 +213,28 @@ const Page = () => {
                   <TableCell>
                     <strong> Total Weight:</strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
-                </TableRow>
-
-                <TableRow>
-                  <TableCell>
-                    <strong> KG:</strong>
-                  </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {salesBook.final_weight} </TableCell>
                 </TableRow>
 
                 <TableRow>
                   <TableCell>
                     <strong> Maan:</strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {munds} </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong> KG:</strong>
+                  </TableCell>
+                  <TableCell> {kgs} </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <strong> Price Per Munds:</strong>
+                  </TableCell>
+                  <TableCell> {salesBook?.price_mann} </TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -229,23 +249,48 @@ const Page = () => {
               <TableBody>
                 <TableRow>
                   <TableCell>
-                    <strong> Total Weight:</strong>
+                    <strong> Net Weight:</strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {salesBook?.net_weight} </TableCell>
                 </TableRow>
 
                 <TableRow>
                   <TableCell>
-                    <strong> KG:</strong>
+                    <strong> Final Weight:</strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {salesBook?.final_weight} </TableCell>
                 </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+      </Grid>
 
+      <Grid container spacing={2}>
+        <Grid item xs={12} lg={6} sm={6}>
+          <TableContainer sx={{ mt: 2 }}>
+            <Table>
+              <TableBody>
                 <TableRow>
                   <TableCell>
-                    <strong> Maan:</strong>
+                    <strong> Pending Amount:</strong>
                   </TableCell>
-                  <TableCell> test </TableCell>
+                  <TableCell> {salesBook.rem_amount} </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+
+        <Grid item xs={12} lg={6} sm={6}>
+          <TableContainer sx={{ mt: 2 }}>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <strong> Signature:</strong>
+                  </TableCell>
+                  <TableCell> </TableCell>
                 </TableRow>
               </TableBody>
             </Table>
