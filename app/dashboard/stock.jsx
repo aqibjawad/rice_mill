@@ -57,7 +57,9 @@ const Page = () => {
       const queryParams = [];
 
       if (startDate && endDate) {
-        queryParams.push(`start_date=${format(new Date(startDate), "yyyy-MM-dd")}`);
+        queryParams.push(
+          `start_date=${format(new Date(startDate), "yyyy-MM-dd")}`
+        );
         queryParams.push(`end_date=${format(new Date(endDate), "yyyy-MM-dd")}`);
       } else {
         const currentDate = format(new Date(), "yyyy-MM-dd");
@@ -65,7 +67,9 @@ const Page = () => {
         queryParams.push(`end_date=${currentDate}`);
       }
 
-      const response = await api.getDataWithToken(`${stocks}?${queryParams.join("&")}`);
+      const response = await api.getDataWithToken(
+        `${stocks}?${queryParams.join("&")}`
+      );
 
       const data = response.data;
       if (Array.isArray(data)) {
@@ -114,24 +118,30 @@ const Page = () => {
   return (
     <div>
       <div className={styles.container}>
-        <Grid container spacing={2}>
+        <Grid className="mt-5" container spacing={2}>
           <Grid item lg={8} sm={12} xs={12} md={4}>
             <div className={styles.leftSection}>Stock</div>
           </Grid>
           <Grid item lg={4} sm={12} xs={12} md={8}>
-            <div className={styles.rightSection}>
-              <Grid container spacing={2}>
-                <Grid lg={3} item xs={6} sm={6} md={3}>
-                  <div onClick={openAddStockModal} className={styles.rightItem}>
-                    Add
-                  </div>
-                </Grid>
+            <div className="flex">
+              <div className="flex-grow"></div>
 
-                <Grid lg={3} item xs={6} sm={6} md={3}>
-                  <DateFilters onDateChange={handleDateChange} />
-                </Grid>
+              <div>
+                <Grid container spacing={2}>
+                  <Grid lg={6} item xs={6} sm={6} md={3}>
+                    <div
+                      onClick={openAddStockModal}
+                      className={styles.rightItem}
+                    >
+                      Add
+                    </div>
+                  </Grid>
 
-              </Grid>
+                  <Grid lg={6} item xs={6} sm={6} md={3}>
+                    <DateFilters onDateChange={handleDateChange} />
+                  </Grid>
+                </Grid>
+              </div>
             </div>
           </Grid>
         </Grid>
@@ -179,7 +189,10 @@ const Page = () => {
                   <TableCell>{row.product_name}</TableCell>
                   <TableCell>{row.quantity}</TableCell>
                   <TableCell>
-                    <IconButton onClick={() => handleDelete(row.id)} color="error">
+                    <IconButton
+                      onClick={() => handleDelete(row.id)}
+                      color="error"
+                    >
                       <MdDelete />
                     </IconButton>
                     <IconButton onClick={() => handleEdit(row)} color="primary">

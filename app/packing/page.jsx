@@ -92,11 +92,10 @@ const Page = () => {
     <div className={styles.pageContainer}>
       <div className={styles.container}>
         <Grid container spacing={2}>
-          <Grid item lg={8} sm={12} xs={12} md={4}>
+          <Grid item lg={11} sm={12} xs={12} md={4}>
             <div className={styles.leftSection}>Packing</div>
           </Grid>
-          <Grid item lg={4} sm={12} xs={12} md={8}>
-            <div className={styles.rightSection}>
+          <Grid item lg={1} sm={12} xs={12} md={8}>
 
               <Grid container spacing={2}>
 
@@ -106,12 +105,7 @@ const Page = () => {
                   </div>
                 </Grid>
 
-                <Grid lg={6} item xs={6} sm={6} md={6}>
-                  <div className={styles.rightItem}>date</div>
-                </Grid>
-
               </Grid>
-            </div>
           </Grid>
         </Grid>
       </div>

@@ -73,6 +73,7 @@
 .rightSection {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .rightItem {
@@ -96,24 +97,24 @@
 }
 
 .rightItemExp {
-  width: Hug (62px) px;
-  height: Hug (32px) px;
-  padding: 6px 5px 6px 5px;
-  gap: 7px;
-  border-radius: 8px;
+  width: 100px;
+  height: 60px;
+  border-radius: 14px;
   border: 1px;
-  margin-left: 20px;
+  background: #0e7669;
   font-family: "regular";
-  font-size: 16px;
-  border: 1px solid #e3e3e3;
-  padding: 10px;
-  font-family: "regular";
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 14.06px;
-  text-align: left;
-  color: white;
-  background: #316aff;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.addText{
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tableSection {
@@ -159,7 +160,6 @@
   text-align: center;
   justify-content: center;
 }
-
 
 @media print {
   .hide-on-print {

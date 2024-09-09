@@ -109,9 +109,6 @@ const Page = () => {
           <div className={styles.rightItemExp} onClick={handleOpen}>
             + Add
           </div>
-          <div className={styles.rightItem}>date</div>
-          <div className={styles.rightItem}>view all</div>
-          <div className={styles.rightItemExp}>export</div>
         </div>
       </div>
 

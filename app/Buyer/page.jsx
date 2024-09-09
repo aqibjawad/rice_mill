@@ -101,11 +101,10 @@ const Page = () => {
         <div className={styles.leftSection}>Buyer</div>
         <div className={styles.rightSection}>
           <div className={styles.rightItemExp} onClick={handleOpen}>
-            + Add
+            <div className={styles.addText}>
+              + Add 
+            </div>
           </div>
-          <div className={styles.rightItem}>date</div>
-          <div className={styles.rightItem}>view all</div>
-          <div className={styles.rightItemExp}>export</div>
         </div>
       </div>
       <div className={styles.contentContainer}>

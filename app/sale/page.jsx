@@ -19,6 +19,8 @@ import { saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Link from "next/link";
 
+import Buttons from "@/components/buttons";
+
 import { useRouter } from "next/navigation";
 
 const Page = () => {
@@ -75,25 +77,10 @@ const Page = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <div className={styles.container}>
-        <div className={styles.leftSection}>Sale</div>
-        <div className={styles.rightSection}>
-          {/* <div className={styles.searchContainer}>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={handleSearch}
-              className={styles.searchInput}
-            />
-          </div> */}
-
-          <div className={styles.rightItemExp}>
-            <Link href="/addSale">+ Add</Link>
-          </div>
-          <div className={styles.rightItem}>date</div>
-        </div>
-      </div>
+      <Buttons
+        leftSectionText="Stock"
+        addButtonLink="/addSale"
+      />
 
       <div className={styles.contentContainer}>
         <TableContainer component={Paper}>

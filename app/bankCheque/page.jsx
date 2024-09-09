@@ -65,10 +65,10 @@ const Page = () => {
     <>
       <div className={styles.container}>
         <Grid container spacing={2}>
-          <Grid item lg={6} sm={12} xs={12} md={4}>
+          <Grid item lg={11} sm={12} xs={12} md={4}>
             <div className={styles.leftSection}>Bank Cheques</div>
           </Grid>
-          <Grid item lg={6} sm={12} xs={12} md={8}>
+          <Grid item lg={1} sm={12} xs={12} md={8}>
             <div className={styles.rightSection}>
               <Grid container spacing={2}>
                 <Grid lg={3} item xs={6} sm={6} md={3}>
@@ -79,10 +79,6 @@ const Page = () => {
                   >
                     Add Banks
                   </div>
-                </Grid>
-
-                <Grid item lg={3} xs={6} sm={6} md={3}>
-                  <div className={styles.rightItem}>Date</div>
                 </Grid>
               </Grid>
             </div>
