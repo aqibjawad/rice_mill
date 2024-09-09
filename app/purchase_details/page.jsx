@@ -116,8 +116,8 @@ const Page = () => {
       <div className="mt-10">
         <Grid container spacing={2}>
           <Grid item xs={12} lg={6} sm={6}>
-            <div className={styles.issueDate}>Serial Number</div>
-            <div className={styles.buyerName}> {salesBook.serial_no} </div>
+            <div className={styles.issueDate}>Party Name</div>
+            <div className={styles.buyerName}> {salesBook?.supplier?.person_name} </div>
           </Grid>
 
           {/* <Grid item xs={12} lg={4} sm={6}>
@@ -147,6 +147,14 @@ const Page = () => {
           <TableContainer component={Paper} sx={{ mt: 2 }}>
             <Table>
               <TableBody>
+
+                 <TableRow>
+                  <TableCell>
+                    <strong> Serial Number:</strong>
+                  </TableCell>
+                  <TableCell> {salesBook?.serial_no} </TableCell>
+                </TableRow>
+
                 <TableRow>
                   <TableCell>
                     <strong> Bardaana Quantity:</strong>
