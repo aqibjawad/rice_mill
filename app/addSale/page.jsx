@@ -49,6 +49,9 @@ const Page = () => {
   const [supplierList, setSuppliers] = useState([]);
   const [refList, setRef] = useState({ id: "", next_ref_no: "" });
 
+  const [cartData, setCartData] = useState([]);
+  const [currentRefId, setCurrentRefId] = useState("");  
+
   const [error, setError] = useState("");
 
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
@@ -61,7 +64,6 @@ const Page = () => {
 
   const [total, setTotal] = useState(0);
   const [silaiTotal, setSilaiTotal] = useState(0);
-  console.log("bardaana Total", silaiTotal);
 
   const [netWeight, setNetWeight] = useState(0);
   const [combinedTotal, setCombinedTotal] = useState(0);
@@ -174,7 +176,6 @@ const Page = () => {
       const { bardaana_deduction, khoot } = formData;
       const total = parseFloat(bardaana_deduction) + parseFloat(khoot);
 
-      console.log("Total:", total);
       setTotal(total);
     };
 
@@ -243,9 +244,6 @@ const Page = () => {
     const numericTotalAmount = Number(totalsAmounts);
 
     const combinedTotal = numericSilaiTotal + numericTotalAmount;
-
-    console.log(combinedTotal);
-
     setCombinedTotal(combinedTotal);
   }, [silaiTotal, totalsAmounts]);
 
@@ -262,6 +260,17 @@ const Page = () => {
       setSaleDetails(response.data.details);
       setBilTotal(response.data.total_amount);
       localStorage.setItem("saleBookId", response.data.id);
+
+      // Update cart data
+      setCartData((prevData) => [
+        ...prevData,
+        {
+          product_name: response.data.product_name,
+          weight: response.data.weight,
+          total_amount: response.data.total_amount,
+        },
+      ]);
+      setCurrentRefId(response.data.id);
 
       Swal.fire({
         title: "Success!",
@@ -289,11 +298,12 @@ const Page = () => {
       setLoadingSubmit(false);
     }
   };
+
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoadingCompleteBill(true); // Set loading state to true when starting
 
-    const bilObj = { sale_book_id: refList.id };
+    const bilObj = { sale_book_id: currentRefId };
 
     try {
       const response = await api.postFormDataWithToken(`${saleBook}`, bilObj);
@@ -318,6 +328,10 @@ const Page = () => {
         product_description: "",
         weight: "",
       }));
+
+      // Clear cart data after bill completion
+      setCartData([]);
+      setCurrentRefId("");
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
@@ -541,7 +555,7 @@ const Page = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {saleData?.map((item, index) => (
+              {cartData.map((item, index) => (
                 <TableRow key={index}>
                   <TableCell>{item.product_name}</TableCell>
                   <TableCell>{`${item.weight}`}</TableCell>
