@@ -13,14 +13,13 @@ import {
   Skeleton,
   Button,
   Grid,
+  TableFooter,
+  TablePagination,
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
-
 import { format } from "date-fns";
-
 import AddExpense from "@/components/stock/addExpense";
-
 import DateFilter from "@/components/generic/DateFilter";
 
 const Page = () => {
@@ -39,7 +38,7 @@ const Page = () => {
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate]); // Add dependencies here
+  }, []); // Add dependencies here
 
   const fetchData = async () => {
     try {
@@ -56,7 +55,7 @@ const Page = () => {
       }
 
       const response = await api.getDataWithToken(
-        `${expenseCat}?${queryParams.join("&")}`
+        `${expenseCat}`
       );
 
       const data = response.data;
@@ -83,29 +82,35 @@ const Page = () => {
     router.push("/expenseDetails");
   };
 
+  // Calculate total expenses
+  const totalExpenses = tableData.reduce(
+    (total, item) => total + parseFloat(item.expenses_sum_total_amount || 0),
+    0
+  );
+
   return (
     <>
       <div className={styles.container}>
         <Grid container spacing={2}>
-          <Grid item lg={4} sm={12} xs={12} md={4}>
+          <Grid item lg={6} sm={12} xs={12} md={4}>
             <div className={styles.leftSection}>Expense</div>
           </Grid>
-          <Grid item lg={8} sm={12} xs={12} md={8}>
+          <Grid item lg={6} sm={12} xs={12} md={8}>
             <div className={styles.rightSection}>
               <Grid container spacing={2}>
-                <Grid lg={4} item xs={6} sm={6} md={3}>
+                <Grid lg={6} item xs={6} sm={6} md={3}>
                   <div onClick={handleOpenExpense} className={styles.rightItem}>
                     Expenses Categories
                   </div>
                 </Grid>
 
-                <Grid lg={4} item xs={6} sm={6} md={3}>
+                <Grid lg={6} item xs={6} sm={6} md={3}>
                   <div className={styles.rightItem}>Add Expense</div>
                 </Grid>
 
-                <Grid item lg={4} xs={6} sm={6} md={3}>
+                {/* <Grid item lg={4} xs={6} sm={6} md={3}>
                   <DateFilter onDateChange={handleDateChange} />
-                </Grid>
+                </Grid> */}
               </Grid>
             </div>
           </Grid>
@@ -116,8 +121,8 @@ const Page = () => {
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
-              <TableCell> Expense Category </TableCell>
-              <TableCell> Expense Amount </TableCell>
+              <TableCell>Expense Category</TableCell>
+              <TableCell>Expense Amount</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -132,9 +137,9 @@ const Page = () => {
                     ))}
                   </TableRow>
                 ))
-              : tableData.map((row) => (
+              : tableData.map((row, index) => (
                   <TableRow key={row.id}>
-                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.expense_category}</TableCell>
                     <TableCell>{row.expenses_sum_total_amount}</TableCell>
                     <TableCell>
@@ -145,6 +150,17 @@ const Page = () => {
                   </TableRow>
                 ))}
           </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={2} align="right">
+                <strong>Total Expenses:</strong>
+              </TableCell>
+              <TableCell>
+                <strong>{totalExpenses.toFixed(2)}</strong>
+              </TableCell>
+              <TableCell />
+            </TableRow>
+          </TableFooter>
         </Table>
       </TableContainer>
 
