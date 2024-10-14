@@ -146,7 +146,9 @@ const Page = () => {
                   </TableRow>
                 ))
               : // Actual data
-                tableData.map((row, index) => (
+                tableData
+                .filter((row) => row.cr_amount > 0) 
+                .map((row, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.payment_type}</TableCell>

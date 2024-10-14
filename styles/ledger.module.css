@@ -98,7 +98,7 @@
 
 .rightItemExp {
   width: 100px;
-  height: 60px;
+  height: auto;
   border-radius: 14px;
   border: 1px;
   background: #0e7669;

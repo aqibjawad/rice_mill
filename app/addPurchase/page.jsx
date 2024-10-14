@@ -256,6 +256,16 @@ const AddPurchaseContent = () => {
     }
   };
 
+
+  useEffect(() => {
+    // Set the current date in 'YYYY-MM-DD' format when the component mounts
+    const currentDate = new Date().toISOString().split("T")[0];
+    setFormData((prevData) => ({
+      ...prevData,
+      date: currentDate, // Set the current date
+    }));
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({

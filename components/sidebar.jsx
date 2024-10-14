@@ -46,7 +46,7 @@ const SideBar = () => {
     { name: "Recieves", href: "/inflow/", icon: <FaArrowRight /> },
     { name: "Payments", href: "/outflow/", icon: <FaArrowLeft /> },
     { name: "Suppliers", href: "/supplier/", icon: <FaTruck /> },
-    { name: "Buyers", href: "/buyer/", icon: <FaUserTie /> },
+    { name: "Buyers", href: "/Buyer/", icon: <FaUserTie /> },
     { name: "Expenses", href: "/expenses/", icon: <FaMoneyBill /> },
     { name: "Company Ledger", href: "/companyLedger/", icon: <FaMoneyBill /> },
     { name: "Bank Cheque", href: "/bankCheque/", icon: <FaArrowRight /> },

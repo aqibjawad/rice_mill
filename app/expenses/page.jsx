@@ -12,15 +12,16 @@ import {
   Paper,
   Skeleton,
   Button,
-  Grid
+  Grid,
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
 
-import Buttons from "@/components/buttons";
 import { format } from "date-fns";
 
 import AddExpense from "@/components/stock/addExpense";
+
+import DateFilter from "@/components/generic/DateFilter";
 
 const Page = () => {
   const api = new APICall();
@@ -86,24 +87,24 @@ const Page = () => {
     <>
       <div className={styles.container}>
         <Grid container spacing={2}>
-          <Grid item lg={6} sm={12} xs={12} md={4}>
-            <div className={styles.leftSection}>Stock</div>
+          <Grid item lg={4} sm={12} xs={12} md={4}>
+            <div className={styles.leftSection}>Expense</div>
           </Grid>
-          <Grid item lg={6} sm={12} xs={12} md={8}>
+          <Grid item lg={8} sm={12} xs={12} md={8}>
             <div className={styles.rightSection}>
               <Grid container spacing={2}>
-                <Grid lg={3} item xs={6} sm={6} md={3}>
+                <Grid lg={4} item xs={6} sm={6} md={3}>
                   <div onClick={handleOpenExpense} className={styles.rightItem}>
                     Expenses Categories
                   </div>
                 </Grid>
 
-                <Grid lg={3} item xs={6} sm={6} md={3}>
+                <Grid lg={4} item xs={6} sm={6} md={3}>
                   <div className={styles.rightItem}>Add Expense</div>
                 </Grid>
 
-                <Grid item lg={3} xs={6} sm={6} md={3}>
-                  <div className={styles.rightItem}>Date</div>
+                <Grid item lg={4} xs={6} sm={6} md={3}>
+                  <DateFilter onDateChange={handleDateChange} />
                 </Grid>
               </Grid>
             </div>

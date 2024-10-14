@@ -19,7 +19,6 @@ const Page = () => {
   const api = new APICall();
 
   const [tableData, setTableData] = useState([]);
-  
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,10 +46,8 @@ const Page = () => {
       const response = await api.getDataWithToken(
         `${getAmountReceives}?${queryParams.join("&")}`
       );
-      
 
       const data = response.data;
-      
 
       if (Array.isArray(data)) {
         setTableData(data);
@@ -115,22 +112,25 @@ const Page = () => {
                     ))}
                   </TableRow>
                 ))
-              : tableData.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.payment_type}</TableCell>
-                    <TableCell>{row.customer?.person_name}</TableCell>
-                    <TableCell>{row.description}</TableCell>
-                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
-                    <TableCell>{row.cheque_no || "N/A"}</TableCell>
-                    <TableCell>{row.cheque_date || "N/A"}</TableCell>
-                    <TableCell>{row.cr_amount}</TableCell>
-                    <TableCell>{row.balance}</TableCell>
-                  </TableRow>
-                ))}
+              : tableData
+                  .filter((row) => row.cr_amount > 0) // Filter rows where credit amount is greater than 0
+                  .map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{row.payment_type}</TableCell>
+                      <TableCell>{row.customer?.person_name}</TableCell>
+                      <TableCell>{row.description}</TableCell>
+                      <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
+                      <TableCell>{row.cheque_no || "N/A"}</TableCell>
+                      <TableCell>{row.cheque_date || "N/A"}</TableCell>
+                      <TableCell>{row.cr_amount}</TableCell>
+                      <TableCell>{row.balance}</TableCell>
+                    </TableRow>
+                  ))}
           </TableBody>
         </Table>
       </TableContainer>
+
       <div className={styles.tableTotalRow}>
         Total: {calculateTotalAmount()}
       </div>

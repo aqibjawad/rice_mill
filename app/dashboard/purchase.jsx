@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import styles from "../../styles/purchase.module.css";
 import APICall from "../../networkApi/APICall";
 import { purchaseBook } from "@/networkApi/Constants";
-import Swal from "sweetalert2";
 import {
   Table,
   TableBody,
@@ -13,15 +12,21 @@ import {
   TableRow,
   Paper,
   Skeleton,
+  Grid
 } from "@mui/material";
 
 import Buttons from "../../components/buttons";
+
+import Link from "next/link";
+
 
 import withAuth from "@/utils/withAuth";
 
 import { useRouter } from "next/navigation";
 
 import { format } from "date-fns";
+
+import DateFilter from "@/components/generic/DateFilter";
 
 const Purchase = () => {
   const router = useRouter();
@@ -36,25 +41,12 @@ const Purchase = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [startDate, endDate]);
 
-  // const fetchData = async () => {
-  //   try {
-  //     const response = await api.getDataWithToken(purchaseBook);
-
-  //     const data = response.data;
-
-  //     if (Array.isArray(data)) {
-  //       setTableData(data);
-  //     } else {
-  //       throw new Error("Fetched data is not an array");
-  //     }
-  //   } catch (error) {
-  //     setError(error.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  const handleDateChange = (start, end) => {
+    setStartDate(start);
+    setEndDate(end);
+  };
 
   const fetchData = async () => {
     try {
@@ -88,10 +80,7 @@ const Purchase = () => {
     }
   };
 
-  const handleDateChange = (start, end) => {
-    setStartDate(start);
-    setEndDate(end);
-  };
+
 
   const handleViewDetails = (row) => {
     localStorage.setItem("purchaseBookId", row.id);
@@ -101,6 +90,31 @@ const Purchase = () => {
   return (
     <div className={styles.container}>
       <Buttons leftSectionText="Purchase" addButtonLink="/addPurchase"  onDateChange={handleDateChange} />
+
+      {/* <Grid container spacing={2}>
+        <Grid item lg={8} sm={12} xs={12} md={4}>
+          <div className={styles.leftSection}> Purchase </div>
+        </Grid>
+
+        <Grid item lg={4} sm={12} xs={12} md={8}>
+          <div className="flex">
+            <div className="flex-grow"></div>
+
+            <div>
+              <Grid container spacing={2}>
+                <Grid lg={6} item xs={6} sm={6} md={6}>
+                  <Link href="/addPurchase">
+                    <div className={styles.rightItem}>Add</div>
+                  </Link>
+                </Grid>
+                <Grid lg={6} item xs={6} sm={6} md={6}>
+                  <DateFilter onDateChange={handleDateChange} />
+                </Grid>
+              </Grid>
+            </div>
+          </div>
+        </Grid>
+      </Grid> */}
 
       <TableContainer component={Paper} className={styles.tableSection}>
         <Table>
