@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/bankCheque.module.css";
-import { banks, bankCheque, getLocalStorage } from "../../networkApi/Constants";
 import {
   Table,
   TableBody,
@@ -13,10 +12,8 @@ import {
   Paper,
   Skeleton,
   Grid,
-  Button,
-  CircularProgress,
 } from "@mui/material";
-import Swal from "sweetalert2";
+import { banks, getLocalStorage } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 
 const Page = () => {
@@ -28,16 +25,12 @@ const Page = () => {
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(); // State for action loading
 
-  const [openBankCheque, setOpenBankCheque] = useState(false);
-  const [editData, setEditData] = useState(null);
+  const bankId = getLocalStorage("selectedRowId");
 
   useEffect(() => {
     fetchData();
   }, []);
-
-  const bankId = getLocalStorage("selectedRowId");
 
   const fetchData = async () => {
     try {
@@ -59,11 +52,19 @@ const Page = () => {
     }
   };
 
+  const showChequeDetails = tableData.some(
+    (row) => row.payment_type === "cheque"
+  );
+
+  const totalBalance = tableData.reduce((sum, row) => {
+    const balance = parseFloat(row.balance) || 0;
+    return sum + balance;
+  }, 0);
+
   return (
     <div>
       <div className={styles.container}>
         <Grid container spacing={2}>
-
           <Grid item lg={8} sm={12} xs={12} md={4}>
             <div className={styles.leftSection}> {data.bank_name} </div>
             <div className="mb-5"> {data.balance} </div>
@@ -80,39 +81,67 @@ const Page = () => {
           </Grid>
         </Grid>
       </div>
+
       <TableContainer component={Paper} className={styles.tableContainer}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Amount</TableCell>
+              <TableCell>Amount Type</TableCell>
               <TableCell>Balance</TableCell>
-              <TableCell>Customer Type</TableCell>
-              <TableCell>Cheque Number</TableCell>
-              <TableCell>Cheque Date</TableCell>
+              {showChequeDetails && <TableCell>Cheque Number</TableCell>}
+              {showChequeDetails && <TableCell>Cheque Date</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {loading
               ? [...Array(5)].map((_, index) => (
                   <TableRow key={index}>
-                    {[...Array(6)].map((_, cellIndex) => (
-                      <TableCell key={cellIndex}>
-                        <Skeleton variant="text" />
-                      </TableCell>
-                    ))}
+                    {[...Array(showChequeDetails ? 7 : 5)].map(
+                      (_, cellIndex) => (
+                        <TableCell key={cellIndex}>
+                          <Skeleton variant="text" />
+                        </TableCell>
+                      )
+                    )}
                   </TableRow>
                 ))
-              : tableData.map((row) => (
+              : tableData.map((row, index) => (
                   <TableRow key={row.id}>
-                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{row?.customer?.person_name}</TableCell>
                     <TableCell>{row.cr_amount}</TableCell>
+                    <TableCell>
+                      {row.customer_type === "buyer" ? "Debit" : "Credit"}
+                    </TableCell>
                     <TableCell>{row.balance}</TableCell>
-                    <TableCell>{row.customer_type}</TableCell>
-                    <TableCell>{row.cheque_no}</TableCell>
-                    <TableCell>{row.cheque_date}</TableCell>
+                    {showChequeDetails && (
+                      <>
+                        <TableCell>
+                          {row.payment_type === "cheque" ? row.cheque_no : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {row.payment_type === "cheque"
+                            ? row.cheque_date
+                            : "-"}
+                        </TableCell>
+                      </>
+                    )}
                   </TableRow>
                 ))}
+
+            {/* Display total balance row */}
+            <TableRow>
+              <TableCell colSpan={4} style={{ fontWeight: "bold" }}>
+                Total Balance
+              </TableCell>
+              <TableCell style={{ fontWeight: "bold" }}>
+                {totalBalance}
+              </TableCell>
+              {showChequeDetails && <TableCell colSpan={2}></TableCell>}
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
