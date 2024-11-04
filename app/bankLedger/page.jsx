@@ -90,9 +90,9 @@ const Page = () => {
               <TableCell>Name</TableCell>
               <TableCell>Amount</TableCell>
               <TableCell>Amount Type</TableCell>
-              <TableCell>Balance</TableCell>
               {showChequeDetails && <TableCell>Cheque Number</TableCell>}
               {showChequeDetails && <TableCell>Cheque Date</TableCell>}
+              <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -116,7 +116,6 @@ const Page = () => {
                     <TableCell>
                       {row.customer_type === "buyer" ? "Debit" : "Credit"}
                     </TableCell>
-                    <TableCell>{row.balance}</TableCell>
                     {showChequeDetails && (
                       <>
                         <TableCell>
@@ -129,12 +128,13 @@ const Page = () => {
                         </TableCell>
                       </>
                     )}
+                    <TableCell>{row.balance}</TableCell>
                   </TableRow>
                 ))}
 
             {/* Display total balance row */}
             <TableRow>
-              <TableCell colSpan={4} style={{ fontWeight: "bold" }}>
+              <TableCell colSpan={6} style={{ fontWeight: "bold" }}>
                 Total Balance
               </TableCell>
               <TableCell style={{ fontWeight: "bold" }}>
