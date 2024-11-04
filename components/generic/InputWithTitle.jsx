@@ -4,8 +4,8 @@ import styles from "../../styles/generic/inputStyles.module.css";
 const InputWithTitle = ({ title, onEnterPress, ...rest }) => {
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
-      alert("Hello");
-      // onEnterPress();
+      // alert("Hello");
+      onEnterPress();
     }
   };
   return (

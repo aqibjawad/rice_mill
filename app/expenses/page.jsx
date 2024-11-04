@@ -36,10 +36,6 @@ const Page = () => {
   const handleOpenExpense = () => setOpenExpense(true);
   const handleCloseExpense = () => setOpenExpense(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []); // Add dependencies here
-
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -54,9 +50,7 @@ const Page = () => {
         queryParams.push(`end_date=${currentDate}`);
       }
 
-      const response = await api.getDataWithToken(
-        `${expenseCat}`
-      );
+      const response = await api.getDataWithToken(`${expenseCat}`);
 
       const data = response.data;
 
@@ -71,6 +65,10 @@ const Page = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [startDate, endDate]);
 
   const handleDateChange = (start, end) => {
     setStartDate(start);
@@ -92,25 +90,25 @@ const Page = () => {
     <>
       <div className={styles.container}>
         <Grid container spacing={2}>
-          <Grid item lg={6} sm={12} xs={12} md={4}>
+          <Grid item lg={6} sm={12} xs={12} md={3}>
             <div className={styles.leftSection}>Expense</div>
           </Grid>
-          <Grid item lg={6} sm={12} xs={12} md={8}>
+          <Grid item lg={6} sm={12} xs={12} md={9}>
             <div className={styles.rightSection}>
               <Grid container spacing={2}>
-                <Grid lg={6} item xs={6} sm={6} md={3}>
+                <Grid lg={4} item xs={6} sm={6} md={6}>
                   <div onClick={handleOpenExpense} className={styles.rightItem}>
                     Expenses Categories
                   </div>
                 </Grid>
 
-                <Grid lg={6} item xs={6} sm={6} md={3}>
+                <Grid lg={4} item xs={6} sm={6} md={6}>
                   <div className={styles.rightItem}>Add Expense</div>
                 </Grid>
 
-                {/* <Grid item lg={4} xs={6} sm={6} md={3}>
+                <Grid item lg={4} xs={6} sm={6} md={5}>
                   <DateFilter onDateChange={handleDateChange} />
-                </Grid> */}
+                </Grid>
               </Grid>
             </div>
           </Grid>

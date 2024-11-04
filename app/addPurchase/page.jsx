@@ -46,6 +46,7 @@ const AddPurchaseContent = () => {
     cash_amount: "",
     cheque_amount: "",
     cheque_no: "",
+    cheque_date: " ",
     khoot: "",
     chungi: "",
     net_weight: "",
@@ -256,7 +257,6 @@ const AddPurchaseContent = () => {
     }
   };
 
-
   useEffect(() => {
     // Set the current date in 'YYYY-MM-DD' format when the component mounts
     const currentDate = new Date().toISOString().split("T")[0];
@@ -286,7 +286,7 @@ const AddPurchaseContent = () => {
           ...prev,
           [name]: selectedOption.label,
         }));
-      } else if (name === "sup_id" || name === "pro_id") {
+      } else if (["sup_id", "pro_id", "bank_id"].includes(name)) {
         setFormData((prev) => ({
           ...prev,
           [name]: selectedOption.id.toString(),
@@ -307,7 +307,7 @@ const AddPurchaseContent = () => {
     e.preventDefault();
 
     // If validation is required, uncomment the following line
-    // if (!validateForm()) return;
+    if (!validateForm()) return;
 
     setLoadingSubmit(true);
 
@@ -583,6 +583,17 @@ const AddPurchaseContent = () => {
 
             <Grid className="mt-10" item xs={12} sm={4}>
               <InputWithTitle
+                title={"Cheque Date"}
+                placeholder={"Cheque Date"}
+                name="cheque_date"
+                value={formData.cheque_date}
+                onChange={handleInputChange}
+                type={"date"}
+              />
+            </Grid>
+
+            <Grid className="mt-10" item xs={12} sm={4}>
+              <InputWithTitle
                 title={"Cheque Amount"}
                 placeholder={"Cheque Amount"}
                 name="cheque_amount"
@@ -636,6 +647,17 @@ const AddPurchaseContent = () => {
                 name="cheque_amount"
                 value={formData.cheque_amount}
                 onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid className="mt-10" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Cheque Date"}
+                placeholder={"Cheque Date"}
+                name="cheque_date"
+                value={formData.cheque_date}
+                onChange={handleInputChange}
+                type={"date"}
               />
             </Grid>
 

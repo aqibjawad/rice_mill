@@ -61,6 +61,11 @@ const Page = () => {
     router.push("/bankDetails");
   };
 
+  const handleViewLedger = (id) => {
+    localStorage.setItem("selectedRowId", id);
+    router.push("/bankLedger");
+  };
+
   return (
     <>
       <div className={styles.container}>
@@ -94,7 +99,8 @@ const Page = () => {
               <TableCell>No of Cheque</TableCell>
               <TableCell>Advance Cheque Amount</TableCell>
               <TableCell>Total Balance</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>View Details</TableCell>
+              <TableCell>View Ledger</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -122,6 +128,12 @@ const Page = () => {
                     <TableCell>
                       <Button onClick={() => handleViewDetails(row.id)}>
                         View Details
+                      </Button>
+                    </TableCell>
+
+                    <TableCell>
+                      <Button onClick={() => handleViewLedger(row.id)}>
+                        View Ledger
                       </Button>
                     </TableCell>
                   </TableRow>
