@@ -56,10 +56,20 @@ const Page = () => {
     (row) => row.payment_type === "cheque"
   );
 
-  const totalBalance = tableData.reduce((sum, row) => {
-    const balance = parseFloat(row.balance) || 0;
-    return sum + balance;
-  }, 0);
+  const { debitTotal, creditTotal } = tableData.reduce(
+    (totals, row) => {
+      const amount = parseFloat(row.cr_amount) || 0;
+      if (row.customer_type === "buyer") {
+        totals.creditTotal += amount;
+      } else {
+        totals.debitTotal += amount;
+      }
+      return totals;
+    },
+    { debitTotal: 0, creditTotal: 0, finalBalance: 0 }
+  );
+
+  const finalBalance = debitTotal - creditTotal;
 
   return (
     <div>
@@ -88,10 +98,11 @@ const Page = () => {
             <TableRow>
               <TableCell>Sr No</TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Amount</TableCell>
               <TableCell>Amount Type</TableCell>
               {showChequeDetails && <TableCell>Cheque Number</TableCell>}
               {showChequeDetails && <TableCell>Cheque Date</TableCell>}
+              <TableCell>Transaction ID</TableCell>
+              <TableCell> Bank Amount</TableCell>
               <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
@@ -99,48 +110,60 @@ const Page = () => {
             {loading
               ? [...Array(5)].map((_, index) => (
                   <TableRow key={index}>
-                    {[...Array(showChequeDetails ? 7 : 5)].map(
-                      (_, cellIndex) => (
-                        <TableCell key={cellIndex}>
-                          <Skeleton variant="text" />
-                        </TableCell>
-                      )
-                    )}
+                    {[...Array(7)].map((_, cellIndex) => (
+                      <TableCell key={cellIndex}>
+                        <Skeleton variant="text" />
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))
               : tableData.map((row, index) => (
                   <TableRow key={row.id}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row?.customer?.person_name}</TableCell>
-                    <TableCell>{row.cr_amount}</TableCell>
+                    <TableCell>{row?.customer?.person_name || "-"}</TableCell>
                     <TableCell>
                       {row.customer_type === "buyer" ? "Debit" : "Credit"}
                     </TableCell>
-                    {showChequeDetails && (
+
+                    {/* Show Cheque Details if payment_type is "cheque" */}
+                    {row.payment_type === "cheque" ? (
                       <>
-                        <TableCell>
-                          {row.payment_type === "cheque" ? row.cheque_no : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {row.payment_type === "cheque"
-                            ? row.cheque_date
-                            : "-"}
-                        </TableCell>
+                        <TableCell>{row.cheque_no || "-"}</TableCell>
+                        <TableCell>{row.cheque_date || "-"}</TableCell>
+                      </>
+                    ) : (
+                      <>
+                        <TableCell>-</TableCell>
+                        <TableCell>-</TableCell>
                       </>
                     )}
-                    <TableCell>{row.balance}</TableCell>
+
+                    {/* Show Online Details if payment_type is "online" */}
+                    {row.payment_type === "online" ? (
+                      <>
+                        <TableCell>{row.transaction_id || "-"}</TableCell>
+                        <TableCell>{row.cash_amount || "-"}</TableCell>
+                      </>
+                    ) : (
+                      <>
+                        <TableCell>-</TableCell>
+                        <TableCell>-</TableCell>
+                      </>
+                    )}
+
+                    {/* Display cr_amount in Balance column */}
+                    <TableCell>{row.cr_amount || "-"}</TableCell>
                   </TableRow>
                 ))}
 
             {/* Display total balance row */}
             <TableRow>
-              <TableCell colSpan={6} style={{ fontWeight: "bold" }}>
+              <TableCell colSpan={7} style={{ fontWeight: "bold" }}>
                 Total Balance
               </TableCell>
               <TableCell style={{ fontWeight: "bold" }}>
-                {totalBalance}
+                {Math.abs(finalBalance)}
               </TableCell>
-              {showChequeDetails && <TableCell colSpan={2}></TableCell>}
             </TableRow>
           </TableBody>
         </Table>
