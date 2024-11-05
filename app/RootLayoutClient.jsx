@@ -8,6 +8,7 @@ export default function RootLayoutClient({ children }) {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const isInvoicePage = pathname === "/invoice/";
+  const isTrialPage = pathname === "/trialBalance/";
 
   const LayoutWithSidebar = ({ children }) => (
     <div className="layout-container">
@@ -15,9 +16,7 @@ export default function RootLayoutClient({ children }) {
         <SideBar />
       </div>
       <div className="main-content">
-        <main className="main-content-child">
-          {children}
-        </main>
+        <main className="main-content-child">{children}</main>
       </div>
     </div>
   );
@@ -25,16 +24,13 @@ export default function RootLayoutClient({ children }) {
   const LayoutWithoutSidebar = ({ children }) => (
     <div className="layout-container home-layout">
       <div className="main-content">
-        <main className="main-content-child full-width">
-          {children}
-        </main>
+        <main className="main-content-child full-width">{children}</main>
       </div>
     </div>
   );
 
-  if (isHomePage || isInvoicePage) {
-    console.log("ko;l");
-    
+  if (isHomePage || isInvoicePage || isTrialPage) {
+
     return <LayoutWithoutSidebar>{children}</LayoutWithoutSidebar>;
   } else {
     return <LayoutWithSidebar>{children}</LayoutWithSidebar>;
