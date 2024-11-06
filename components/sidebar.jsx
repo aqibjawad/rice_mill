@@ -50,7 +50,7 @@ const SideBar = () => {
     { name: "Buyers", href: "/Buyer/", icon: <FaUserTie /> },
     { name: "Expenses", href: "/expenses/", icon: <FaMoneyBill /> },
     { name: "Company Ledger", href: "/companyLedger/", icon: <FaMoneyBill /> },
-    { name: "Bank Cheque", href: "/bankCheque/", icon: <FaArrowRight /> },
+    { name: "Banks", href: "/bankCheque/", icon: <FaArrowRight /> },
     { name: "Product", href: "/product/", icon: <FaShoppingCart /> },
     { name: "Packing", href: "/packing/", icon: <FaBox /> },
     { name: "Stock", href: "/stock/", icon: <FaBoxes /> },

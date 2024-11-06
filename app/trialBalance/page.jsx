@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import {
   Grid,
   Container,
-  Typography,
   Table,
   TableBody,
   TableCell,
@@ -23,20 +22,18 @@ const Page = () => {
 
   const [tableData, setTableData] = useState([]);
   const [tableCreditData, setTableCreditData] = useState([]);
-
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDebitData();
-    fetchCredittData();
+    fetchCreditData();
   }, []);
 
   const fetchDebitData = async () => {
     try {
       const response = await api.getDataWithToken(`${debitTrial}`);
-      const data = response.data;
-      setTableData(data);
+      setTableData(response.data);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -44,21 +41,42 @@ const Page = () => {
     }
   };
 
-  const fetchCredittData = async () => {
+  const fetchCreditData = async () => {
     try {
       const response = await api.getDataWithToken(`${creditTrial}`);
-      const data = response.data;
-      setTableCreditData(data);
+      setTableCreditData(response.data);
     } catch (error) {
       setError(error.message);
     } finally {
       setLoading(false);
     }
   };
+
+  // Calculate totals for credit and debit
+  // Calculate totals for credit and debit
+  const creditTotal = tableCreditData?.buyers?.reduce(
+    (acc, item) => acc + parseFloat(item.current_balance || 0),
+    0
+  );
+
+  const debitTotal =
+    (tableData?.banks?.reduce(
+      (acc, item) => acc + parseFloat(item.balance || 0),
+      0
+    ) || 0) +
+    (tableData?.expense_categories?.reduce(
+      (acc, item) => acc + parseFloat(item.expenses_sum_total_amount || 0),
+      0
+    ) || 0) +
+    (tableData?.suppliers?.reduce(
+      (acc, item) => acc + parseFloat(item.current_balance || 0),
+      0
+    ) || 0);
 
   return (
     <Container>
       <Grid container spacing={2}>
+        {/* Credit Table */}
         <Grid item xs={12} sm={6}>
           <div
             style={{
@@ -94,12 +112,22 @@ const Page = () => {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {/* Total Row for Credit */}
+                  <TableRow>
+                    <TableCell align="center" style={{ fontWeight: "bold" }}>
+                      Total
+                    </TableCell>
+                    <TableCell align="center" style={{ fontWeight: "bold" }}>
+                      {creditTotal}
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             )}
           </TableContainer>
         </Grid>
 
+        {/* Debit Table */}
         <Grid item xs={12} sm={6}>
           <div
             style={{
@@ -151,6 +179,15 @@ const Page = () => {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {/* Total Row for Debit */}
+                  <TableRow>
+                    <TableCell align="center" style={{ fontWeight: "bold" }}>
+                      Total
+                    </TableCell>
+                    <TableCell align="center" style={{ fontWeight: "bold" }}>
+                      {debitTotal}
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             )}
