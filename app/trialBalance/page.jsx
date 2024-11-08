@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Table,
@@ -49,40 +49,82 @@ const CombinedTable = () => {
   }, []);
 
   const renderAmount = (item) => {
+    // Handling for expense categories (always show as debit/negative)
+    if (item.expense_category) {
+      const amount = parseFloat(item.expenses_sum_total_amount || 0);
+      return {
+        credit: "-",
+        debit: amount > 0 ? amount.toFixed(2) : "-",
+      };
+    }
+
+    // Handling for banks (show balance as is)
+    if (item.bank_name) {
+      const amount = parseFloat(item.balance || 0);
+      return {
+        credit: amount > 0 ? amount.toFixed(2) : "-",
+        debit: amount < 0 ? Math.abs(amount).toFixed(2) : "-",
+      };
+    }
+
+    // Handling for suppliers and buyers
     const balance = parseFloat(item.current_balance || 0);
+    const isSupplier = item.customer_type === "supplier";
     const isBuyer = item.customer_type === "buyer";
 
-    // For Credit Column
-    const creditAmount = () => {
-      if (isBuyer) {
-        // If buyer and positive balance -> show in credit
-        if (balance > 0) return balance.toFixed(2);
-        return "-";
-      } else {
-        // If not buyer and negative balance -> show absolute value in credit
-        if (balance < 0) return Math.abs(balance).toFixed(2);
-        return "-";
-      }
-    };
-
-    // For Debit Column
-    const debitAmount = () => {
-      if (isBuyer) {
-        // If buyer and negative balance -> show absolute value in debit
-        if (balance < 0) return Math.abs(balance).toFixed(2);
-        return "-";
-      } else {
-        // If not buyer and positive balance -> show in debit
-        if (balance > 0) return balance.toFixed(2);
-        return "-";
-      }
-    };
-
     return {
-      credit: creditAmount(),
-      debit: debitAmount(),
+      debit:
+        (isSupplier && balance > 0) || (isBuyer && balance < 0)
+          ? Math.abs(balance).toFixed(2)
+          : "-",
+      credit:
+        (isSupplier && balance < 0) || (isBuyer && balance > 0)
+          ? Math.abs(balance).toFixed(2)
+          : "-",
     };
   };
+
+  // Calculate total credit
+  const totalCredit = tableData
+    .reduce((sum, item) => {
+      if (item.expense_category) {
+        return sum; // Skip expense categories for credit total
+      }
+      if (item.bank_name) {
+        const balance = parseFloat(item.balance || 0);
+        return balance > 0 ? sum + balance : sum; // Only add positive balances
+      }
+      const balance = parseFloat(item.current_balance || 0);
+      if (
+        (item.customer_type === "supplier" && balance < 0) ||
+        (item.customer_type === "buyer" && balance > 0)
+      ) {
+        return sum + Math.abs(balance);
+      }
+      return sum;
+    }, 0)
+    .toFixed(2);
+
+  // Calculate total debit
+  const totalDebit = tableData
+    .reduce((sum, item) => {
+      if (item.expense_category) {
+        return sum + parseFloat(item.expenses_sum_total_amount || 0); // Add expense amounts
+      }
+      if (item.bank_name) {
+        const balance = parseFloat(item.balance || 0);
+        return balance < 0 ? sum + Math.abs(balance) : sum; // Only add negative balances
+      }
+      const balance = parseFloat(item.current_balance || 0);
+      if (
+        (item.customer_type === "supplier" && balance > 0) ||
+        (item.customer_type === "buyer" && balance < 0)
+      ) {
+        return sum + Math.abs(balance);
+      }
+      return sum;
+    }, 0)
+    .toFixed(2);
 
   return (
     <Container>
@@ -93,9 +135,6 @@ const CombinedTable = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="center" style={{ fontWeight: "bold" }}>
-                  Sr
-                </TableCell>
                 <TableCell align="center" style={{ fontWeight: "bold" }}>
                   Name
                 </TableCell>
@@ -120,53 +159,25 @@ const CombinedTable = () => {
 
                 return (
                   <TableRow key={index}>
-                    <TableCell align="center">{index+1}</TableCell>
                     <TableCell align="center">
                       {item.person_name ||
                         item.expense_category ||
                         item.bank_name}
                     </TableCell>
-                    <TableCell align="center">{amounts.credit}</TableCell>
                     <TableCell align="center">{amounts.debit}</TableCell>
+                    <TableCell align="center">{amounts.credit}</TableCell>
                   </TableRow>
                 );
               })}
-
               <TableRow>
                 <TableCell align="center" style={{ fontWeight: "bold" }}>
                   Total
                 </TableCell>
                 <TableCell align="center" style={{ fontWeight: "bold" }}>
-                  {tableData
-                    .reduce((sum, item) => {
-                      const balance = parseFloat(item.current_balance || 0);
-                      const isBuyer = item.customer_type === "buyer";
-
-                      if (
-                        (isBuyer && balance > 0) ||
-                        (!isBuyer && balance < 0)
-                      ) {
-                        return sum + Math.abs(balance);
-                      }
-                      return sum;
-                    }, 0)
-                    .toFixed(2)}
+                  {totalDebit}
                 </TableCell>
                 <TableCell align="center" style={{ fontWeight: "bold" }}>
-                  {tableData
-                    .reduce((sum, item) => {
-                      const balance = parseFloat(item.current_balance || 0);
-                      const isBuyer = item.customer_type === "buyer";
-
-                      if (
-                        (isBuyer && balance < 0) ||
-                        (!isBuyer && balance > 0)
-                      ) {
-                        return sum + Math.abs(balance);
-                      }
-                      return sum;
-                    }, 0)
-                    .toFixed(2)}
+                  {totalCredit}
                 </TableCell>
               </TableRow>
             </TableBody>
