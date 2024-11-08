@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Grid,
   Container,
   Table,
   TableBody,
@@ -17,185 +16,165 @@ import {
 import { debitTrial, creditTrial } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 
-const Page = () => {
+const CombinedTable = () => {
   const api = new APICall();
 
   const [tableData, setTableData] = useState([]);
-  const [tableCreditData, setTableCreditData] = useState([]);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchDebitData();
-    fetchCreditData();
+    const fetchCombinedData = async () => {
+      try {
+        const debitResponse = await api.getDataWithToken(`${debitTrial}`);
+        const creditResponse = await api.getDataWithToken(`${creditTrial}`);
+
+        const combinedData = [
+          ...debitResponse.data.expense_categories,
+          ...debitResponse.data.suppliers,
+          ...debitResponse.data.banks,
+          ...creditResponse.data.buyers,
+        ];
+
+        setTableData(combinedData);
+      } catch (error) {
+        setError(error.message);
+        console.log("Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCombinedData();
   }, []);
 
-  const fetchDebitData = async () => {
-    try {
-      const response = await api.getDataWithToken(`${debitTrial}`);
-      setTableData(response.data);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
+  const renderAmount = (item) => {
+    const balance = parseFloat(item.current_balance || 0);
+    const isBuyer = item.customer_type === "buyer";
+
+    // For Credit Column
+    const creditAmount = () => {
+      if (isBuyer) {
+        // If buyer and positive balance -> show in credit
+        if (balance > 0) return balance.toFixed(2);
+        return "-";
+      } else {
+        // If not buyer and negative balance -> show absolute value in credit
+        if (balance < 0) return Math.abs(balance).toFixed(2);
+        return "-";
+      }
+    };
+
+    // For Debit Column
+    const debitAmount = () => {
+      if (isBuyer) {
+        // If buyer and negative balance -> show absolute value in debit
+        if (balance < 0) return Math.abs(balance).toFixed(2);
+        return "-";
+      } else {
+        // If not buyer and positive balance -> show in debit
+        if (balance > 0) return balance.toFixed(2);
+        return "-";
+      }
+    };
+
+    return {
+      credit: creditAmount(),
+      debit: debitAmount(),
+    };
   };
-
-  const fetchCreditData = async () => {
-    try {
-      const response = await api.getDataWithToken(`${creditTrial}`);
-      setTableCreditData(response.data);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Calculate totals for credit and debit
-  // Calculate totals for credit and debit
-  const creditTotal = tableCreditData?.buyers?.reduce(
-    (acc, item) => acc + parseFloat(item.current_balance || 0),
-    0
-  );
-
-  const debitTotal =
-    (tableData?.banks?.reduce(
-      (acc, item) => acc + parseFloat(item.balance || 0),
-      0
-    ) || 0) +
-    (tableData?.expense_categories?.reduce(
-      (acc, item) => acc + parseFloat(item.expenses_sum_total_amount || 0),
-      0
-    ) || 0) +
-    (tableData?.suppliers?.reduce(
-      (acc, item) => acc + parseFloat(item.current_balance || 0),
-      0
-    ) || 0);
 
   return (
     <Container>
-      <Grid container spacing={2}>
-        {/* Credit Table */}
-        <Grid item xs={12} sm={6}>
-          <div
-            style={{
-              padding: "20px",
-              textAlign: "center",
-              fontSize: "20px",
-              fontWeight: "600",
-            }}
-          >
-            Credit
-          </div>
-          <TableContainer component={Paper} style={{ marginTop: "10px" }}>
-            {loading ? (
-              <Skeleton variant="rectangular" height={200} />
-            ) : (
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="center" style={{ fontWeight: "bold" }}>
-                      Name
-                    </TableCell>
-                    <TableCell align="center" style={{ fontWeight: "bold" }}>
-                      Amount
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {tableCreditData?.buyers?.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell align="center">{row.person_name}</TableCell>
-                      <TableCell align="center">
-                        {row.current_balance}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {/* Total Row for Credit */}
-                  <TableRow>
-                    <TableCell align="center" style={{ fontWeight: "bold" }}>
-                      Total
-                    </TableCell>
-                    <TableCell align="center" style={{ fontWeight: "bold" }}>
-                      {creditTotal}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            )}
-          </TableContainer>
-        </Grid>
+      <TableContainer component={Paper} style={{ marginTop: "10px" }}>
+        {loading ? (
+          <Skeleton variant="rectangular" height={200} />
+        ) : (
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell align="center" style={{ fontWeight: "bold" }}>
+                  Sr
+                </TableCell>
+                <TableCell align="center" style={{ fontWeight: "bold" }}>
+                  Name
+                </TableCell>
+                <TableCell align="center" style={{ fontWeight: "bold" }}>
+                  Credit
+                </TableCell>
+                <TableCell align="center" style={{ fontWeight: "bold" }}>
+                  Debit
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tableData.length === 0 && (
+                <TableRow>
+                  <TableCell align="center" colSpan={3}>
+                    No data available
+                  </TableCell>
+                </TableRow>
+              )}
+              {tableData.map((item, index) => {
+                const amounts = renderAmount(item);
 
-        {/* Debit Table */}
-        <Grid item xs={12} sm={6}>
-          <div
-            style={{
-              padding: "20px",
-              textAlign: "center",
-              fontSize: "20px",
-              fontWeight: "600",
-            }}
-          >
-            Debit
-          </div>
-          <TableContainer component={Paper} style={{ marginTop: "10px" }}>
-            {loading ? (
-              <Skeleton variant="rectangular" height={200} />
-            ) : (
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="center" style={{ fontWeight: "bold" }}>
-                      Name
+                return (
+                  <TableRow key={index}>
+                    <TableCell align="center">{index+1}</TableCell>
+                    <TableCell align="center">
+                      {item.person_name ||
+                        item.expense_category ||
+                        item.bank_name}
                     </TableCell>
-                    <TableCell align="center" style={{ fontWeight: "bold" }}>
-                      Amount
-                    </TableCell>
+                    <TableCell align="center">{amounts.credit}</TableCell>
+                    <TableCell align="center">{amounts.debit}</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {tableData?.banks?.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell align="center">{row.bank_name}</TableCell>
-                      <TableCell align="center">{row.balance}</TableCell>
-                    </TableRow>
-                  ))}
-                  {tableData?.expense_categories?.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell align="center">
-                        {row.expense_category}
-                      </TableCell>
-                      <TableCell align="center">
-                        {row.expenses_sum_total_amount}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {tableData?.suppliers?.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell align="center">{row.person_name}</TableCell>
-                      <TableCell align="center">
-                        {row.current_balance}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {/* Total Row for Debit */}
-                  <TableRow>
-                    <TableCell align="center" style={{ fontWeight: "bold" }}>
-                      Total
-                    </TableCell>
-                    <TableCell align="center" style={{ fontWeight: "bold" }}>
-                      {debitTotal}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            )}
-          </TableContainer>
-        </Grid>
-      </Grid>
+                );
+              })}
+
+              <TableRow>
+                <TableCell align="center" style={{ fontWeight: "bold" }}>
+                  Total
+                </TableCell>
+                <TableCell align="center" style={{ fontWeight: "bold" }}>
+                  {tableData
+                    .reduce((sum, item) => {
+                      const balance = parseFloat(item.current_balance || 0);
+                      const isBuyer = item.customer_type === "buyer";
+
+                      if (
+                        (isBuyer && balance > 0) ||
+                        (!isBuyer && balance < 0)
+                      ) {
+                        return sum + Math.abs(balance);
+                      }
+                      return sum;
+                    }, 0)
+                    .toFixed(2)}
+                </TableCell>
+                <TableCell align="center" style={{ fontWeight: "bold" }}>
+                  {tableData
+                    .reduce((sum, item) => {
+                      const balance = parseFloat(item.current_balance || 0);
+                      const isBuyer = item.customer_type === "buyer";
+
+                      if (
+                        (isBuyer && balance < 0) ||
+                        (!isBuyer && balance > 0)
+                      ) {
+                        return sum + Math.abs(balance);
+                      }
+                      return sum;
+                    }, 0)
+                    .toFixed(2)}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        )}
+      </TableContainer>
     </Container>
   );
 };
 
-export default Page;
+export default CombinedTable;
