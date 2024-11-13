@@ -58,12 +58,12 @@ const CombinedTable = () => {
       };
     }
 
-    // Handling for banks (show balance as is)
+    // Handling for banks
     if (item.bank_name) {
       const amount = parseFloat(item.balance || 0);
       return {
-        credit: amount > 0 ? amount.toFixed(2) : "-",
-        debit: amount < 0 ? Math.abs(amount).toFixed(2) : "-",
+        debit: amount > 0 ? amount.toFixed(2) : "-",
+        credit: amount < 0 ? Math.abs(amount).toFixed(2) : "-",
       };
     }
 
@@ -87,42 +87,18 @@ const CombinedTable = () => {
   // Calculate total credit
   const totalCredit = tableData
     .reduce((sum, item) => {
-      if (item.expense_category) {
-        return sum; // Skip expense categories for credit total
-      }
-      if (item.bank_name) {
-        const balance = parseFloat(item.balance || 0);
-        return balance > 0 ? sum + balance : sum; // Only add positive balances
-      }
-      const balance = parseFloat(item.current_balance || 0);
-      if (
-        (item.customer_type === "supplier" && balance < 0) ||
-        (item.customer_type === "buyer" && balance > 0)
-      ) {
-        return sum + Math.abs(balance);
-      }
-      return sum;
+      const amounts = renderAmount(item);
+      const credit = parseFloat(amounts.credit || 0);
+      return sum + (isNaN(credit) ? 0 : credit);
     }, 0)
     .toFixed(2);
 
   // Calculate total debit
   const totalDebit = tableData
     .reduce((sum, item) => {
-      if (item.expense_category) {
-        return sum + parseFloat(item.expenses_sum_total_amount || 0); // Add expense amounts
-      }
-      if (item.bank_name) {
-        const balance = parseFloat(item.balance || 0);
-        return balance < 0 ? sum + Math.abs(balance) : sum; // Only add negative balances
-      }
-      const balance = parseFloat(item.current_balance || 0);
-      if (
-        (item.customer_type === "supplier" && balance > 0) ||
-        (item.customer_type === "buyer" && balance < 0)
-      ) {
-        return sum + Math.abs(balance);
-      }
-      return sum;
+      const amounts = renderAmount(item);
+      const debit = parseFloat(amounts.debit || 0);
+      return sum + (isNaN(debit) ? 0 : debit);
     }, 0)
     .toFixed(2);
 
