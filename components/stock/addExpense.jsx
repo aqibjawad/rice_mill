@@ -12,11 +12,17 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 600,
+  width: "90%", // Make modal width responsive
+  maxWidth: "600px", // Max width for larger screens
   bgcolor: "background.paper",
   boxShadow: 24,
+  borderRadius: 10,
   p: 4,
   outline: "none",
+  "@media (max-width: 600px)": {
+    width: "100%", // Full width for very small screens
+    padding: "16px", // Smaller padding on small screens
+  },
 };
 
 const AddExpense = ({ openExpense, handleCloseExpense, editData = null }) => {

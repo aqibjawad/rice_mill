@@ -17,12 +17,17 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 600,
+  width: "90%", // Make modal width responsive
+  maxWidth: "600px", // Max width for larger screens
   bgcolor: "background.paper",
   boxShadow: 24,
   borderRadius: 10,
   p: 4,
   outline: "none",
+  "@media (max-width: 600px)": {
+    width: "100%", // Full width for very small screens
+    padding: "16px", // Smaller padding on small screens
+  },
 };
 
 const top100Films = [{ label: "Self" }];
@@ -208,12 +213,12 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
           className="mt-5"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
-          <div style={{ flex: 1, marginRight: "10px", cursor:"pointer" }}>
+          <div style={{ flex: 1, marginRight: "10px", cursor: "pointer" }}>
             <div className={styles.editBtn} onClick={handleClose}>
               Cancel
             </div>
           </div>
-          <div style={{ flex: 1, marginLeft: "10px" , cursor:"pointer" }}>
+          <div style={{ flex: 1, marginLeft: "10px", cursor: "pointer" }}>
             <div className={styles.saveBtn} onClick={handleSubmit}>
               {sendingData ? (
                 <CircularProgress color="inherit" size={20} />

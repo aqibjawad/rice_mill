@@ -6,6 +6,7 @@ import {
   Skeleton,
   Typography,
   CircularProgress,
+  Grid,
 } from "@mui/material";
 import { packings, products, stocks } from "@/networkApi/Constants";
 import TextField from "@mui/material/TextField";
@@ -19,6 +20,27 @@ import styles from "../../styles/paymentss.module.css";
 import DropDown from "@/components/generic/dropdown";
 
 const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
+  
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "90%", // Make modal width responsive
+    maxWidth: "500px", // Max width for larger screens
+    bgcolor: "background.paper",
+    boxShadow: 24,
+    borderRadius: 10,
+    p: 4,
+    outline: "none",
+    maxHeight: "80vh", // Set maximum height for scrolling
+    overflowY: "auto", // Enable vertical scrolling if content exceeds height
+    "@media (max-width: 600px)": {
+      width: "100%", // Full width for very small screens
+      padding: "16px", // Smaller padding on small screens
+      maxHeight: "90vh", // Increase max height for smaller screens
+    },
+  };
 
   const [fetchingProducts, setFetchingProducts] = useState(false);
 
@@ -237,19 +259,6 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
     }
   };
 
-  const modalStyle = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    boxShadow: 24,
-    borderRadius: 2,
-    p: 4,
-    outline: "none",
-  };
-
   return (
     <Modal
       open={open}
@@ -257,107 +266,118 @@ const AddItemToStock = ({ open, handleClose, editingData, onItemUpdated }) => {
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
-      <Box sx={modalStyle}>
-        <div className="mb-10">
-          <div className={styles.logocontainer}>
-            <img className={styles.logo} src="/logo.png" alt="Logo" />
-          </div>
+      <Box sx={style}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <div className="mb-10">
+              <div className={styles.logocontainer}>
+                <img className={styles.logo} src="/logo.png" alt="Logo" />
+              </div>
 
-          <div
-            className={styles.ledgerHead}
-            style={{ fontSize: "1.5rem", padding: "1rem" }}
-          >
-            {editingData ? "Update Item In Stock" : "Add Item In Stock"}
-          </div>
-          {fetchingProducts ? (
-            <Skeleton height={70} />
-          ) : (
-            <>
-              <DropDown
-                title="Select Products"
-                options={productsList}
-                onChange={handleProductChange}
+              <div
+                className={styles.ledgerHead}
+                style={{ fontSize: "1.5rem", padding: "1rem" }}
+              >
+                {editingData ? "Update Item In Stock" : "Add Item In Stock"}
+              </div>
+              {fetchingProducts ? (
+                <Skeleton height={70} />
+              ) : (
+                <DropDown
+                  title="Select Products"
+                  options={productsList}
+                  onChange={handleProductChange}
+                  value={
+                    productsList.find(
+                      (item) => item.id === selectedProductID[0]
+                    ) || null
+                  }
+                  name="productsList"
+                />
+              )}
+            </div>
+          </Grid>
+
+          <Grid item xs={12}>
+            {fetchingPackings ? (
+              <Skeleton height={70} />
+            ) : (
+              <Autocomplete
+                disablePortal
+                id="packing-select"
+                options={allPackingsList}
                 value={
-                  productsList.find(
-                    (item) => item.id === selectedProductID[0]
+                  allPackingsList.find(
+                    (item) => item.id === selectedPackingID[0]
                   ) || null
                 }
-                // value={formData.productsList}
-                name="productsList"
+                renderInput={(params) => (
+                  <TextField {...params} label="Select Packing" />
+                )}
+                onChange={handlePackingChange}
               />
-            </>
-          )}
-        </div>
-        <div className="mb-5">
-          {fetchingPackings ? (
-            <Skeleton height={70} />
-          ) : (
-            <Autocomplete
-              disablePortal
-              id="packing-select"
-              options={allPackingsList}
-              value={
-                allPackingsList.find(
-                  (item) => item.id === selectedPackingID[0]
-                ) || null
-              }
-              renderInput={(params) => (
-                <TextField {...params} label="Select Packing" />
-              )}
-              onChange={handlePackingChange}
-            />
-          )}
-        </div>
-
-        <div className="mb-5">
-          <MultilineInput
-            title={"Add Product Description"}
-            placeholder="Add Product Description"
-            type="text"
-            value={description}
-            onChange={handleDescriptionChange}
-          />
-        </div>
-        <InputWithTitle
-          title={"Add Quantity"}
-          placeholder="Add Quantity"
-          type="text"
-          value={quantity}
-          onChange={handleQuantityChange}
-        />
-
-        <div className="mt-5">
-          <InputWithTitle
-            title={"Add Price"}
-            placeholder="Add Price"
-            type="text"
-            value={price}
-            onChange={handlePriceChange}
-          />
-        </div>
-        {error && (
-          <Typography color="error" className="mt-3">
-            {error}
-          </Typography>
-        )}
-        <div style={{ flex: 1, marginRight: "10px" }}>
-          <button
-            className={styles.saveBtn}
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {isSubmitting ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "Save"
             )}
-          </button>
-        </div>
+          </Grid>
+
+          <Grid item xs={12}>
+            <MultilineInput
+              title={"Add Product Description"}
+              placeholder="Add Product Description"
+              type="text"
+              value={description}
+              onChange={handleDescriptionChange}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <InputWithTitle
+              title={"Add Quantity"}
+              placeholder="Add Quantity"
+              type="text"
+              value={quantity}
+              onChange={handleQuantityChange}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <InputWithTitle
+              title={"Add Price"}
+              placeholder="Add Price"
+              type="text"
+              value={price}
+              onChange={handlePriceChange}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            {error && (
+              <Typography color="error" className="mt-3">
+                {error}
+              </Typography>
+            )}
+          </Grid>
+
+          <Grid item xs={12}>
+            <div style={{ flex: 1, marginRight: "10px" }}>
+              <button
+                className={styles.saveBtn}
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                {isSubmitting ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Save"
+                )}
+              </button>
+            </div>
+          </Grid>
+        </Grid>
       </Box>
     </Modal>
   );
