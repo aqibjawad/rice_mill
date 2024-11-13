@@ -150,7 +150,7 @@ const Page = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen w-full overflow-x-hidden px-4 md:px-6">
       <div className={styles.recievesHead}>Add Amount Receives</div>
 
       <div className="mt-10">
