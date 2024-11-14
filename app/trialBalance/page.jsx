@@ -29,7 +29,12 @@ const CombinedTable = () => {
         const debitResponse = await api.getDataWithToken(`${debitTrial}`);
         const creditResponse = await api.getDataWithToken(`${creditTrial}`);
 
+        // Add cash as a separate entry if it exists
+        const cashEntry = debitResponse.data.cash ? 
+          [{ is_cash: true, balance: debitResponse.data.cash }] : [];
+
         const combinedData = [
+          ...cashEntry,
           ...debitResponse.data.expense_categories,
           ...debitResponse.data.suppliers,
           ...debitResponse.data.banks,
@@ -49,6 +54,15 @@ const CombinedTable = () => {
   }, []);
 
   const renderAmount = (item) => {
+    // Handling for cash
+    if (item.is_cash) {
+      const amount = parseFloat(item.balance || 0);
+      return {
+        credit: amount > 0 ? amount.toFixed(2) : "-",
+        debit: "-", // Cash will always show on credit side if positive
+      };
+    }
+
     // Handling for expense categories (always show as debit/negative)
     if (item.expense_category) {
       const amount = parseFloat(item.expenses_sum_total_amount || 0);
@@ -136,7 +150,8 @@ const CombinedTable = () => {
                 return (
                   <TableRow key={index}>
                     <TableCell align="center">
-                      {item.person_name ||
+                      {item.is_cash ? "Cash" : 
+                        item.person_name ||
                         item.expense_category ||
                         item.bank_name}
                     </TableCell>
