@@ -155,10 +155,33 @@ const Page = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState, // Spread the existing state to keep other values intact
-      [name]: value, // Update only the specific field
-    }));
+
+    if (
+      (name === "cash_amount" || name === "cheque_amount") &&
+      selectedParty?.customer_type === "supplier"
+    ) {
+      // For suppliers, ensure the amount is negative
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        const negativeValue = Math.abs(numValue) * -1;
+        setFormData((prevState) => ({
+          ...prevState,
+          [name]: negativeValue.toString(),
+        }));
+      } else if (value === "" || value === "-") {
+        // Allow empty field or just minus sign
+        setFormData((prevState) => ({
+          ...prevState,
+          [name]: value,
+        }));
+      }
+    } else {
+      // For buyers or other fields, handle normally
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
   };
 
   const handleDropdownChange = (name, selectedOption) => {
