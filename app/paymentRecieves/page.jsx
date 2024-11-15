@@ -4,20 +4,24 @@ import React, { useState, useEffect } from "react";
 import styles from "../../styles/paymentRecieves.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
-import DropDown2 from "@/components/generic/DropDown2";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
 import Skeleton from "@mui/material/Skeleton";
 import Grid from "@mui/material/Grid";
-import Swal from "sweetalert2";
+import Swal from "sweetalert2"; // Import SweetAlert2
+
 import PaymentReceipt from "../paymentReciept/page";
+
 import {
   buyer,
-  suppliers,
   banks,
   buyerLedger,
-  supplierLedger,
   bankCheque,
+  suppliers,
+  supplierLedger,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
+import DropDown from "@/components/generic/dropdown";
 import { useRouter } from "next/navigation";
 
 const Page = () => {
@@ -26,8 +30,7 @@ const Page = () => {
 
   const [formData, setFormData] = useState({
     buyer_id: "",
-    sup_iid: "",
-    customer_type: "",
+    sup_id: "",
     payment_type: "cash",
     description: "",
     cash_amount: "",
@@ -38,60 +41,107 @@ const Page = () => {
     transection_id: "",
   });
 
+  const [selectedParty, setSelectedParty] = useState(null);
+
   const [tableBankData, setTableBankData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [activeTab, setActiveTab] = useState("cash");
-  const [responseData, setResponseData] = useState(null); // Ensure this is defined
-  const [tablePartyData, setTablePartyData] = useState(null); // Ensure this is defined
-
-  console.log(tablePartyData);
+  const [tablePartyData, setPartyData] = useState([]);
+  const [dataFetched, setDataFetched] = useState(false); // Flag to track if both data have been fetched
+  const [responseData, setResponseData] = useState();
 
   useEffect(() => {
     fetchData();
     fetchBankData();
+    fetchSupplierData();
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
     try {
-      // Fetch both endpoints simultaneously
-      const [suppliersResponse, buyersResponse] = await Promise.all([
-        api.getDataWithToken(suppliers),
-        api.getDataWithToken(buyer),
-      ]);
+      const response = await api.getDataWithToken(buyer);
+      const data = response.data;
+      console.log("Buyer Data:", data); // Log to check buyer data
+      if (Array.isArray(data)) {
+        const formattedData = data.map((buyers) => ({
+          label: `${buyers.person_name} (Buyer)`,
+          customer_type: buyers.customer_type,
+          id: buyers.id,
+        }));
 
-      // Combine and format data
-      const formattedData = [
-        ...(suppliersResponse.data || []),
-        ...(buyersResponse.data || []),
-      ].map((item) => ({
-        id: item.id,
-        label: `${item.person_name} (${
-          item.customer_type.charAt(0).toUpperCase() +
-          item.customer_type.slice(1)
-        })`,
-        customer_type: item.customer_type,
-      }));
-
-      setTablePartyData(formattedData);
+        setPartyData((prevData) => {
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
+      } else {
+        throw new Error("Fetched buyer data is not an array");
+      }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching buyer data:", error.message);
     } finally {
       setLoading(false);
+      setDataFetched(true); // Mark as fetched
     }
   };
+
+  const fetchSupplierData = async () => {
+    try {
+      const response = await api.getDataWithToken(suppliers);
+      const data = response.data;
+      console.log("Supplier Data:", data); // Log to check supplier data
+      if (Array.isArray(data)) {
+        const formattedData = data.map((supplier) => ({
+          label: `${supplier.person_name} (Supplier)`,
+          customer_type: supplier.customer_type,
+          id: supplier.id,
+        }));
+
+        setPartyData((prevData) => {
+          // Avoid duplicating data by checking if it's already present
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
+      } else {
+        throw new Error("Fetched supplier data is not an array");
+      }
+    } catch (error) {
+      console.error("Error fetching supplier data:", error.message);
+    } finally {
+      setLoading(false);
+      setDataFetched(true); // Mark as fetched
+    }
+  };
+
+  // Log combined data
+  useEffect(() => {
+    if (dataFetched) {
+      console.log("Combined Party Data:", tablePartyData);
+    }
+  }, [tablePartyData, dataFetched]);
 
   const fetchBankData = async () => {
     try {
       const response = await api.getDataWithToken(banks);
-      const data = response.data.map((bank) => ({
-        label: bank.bank_name,
-        id: bank.id,
-      }));
-      setTableBankData(data);
+      const data = response.data;
+      if (Array.isArray(data)) {
+        const formattedData = data.map((bank) => ({
+          label: bank.bank_name,
+          id: bank.id,
+        }));
+        setTableBankData(formattedData);
+      } else {
+        throw new Error("Fetched data is not an array");
+      }
     } catch (error) {
       console.error("Error fetching bank data:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,23 +156,29 @@ const Page = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
+      ...prevState, // Spread the existing state to keep other values intact
+      [name]: value, // Update only the specific field
     }));
   };
 
   const handleDropdownChange = (name, selectedOption) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      // Clear both IDs first
-      buyer_id: "",
-      sup_id: "",
-      // Set the appropriate ID based on customer type
-      ...(selectedOption.customer_type === "buyer"
-        ? { buyer_id: selectedOption.id }
-        : { sup_id: selectedOption.id }),
-      customer_type: selectedOption.customer_type,
-    }));
+    if (selectedOption) {
+      setSelectedParty(selectedOption); // Store the selected party
+
+      if (selectedOption.customer_type === "buyer") {
+        setFormData((prevState) => ({
+          ...prevState,
+          buyer_id: selectedOption.id,
+          sup_id: "",
+        }));
+      } else if (selectedOption.customer_type === "supplier") {
+        setFormData((prevState) => ({
+          ...prevState,
+          sup_id: selectedOption.id,
+          buyer_id: "",
+        }));
+      }
+    }
   };
 
   const handleBankSelect = (_, value) => {
@@ -134,112 +190,111 @@ const Page = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setLoadingSubmit(true);
-
     try {
-      const endpoint =
-        formData.customer_type === "buyer" ? buyerLedger : supplierLedger;
-
-      // Prepare request data based on payment type
+      let response;
       let requestData = { ...formData };
 
-      // Remove the unused ID field before sending
-      if (formData.customer_type === "buyer") {
-        delete requestData.sup_id;
-      } else {
-        delete requestData.buyer_id;
-      }
+      // Check customer_type (buyer or supplier) and adjust API call and data fields
+      const selectedParty = tablePartyData.find(
+        (party) =>
+          party.id === formData.buyer_id || party.id === formData.sup_id
+      );
 
-      let response;
-      if (["cash", "online"].includes(formData.payment_type)) {
-        response = await api.postDataWithToken(endpoint, requestData);
-      } else if (formData.payment_type === "cheque") {
-        response = await api.postDataWithToken(bankCheque, requestData);
-      } else {
-        throw new Error("Invalid payment type");
-      }
+      if (selectedParty) {
+        if (selectedParty.customer_type === "buyer") {
+          // If the customer is a buyer, use buyerLedger API
+          requestData = {
+            ...formData,
+            buyer_id: formData.buyer_id,
+          };
+          response = await api.postDataWithToken(buyerLedger, requestData);
+        } else if (selectedParty.customer_type === "supplier") {
+          requestData = { ...formData, sup_id: formData.sup_id }; // Correct supplier ID usage
+          response = await api.postDataWithToken(supplierLedger, requestData);
+        } else {
+          throw new Error("Invalid customer type");
+        }
 
-      setResponseData(response);
-      router.push(`/${formData.customer_type}`);
-      Swal.fire("Success", "Your data has been added!", "success");
+        setResponseData(response);
+        router.push("/Buyer");
+
+        Swal.fire("Success", "Your data has been added!", "success");
+      } else {
+        throw new Error("Selected party not found");
+      }
     } catch (error) {
-      console.error("Error submitting form:", error);
-      Swal.fire("Error", "Failed to submit data. Please try again.", "error");
+      console.error("Error submitting data:", error.message);
     } finally {
       setLoadingSubmit(false);
     }
   };
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden px-4 md:px-6">
       <div className={styles.recievesHead}>Add Amount Receives</div>
 
-      {/* Payment Type Tabs */}
       <div className="mt-10">
         <div className={styles.tabPaymentContainer}>
-          {["cash", "cheque", "online"].map((type) => (
-            <button
-              key={type}
-              className={`${styles.tabPaymentButton} ${
-                activeTab === type ? styles.active : ""
-              }`}
-              onClick={() => handleTabClick(type)}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </button>
-          ))}
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "cash" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("cash")}
+          >
+            Cash
+          </button>
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "cheque" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("cheque")}
+          >
+            Cheque
+          </button>
+
+          <button
+            className={`${styles.tabPaymentButton} ${
+              activeTab === "online" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("online")}
+          >
+            Online
+          </button>
         </div>
       </div>
 
       <div>
         <Grid container spacing={2} className="mt-10">
-          <Grid className="mt-5" item xs={12} md={6}>
+          <Grid item xs={12} md={6}>
             {loading ? (
               <Skeleton variant="rectangular" width="100%" height={56} />
             ) : (
-              <DropDown2
-                title="Select Buyer/Supplier"
-                options={tablePartyData}
-                onChange={(option) =>
-                  handleDropdownChange("customer_id", option)
-                }
-                value={
-                  tablePartyData.find((option) => option.id === formData.id) ||
-                  null
-                }
-                name="customer_id"
-              />
+              <div className="mt-5">
+                <DropDown
+                  title="Select Party"
+                  options={tablePartyData}
+                  onChange={handleDropdownChange}
+                  value={selectedParty} // Use the selectedParty state here
+                  name={
+                    selectedParty?.customer_type === "supplier"
+                      ? "sup_id"
+                      : "buyer_id"
+                  }
+                />
+              </div>
             )}
           </Grid>
-
           <Grid item xs={12} md={6}>
             {activeTab === "cash" && (
               <InputWithTitle
                 title="Amount"
-                type="number"
+                type="text"
                 placeholder="Amount"
                 value={formData.cash_amount}
                 name="cash_amount"
-                onChange={(e) => {
-                  let value = e.target.value;
-
-                  // Remove any existing negative sign first
-                  value = value.replace("", "-");
-
-                  // For supplier, always make the value negative
-                  const finalValue =
-                    formData.customer_type === "supplier" ? `-${value}` : value;
-
-                  setFormData((prev) => ({
-                    ...prev,
-                    cash_amount: finalValue,
-                  }));
-                }}
-                // Disable direct negative input
-                onKeyDown={(e) => {
-                  if (e.key === "-" || e.keyCode === 189) {
-                    e.preventDefault();
-                  }
-                }}
+                onChange={handleInputChange}
               />
             )}
           </Grid>
