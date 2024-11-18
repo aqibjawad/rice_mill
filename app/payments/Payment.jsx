@@ -11,17 +11,25 @@ import Skeleton from "@mui/material/Skeleton";
 import Grid from "@mui/material/Grid";
 import Swal from "sweetalert2"; // Import SweetAlert2
 
-import { suppliers, banks, supplierLedger } from "../../networkApi/Constants";
+import {
+  buyer,
+  banks,
+  buyerLedger,
+  bankCheque,
+  suppliers,
+  supplierLedger,
+} from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
 
 const Page = () => {
-  const router = useRouter();
   const api = new APICall();
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
+    buyer_id: "",
     sup_id: "",
-    payment_type: "",
+    payment_type: "cash",
     description: "",
     cash_amount: "",
     bank_id: "",
@@ -29,41 +37,90 @@ const Page = () => {
     cheque_date: "",
     cheque_amount: "",
     transection_id: "",
-    bank_tax:"",
   });
+
+  const [selectedParty, setSelectedParty] = useState(null);
 
   const [tableBankData, setTableBankData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-
-  const [activeTab, setActiveTab] = useState("tab1");
+  const [activeTab, setActiveTab] = useState("cash");
   const [tablePartyData, setPartyData] = useState([]);
-  const [error, setError] = useState(null);
+  const [dataFetched, setDataFetched] = useState(false); // Flag to track if both data have been fetched
+  const [responseData, setResponseData] = useState();
 
   useEffect(() => {
     fetchData();
     fetchBankData();
+    fetchSupplierData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(suppliers);
+      const response = await api.getDataWithToken(buyer);
       const data = response.data;
+      console.log("Buyer Data:", data); // Log to check buyer data
       if (Array.isArray(data)) {
-        const formattedData = data.map((supply) => ({
-          label: supply.person_name,
-          id: supply.id,
+        const formattedData = data.map((buyers) => ({
+          label: `${buyers.person_name} (Buyer)`,
+          customer_type: buyers.customer_type,
+          id: buyers.id,
         }));
-        setPartyData(formattedData);
+
+        setPartyData((prevData) => {
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
       } else {
-        throw new Error("Fetched data is not an array");
+        throw new Error("Fetched buyer data is not an array");
       }
     } catch (error) {
-      console.error("Error fetching data:", error.message);
+      console.error("Error fetching buyer data:", error.message);
     } finally {
       setLoading(false);
+      setDataFetched(true); // Mark as fetched
     }
   };
+
+  const fetchSupplierData = async () => {
+    try {
+      const response = await api.getDataWithToken(suppliers);
+      const data = response.data;
+      console.log("Supplier Data:", data); // Log to check supplier data
+      if (Array.isArray(data)) {
+        const formattedData = data.map((supplier) => ({
+          label: `${supplier.person_name} (Supplier)`,
+          customer_type: supplier.customer_type,
+          id: supplier.id,
+        }));
+
+        setPartyData((prevData) => {
+          // Avoid duplicating data by checking if it's already present
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
+      } else {
+        throw new Error("Fetched supplier data is not an array");
+      }
+    } catch (error) {
+      console.error("Error fetching supplier data:", error.message);
+    } finally {
+      setLoading(false);
+      setDataFetched(true); // Mark as fetched
+    }
+  };
+
+  useEffect(() => {
+    if (dataFetched) {
+      console.log("Combined Party Data:", tablePartyData);
+    }
+  }, [tablePartyData, dataFetched]);
 
   const fetchBankData = async () => {
     try {
@@ -79,7 +136,7 @@ const Page = () => {
         throw new Error("Fetched data is not an array");
       }
     } catch (error) {
-      setError(error.message);
+      console.error("Error fetching bank data:", error.message);
     } finally {
       setLoading(false);
     }
@@ -102,10 +159,23 @@ const Page = () => {
   };
 
   const handleDropdownChange = (name, selectedOption) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: selectedOption.id,
-    }));
+    if (selectedOption) {
+      setSelectedParty(selectedOption); // Store the selected party
+
+      if (selectedOption.customer_type === "buyer") {
+        setFormData((prevState) => ({
+          ...prevState,
+          buyer_id: selectedOption.id,
+          sup_id: "",
+        }));
+      } else if (selectedOption.customer_type === "supplier") {
+        setFormData((prevState) => ({
+          ...prevState,
+          sup_id: selectedOption.id,
+          buyer_id: "",
+        }));
+      }
+    }
   };
 
   const handleBankSelect = (_, value) => {
@@ -115,85 +185,55 @@ const Page = () => {
     }));
   };
 
-  const validateForm = () => {
-    const {
-      sup_id,
-      payment_type,
-      cash_amount,
-      cheque_no,
-      cheque_date,
-      cheque_amount,
-      bank_id,
-      description,
-    } = formData;
-
-    if (!sup_id) {
-      Swal.fire("Error", "Supplier is required", "error");
-      return false;
-    }
-
-    if (payment_type === "cash" && !cash_amount) {
-      Swal.fire("Error", "Cash amount is required for cash payment", "error");
-      return false;
-    }
-
-    if (payment_type === "cash" && !description) {
-      Swal.fire("Error", "Description is required for cash payment", "error");
-      return false;
-    }
-
-    if (payment_type === "cheque" || payment_type === "both") {
-      if (!bank_id) {
-        Swal.fire(
-          "Error",
-          "Bank selection is required for cheque payment",
-          "error"
-        );
-        return false;
-      }
-      if (!cheque_no) {
-        Swal.fire("Error", "Cheque number is required", "error");
-        return false;
-      }
-      if (!cheque_date) {
-        Swal.fire("Error", "Cheque date is required", "error");
-        return false;
-      }
-      if (!cheque_amount) {
-        Swal.fire("Error", "Cheque amount is required", "error");
-        return false;
-      }
-
-      if (!description) {
-        Swal.fire("Error", "Description is required", "error");
-        return false;
-      }
-    }
-
-    return true;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
 
     setLoadingSubmit(true);
     try {
-      const response = await api.postDataWithToken(supplierLedger, formData);
-      console.log("Success:", response);
-      if (response.status === "success") {
-        Swal.fire("Success", `Payment added`, "success");
-        router.push("/outflow");
+      let response;
+      let requestData = { ...formData };
+
+      // Find the selected party based on buyer_id or sup_id
+      const selectedParty = tablePartyData.find(
+        (party) =>
+          party.id === formData.buyer_id || party.id === formData.sup_id
+      );
+
+      if (selectedParty) {
+        if (selectedParty.customer_type === "buyer") {
+          // For buyers, use buyerLedger API
+          requestData = {
+            ...formData,
+            buyer_id: formData.buyer_id,
+            cash_amount: formData.cash_amount
+              ? -Math.abs(formData.cash_amount)
+              : "",
+          };
+          response = await api.postDataWithToken(buyerLedger, requestData);
+
+          // Navigate to buyer page
+          router.push("/Buyer");
+        } else if (selectedParty.customer_type === "supplier") {
+          // For suppliers, set the cash_amount as negative
+          requestData = {
+            ...formData,
+            sup_id: formData.sup_id,
+          };
+          response = await api.postDataWithToken(supplierLedger, requestData);
+
+          // Navigate to supplier page
+          router.push("/supplier");
+        } else {
+          throw new Error("Invalid customer type");
+        }
+
+        setResponseData(response);
+        Swal.fire("Success", "Your data has been added!", "success");
       } else {
-        Swal.fire("Error", `${response?.error?.message}`, "error");
+        throw new Error("Selected party not found");
       }
     } catch (error) {
-      console.error("Error:", error);
-      Swal.fire(
-        "Error",
-        "An error occurred while submitting the payment",
-        "error"
-      );
+      console.error("Error submitting data:", error.message);
     } finally {
       setLoadingSubmit(false);
     }
@@ -245,15 +285,15 @@ const Page = () => {
           ) : (
             <div className="mt-5">
               <DropDown
-                title="Select Supplier"
+                title="Select Party"
                 options={tablePartyData}
                 onChange={handleDropdownChange}
-                value={
-                  tablePartyData.find(
-                    (option) => option.id === formData.sup_id
-                  ) || null
+                value={selectedParty} // Use the selectedParty state here
+                name={
+                  selectedParty?.customer_type === "supplier"
+                    ? "sup_id"
+                    : "buyer_id"
                 }
-                name="sup_id"
               />
             </div>
           )}

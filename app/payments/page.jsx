@@ -18,7 +18,7 @@ const Page = () => {
       <div className={styles.payment}>Payments</div>
 
       <div className={styles.tabPaymentContainer}>
-        <button
+        <button 
           className={`${styles.tabPaymentButton} ${
             activeTab === "tab1" ? styles.active : ""
           }`}

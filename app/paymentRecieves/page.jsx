@@ -118,7 +118,6 @@ const Page = () => {
     }
   };
 
-  // Log combined data
   useEffect(() => {
     if (dataFetched) {
       console.log("Combined Party Data:", tablePartyData);
@@ -155,33 +154,10 @@ const Page = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    if (
-      (name === "cash_amount" || name === "cheque_amount") &&
-      selectedParty?.customer_type === "supplier"
-    ) {
-      // For suppliers, ensure the amount is negative
-      const numValue = parseFloat(value);
-      if (!isNaN(numValue)) {
-        const negativeValue = Math.abs(numValue) * -1;
-        setFormData((prevState) => ({
-          ...prevState,
-          [name]: negativeValue.toString(),
-        }));
-      } else if (value === "" || value === "-") {
-        // Allow empty field or just minus sign
-        setFormData((prevState) => ({
-          ...prevState,
-          [name]: value,
-        }));
-      }
-    } else {
-      // For buyers or other fields, handle normally
-      setFormData((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    }
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
   const handleDropdownChange = (name, selectedOption) => {
@@ -219,7 +195,7 @@ const Page = () => {
       let response;
       let requestData = { ...formData };
 
-      // Check customer_type (buyer or supplier) and adjust API call and data fields
+      // Find the selected party based on buyer_id or sup_id
       const selectedParty = tablePartyData.find(
         (party) =>
           party.id === formData.buyer_id || party.id === formData.sup_id
@@ -227,22 +203,33 @@ const Page = () => {
 
       if (selectedParty) {
         if (selectedParty.customer_type === "buyer") {
-          // If the customer is a buyer, use buyerLedger API
+          // For buyers, use buyerLedger API
           requestData = {
             ...formData,
             buyer_id: formData.buyer_id,
           };
           response = await api.postDataWithToken(buyerLedger, requestData);
+
+          // Navigate to buyer page
+          router.push("/Buyer");
         } else if (selectedParty.customer_type === "supplier") {
-          requestData = { ...formData, sup_id: formData.sup_id }; // Correct supplier ID usage
+          // For suppliers, set the cash_amount as negative
+          requestData = {
+            ...formData,
+            sup_id: formData.sup_id,
+            cash_amount: formData.cash_amount
+              ? -Math.abs(formData.cash_amount)
+              : "",
+          };
           response = await api.postDataWithToken(supplierLedger, requestData);
+
+          // Navigate to supplier page
+          router.push("/supplier");
         } else {
           throw new Error("Invalid customer type");
         }
 
         setResponseData(response);
-        router.push("/Buyer");
-
         Swal.fire("Success", "Your data has been added!", "success");
       } else {
         throw new Error("Selected party not found");
@@ -253,7 +240,7 @@ const Page = () => {
       setLoadingSubmit(false);
     }
   };
-
+  
   return (
     <div className="min-h-screen w-full overflow-x-hidden px-4 md:px-6">
       <div className={styles.recievesHead}>Add Amount Receives</div>

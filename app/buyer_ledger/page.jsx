@@ -117,7 +117,7 @@ const Page = () => {
           <TableHead>
             <TableRow>
               <TableCell> Sr No </TableCell>
-              <TableCell> Dare </TableCell>
+              <TableCell> Date </TableCell>
               <TableCell> Details </TableCell>
               <TableCell> Credit Amount </TableCell>
               <TableCell> Debit Amount </TableCell>
@@ -147,7 +147,7 @@ const Page = () => {
                 <TableRow onClick={() => handleViewDetails(row)} key={index}>
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{formatDate(row.created_at)}</TableCell>
-                  <TableCell>{getDescriction(row)}</TableCell>
+                  <TableCell>{row.description}</TableCell>
                   <TableCell>{row.cr_amount}</TableCell>
                   <TableCell>{row.dr_amount}</TableCell>
                   <TableCell>{row.balance < 0 ? "Jama" : "Naam"}</TableCell>
