@@ -1,4 +1,6 @@
-const baseURL = "https://backend-ghulambari.worldcitizenconsultants.com";
+// const baseURL = "https://backend-ghulambari.worldcitizenconsultants.com";
+const baseURL =
+  "https://pre-backend-ghulambari.worldcitizenconsultants.com/public";
 const apiPrefix = baseURL + "/api";
 
 export const banks = apiPrefix + "/bank";

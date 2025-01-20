@@ -75,7 +75,7 @@ const Dashboard = () => {
       </Grid>
 
       {/* Inflow */}
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={12} sm={6} md={2}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
@@ -97,7 +97,7 @@ const Dashboard = () => {
         </Card>
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={12} sm={6} md={2}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
@@ -116,7 +116,7 @@ const Dashboard = () => {
       </Grid>
 
       {/* outflow */}
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={12} sm={6} md={2}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
@@ -151,9 +151,9 @@ const Dashboard = () => {
               ) : // Calculate the result
               tableData ? (
                 (
-                  (tableData.opening_balance || 0) -
-                  (tableData.cash_inflow || 0) -
-                  (tableData.cash_outflow || 0)
+                  (Number(tableData.opening_balance) || 0) +
+                  (Number(tableData.cash_inflow) || 0) -
+                  Number(tableData.cash_outflow || 0)
                 ).toFixed(2)
               ) : (
                 0
