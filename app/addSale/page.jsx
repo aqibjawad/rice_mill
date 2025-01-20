@@ -1,17 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Grid from "@mui/material/Grid";
 import styles from "../../styles/addSale.module.css";
 import DropDown from "@/components/generic/dropdown";
 import InputWithTitle from "@/components/generic/InputWithTitle";
-import { Skeleton, CircularProgress } from "@mui/material";
 import { buyer, products, saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import withAuth from "@/utils/withAuth";
 import {
+  Grid,
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  Skeleton,
+  CircularProgress,
   Table,
   TableBody,
   TableCell,
@@ -19,8 +24,8 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Divider,
 } from "@mui/material";
-
 // Define the conversion constants
 const MUND_TO_KG = 40; // 1 mund equals 40 kg
 
@@ -50,7 +55,7 @@ const Page = () => {
   const [refList, setRef] = useState({ id: "", next_ref_no: "" });
 
   const [cartData, setCartData] = useState([]);
-  const [currentRefId, setCurrentRefId] = useState("");  
+  const [currentRefId, setCurrentRefId] = useState("");
 
   const [error, setError] = useState("");
 
@@ -353,233 +358,285 @@ const Page = () => {
   };
 
   return (
-    <Grid container spacing={2} style={{ marginTop: "2rem" }}>
-      <Grid item lg={6} xs={12} md={6} sm={12}>
-        <div className={styles.saleHead} style={{ marginBottom: "2rem" }}>
-          Add Sale
-        </div>
-        <Grid className="mt-10" container spacing={2}>
-          <Grid item xs={12} sm={12}>
-            {loadingSuppliers ? (
-              <Skeleton variant="rectangular" width="100%" height={56} />
-            ) : (
-              <DropDown
-                title="Select Party"
-                options={supplierList}
-                onChange={handleDropdownChange}
-                value={dropdownValues.buyer_id}
-                name="buyer_id"
-              />
-            )}
-          </Grid>
-
-          <Grid item lg={4} xs={6}>
-            <InputWithTitle
-              title={"Enter Truck Number"}
-              name="truck_no"
-              value={formData.truck_no}
-              onChange={handleInputChange}
-            />
-          </Grid>
-
-          <Grid item lg={4} xs={12}>
-            <InputWithTitle
-              title={"Bill Reference Number"}
-              name="reference_no"
-              value={formData.reference_no}
-              onChange={handleInputChange}
-            />
-          </Grid>
-
-          <Grid item lg={4} xs={6}>
-            <InputWithTitle
-              title={"Bill Reference No"}
-              defaultValue={`${refList.next_ref_no}`}
-              value={formData.next_ref_no}
-              name="id"
-              readOnly
-            />
-          </Grid>
-
-          <div className={styles.saleSec}>
-            <div className={styles.itemBill} style={{ marginBottom: "1rem" }}>
-              Add Items in bill
-            </div>
-
-            <Grid className="mt-10" container spacing={2}>
+    <Grid container spacing={3} sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+      {/* Left Section */}
+      <Grid item xs={12} md={6}>
+        <Card elevation={3}>
+          <CardHeader
+            title="Add Sale"
+            sx={{
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
+              p: 2,
+            }}
+          />
+          <CardContent>
+            <Grid container spacing={2}>
+              {/* Party Selection */}
               <Grid item xs={12}>
-                {loadingProducts ? (
-                  <Skeleton variant="rectangular" width="100%" height={56} />
+                {loadingSuppliers ? (
+                  <Skeleton variant="rectangular" height={56} />
                 ) : (
                   <DropDown
-                    title="Select Product"
-                    options={productList}
+                    title="Select Party"
+                    options={supplierList}
                     onChange={handleDropdownChange}
-                    value={dropdownValues.pro_id}
-                    name="pro_id"
+                    value={dropdownValues.buyer_id}
+                    name="buyer_id"
                   />
                 )}
               </Grid>
 
-              <Grid item xs={12} sm={6} lg={6}>
+              {/* Truck and Reference Numbers */}
+              <Grid item xs={12} sm={6} md={4}>
                 <InputWithTitle
-                  title="Weight (kg)"
-                  name="weight"
-                  value={weight}
+                  title="Enter Truck Number"
+                  name="truck_no"
+                  value={formData.truck_no}
                   onChange={handleInputChange}
                 />
               </Grid>
-
-              <Grid item xs={12} sm={6} lg={6}>
+              <Grid item xs={12} sm={6} md={4}>
                 <InputWithTitle
-                  title="Bardaana Deduction"
-                  name="bardaana_deduction"
-                  value={formData.bardaana_deduction}
+                  title="Bill Reference Number"
+                  name="reference_no"
+                  value={formData.reference_no}
                   onChange={handleInputChange}
                 />
               </Grid>
-
-              <Grid item xs={12} sm={6} lg={6}>
+              <Grid item xs={12} sm={12} md={4}>
                 <InputWithTitle
-                  title="Khoot"
-                  name="khoot"
-                  value={formData.khoot}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6} lg={6}>
-                <InputWithTitle
-                  title="Net Weight"
-                  name="netWeight"
-                  value={netWeight}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <InputWithTitle
-                  title="Weight in Munds"
-                  name="pounds"
-                  value={munds}
-                  type="text"
+                  title="Bill Reference No"
+                  defaultValue={refList.next_ref_no}
+                  value={formData.next_ref_no}
+                  name="id"
                   readOnly
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <InputWithTitle
-                  title="Weight in Kilograms"
-                  name="kilograms"
-                  value={kgs}
-                  type="number"
-                  readOnly
-                />
-              </Grid>
+              {/* Items Section */}
+              <Grid item xs={12}>
+                <Card variant="outlined" sx={{ mt: 2 }}>
+                  <CardHeader
+                    title="Add Items in Bill"
+                    sx={{ p: 2, bgcolor: "grey.100" }}
+                  />
+                  <CardContent>
+                    <Grid container spacing={2}>
+                      {/* Product Selection */}
+                      <Grid item xs={12}>
+                        {loadingProducts ? (
+                          <Skeleton variant="rectangular" height={56} />
+                        ) : (
+                          <DropDown
+                            title="Select Product"
+                            options={productList}
+                            onChange={handleDropdownChange}
+                            value={dropdownValues.pro_id}
+                            name="pro_id"
+                          />
+                        )}
+                      </Grid>
 
-              <Grid item lg={6} xs={12}>
-                <InputWithTitle
-                  title={"Price Per Munds"}
-                  name="price_mann"
-                  value={formData.price_mann}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+                      {/* Weight and Deductions */}
+                      <Grid item xs={12} sm={6}>
+                        <InputWithTitle
+                          title="Weight (kg)"
+                          name="weight"
+                          value={weight}
+                          onChange={handleInputChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <InputWithTitle
+                          title="Bardaana Deduction"
+                          name="bardaana_deduction"
+                          value={formData.bardaana_deduction}
+                          onChange={handleInputChange}
+                        />
+                      </Grid>
 
-              <Grid item lg={6} xs={6}>
-                <InputWithTitle
-                  title={"Sub Total Amount"}
-                  value={totalsAmounts}
-                  readOnly
-                />
-              </Grid>
+                      {/* Additional Fields */}
+                      <Grid item xs={12} sm={6}>
+                        <InputWithTitle
+                          title="Khoot"
+                          name="khoot"
+                          value={formData.khoot}
+                          onChange={handleInputChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <InputWithTitle
+                          title="Net Weight"
+                          name="netWeight"
+                          value={netWeight}
+                          readOnly
+                        />
+                      </Grid>
 
-              <Grid item lg={4} xs={12}>
-                <InputWithTitle
-                  title={"Bardaana Quantity"}
-                  name="bardaana_quantity"
-                  value={formData.bardaana_quantity}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+                      {/* Weight Conversions */}
+                      <Grid item xs={12} sm={6}>
+                        <InputWithTitle
+                          title="Weight in Munds"
+                          name="pounds"
+                          value={munds}
+                          readOnly
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <InputWithTitle
+                          title="Weight in Kilograms"
+                          name="kilograms"
+                          value={kgs}
+                          readOnly
+                        />
+                      </Grid>
 
-              <Grid item lg={4} xs={12}>
-                <InputWithTitle
-                  title={"Silai"}
-                  name="salai_amt_per_bag"
-                  value={formData.salai_amt_per_bag}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+                      {/* Price and Totals */}
+                      <Grid item xs={12} sm={6}>
+                        <InputWithTitle
+                          title="Price Per Munds"
+                          name="price_mann"
+                          value={formData.price_mann}
+                          onChange={handleInputChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <InputWithTitle
+                          title="Sub Total Amount"
+                          value={totalsAmounts}
+                          readOnly
+                        />
+                      </Grid>
 
-              <Grid item lg={4} xs={12}>
-                <InputWithTitle
-                  title="Total Amount"
-                  name="total_amount"
-                  value={combinedTotal}
-                  readOnly
-                />
-              </Grid>
-              <Grid className="mt-5" item xs={12}>
-                <InputWithTitle
-                  title={"Enter Description"}
-                  name="product_description"
-                  value={formData.product_description}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+                      {/* Bardaana and Silai */}
+                      <Grid item xs={12} sm={6} md={4}>
+                        <InputWithTitle
+                          title="Bardaana Quantity"
+                          name="bardaana_quantity"
+                          value={formData.bardaana_quantity}
+                          onChange={handleInputChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={4}>
+                        <InputWithTitle
+                          title="Silai"
+                          name="salai_amt_per_bag"
+                          value={formData.salai_amt_per_bag}
+                          onChange={handleInputChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={12} md={4}>
+                        <InputWithTitle
+                          title="Total Amount"
+                          name="total_amount"
+                          value={combinedTotal}
+                          readOnly
+                        />
+                      </Grid>
 
-              <button
-                type="submit"
-                className={styles.addItemBtn}
-                onClick={handleSubmit}
-              >
-                {loadingSubmit ? (
-                  <CircularProgress color="inherit" size={24} />
-                ) : (
-                  "Add Item in Bill"
-                )}
-              </button>
+                      {/* Description */}
+                      <Grid item xs={12}>
+                        <InputWithTitle
+                          title="Enter Description"
+                          name="product_description"
+                          value={formData.product_description}
+                          onChange={handleInputChange}
+                        />
+                      </Grid>
+
+                      {/* Submit Button */}
+                      <Grid item xs={12}>
+                        <button
+                          type="submit"
+                          onClick={handleSubmit}
+                          style={{
+                            width: "100%",
+                            padding: "12px",
+                            backgroundColor: "#1976d2",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            marginTop: "16px",
+                          }}
+                          disabled={loadingSubmit}
+                        >
+                          {loadingSubmit ? (
+                            <CircularProgress color="inherit" size={24} />
+                          ) : (
+                            "Add Item in Bill"
+                          )}
+                        </button>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </Grid>
             </Grid>
-          </div>
-        </Grid>
+          </CardContent>
+        </Card>
       </Grid>
 
-      <Grid item lg={6} xs={12} md={6} sm={12}>
-        <TableContainer component={Paper} style={{ marginTop: "20px" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Product</TableCell>
-                <TableCell>Weight</TableCell>
-                <TableCell>Amount</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {saleData.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item?.product_name}</TableCell>
-                  <TableCell>{`${item.net_weight}`}</TableCell>
-                  <TableCell>{item.total_amount}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+      {/* Right Section - Bill Summary */}
+      <Grid item xs={12} md={6}>
+        <Card elevation={3}>
+          <CardHeader
+            title="Bill Summary"
+            sx={{
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
+              p: 2,
+            }}
+          />
+          <CardContent>
+            <TableContainer component={Paper} variant="outlined">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Product</TableCell>
+                    <TableCell>Weight</TableCell>
+                    <TableCell>Amount</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {saleData.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{item?.product_name}</TableCell>
+                      <TableCell>{item.net_weight}</TableCell>
+                      <TableCell>{item.total_amount}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-        <div className={styles.tableTotalRow}>Total: {billTotal}</div>
+            <Typography variant="h6" sx={{ mt: 2, p: 2, bgcolor: "grey.100" }}>
+              Total: {billTotal}
+            </Typography>
 
-        <button
-          type="submit"
-          className={styles.addItemBtn}
-          onClick={handleUpdate}
-          disabled={loadingCompleteBill}
-        >
-          {loadingCompleteBill ? (
-            <CircularProgress color="inherit" size={24} />
-          ) : (
-            "Complete Your Bill"
-          )}
-        </button>
+            <button
+              onClick={handleUpdate}
+              disabled={loadingCompleteBill}
+              style={{
+                width: "100%",
+                padding: "12px",
+                backgroundColor: "#1976d2",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                marginTop: "16px",
+              }}
+            >
+              {loadingCompleteBill ? (
+                <CircularProgress color="inherit" size={24} />
+              ) : (
+                "Complete Your Bill"
+              )}
+            </button>
+          </CardContent>
+        </Card>
       </Grid>
     </Grid>
   );

@@ -26,7 +26,7 @@ import {
   Paper,
 } from "@mui/material";
 
-const MUND_TO_KG = 40; // 1 mund equals 40 kg
+const MUND_TO_KG = 40;
 
 const AddPurchaseContent = () => {
   const router = useRouter();
@@ -60,7 +60,7 @@ const AddPurchaseContent = () => {
   });
 
   const validateForm = () => {
-    const requiredFields = [
+    const baseRequiredFields = [
       "sup_id",
       "date",
       "pro_id",
@@ -73,8 +73,12 @@ const AddPurchaseContent = () => {
       "freight",
       "price_mann",
       "cash_amount",
-      "bank_id",
     ];
+
+    const requiredFields = [...baseRequiredFields];
+    if (["cheque", "both", "online"].includes(formData.payment_type)) {
+      requiredFields.push("bank_id");
+    }
 
     const missingFields = requiredFields.filter((field) => !formData[field]);
 
@@ -89,11 +93,15 @@ const AddPurchaseContent = () => {
       return false;
     }
 
-    if (formData.payment_type !== "cash" && !formData.cheque_no) {
+    // Additional validation for cheque payments
+    if (
+      ["cheque", "both"].includes(formData.payment_type) &&
+      !formData.cheque_no
+    ) {
       Swal.fire({
         icon: "error",
         title: "Missing Cheque Number",
-        text: "Please enter the cheque number for non-cash payments.",
+        text: "Please enter the cheque number for cheque payments.",
       });
       return false;
     }
@@ -109,27 +117,17 @@ const AddPurchaseContent = () => {
   });
 
   const [productList, setProducts] = useState([]);
-
   const [supplierList, setSuppliers] = useState([]);
   const [bank, setBank] = useState([]);
-
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("cash");
-
-  // Loading states
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
-
   const [loadingProducts, setLoadingProducts] = useState(true);
-
   const [loadingBanks, setLoadingBanks] = useState(true);
-
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-
   const [munds, setMunds] = useState("");
   const [kgs, setKgs] = useState("");
-
-  const [totalAmount, steTotalAmounts] = useState(0);
-
+  const [totalAmount, setTotalAmounts] = useState(0);
   const [selectedBardaanaId, setSelectedBardaanaId] = useState(1);
 
   const bardaanaList = [
@@ -170,7 +168,7 @@ const AddPurchaseContent = () => {
       netWeight - firstWeight - secondWeight - bardaana_deduction;
     setFormData((prevData) => ({
       ...prevData,
-      final_weight: finalWeight.toFixed(2), // Format to 2 decimal places
+      final_weight: finalWeight.toFixed(2),
     }));
 
     const weightPerBag = finalWeight
@@ -181,7 +179,6 @@ const AddPurchaseContent = () => {
       weightPerBag,
     }));
 
-    // Calculate munds and kgs based on final weight
     calculateMunds(finalWeight);
   }, [
     formData.net_weight,
@@ -191,16 +188,14 @@ const AddPurchaseContent = () => {
     formData.bardaana_quantity,
   ]);
 
-  const calculatAmount = () => {
+  const calculateAmount = () => {
     const price_per_munds = formData.price_mann / 40;
-
     const totalAmount = price_per_munds * formData.final_weight;
-
-    steTotalAmounts(totalAmount);
+    setTotalAmounts(totalAmount);
   };
 
   useEffect(() => {
-    calculatAmount();
+    calculateAmount();
   }, [formData]);
 
   const fetchSuppliers = async () => {
@@ -239,30 +234,27 @@ const AddPurchaseContent = () => {
 
   const fetchProducts = async () => {
     try {
-      setLoadingProducts(true); // Set loading state to true at the beginning of the fetch
-
+      setLoadingProducts(true);
       const response = await api.getDataWithToken(products);
       const filteredProducts = response.data.map((item, index) => ({
         label: `${item.product_name}`,
         index: index,
         id: item.id,
       }));
-
-      setProducts(filteredProducts); // Set filtered products in the state
+      setProducts(filteredProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
       setError("Failed to fetch products. Please try again.");
     } finally {
-      setLoadingProducts(false); // Set loading state to false once the fetch is complete
+      setLoadingProducts(false);
     }
   };
 
   useEffect(() => {
-    // Set the current date in 'YYYY-MM-DD' format when the component mounts
     const currentDate = new Date().toISOString().split("T")[0];
     setFormData((prevData) => ({
       ...prevData,
-      date: currentDate, // Set the current date
+      date: currentDate,
     }));
   }, []);
 
@@ -306,13 +298,11 @@ const AddPurchaseContent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // If validation is required, uncomment the following line
     if (!validateForm()) return;
 
     setLoadingSubmit(true);
 
     try {
-      // Add hardcoded value to formData
       const payload = { ...formData, bardaana_amount: 0 };
 
       const response = await api.postDataWithToken(purchaseBook, payload);
