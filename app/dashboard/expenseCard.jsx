@@ -92,7 +92,7 @@ const Dashboard = () => {
                 tableData?.cash_inflow
               )}
             </div>
-            <div className={styles.cardTitle}> Cash Recevies</div>
+            <div className={styles.cardTitle}> Cash Receives</div>
           </CardContent>
         </Card>
       </Grid>
@@ -139,19 +139,30 @@ const Dashboard = () => {
       </Grid>
 
       {/* Balance */}
-      {/* <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={12} sm={6} md={3}>
         <Card className={styles.card} variant="outlined">
           <CardContent>
             <div className={styles.imageCont}>
               <img src="/total.png" className={styles.cardImage} alt="Total" />
             </div>
             <div className={styles.cardAmount}>
-              {loading ? <Skeleton width={100} height={30} /> : result}
+              {loading ? (
+                <Skeleton width={100} height={30} />
+              ) : // Calculate the result
+              tableData ? (
+                (
+                  (tableData.opening_balance || 0) -
+                  (tableData.cash_inflow || 0) -
+                  (tableData.cash_outflow || 0)
+                ).toFixed(2)
+              ) : (
+                0
+              )}
             </div>
-            <div className={styles.cardTitle}>Balance</div>
+            <div className={styles.cardTitle}> Cash in Hands </div>
           </CardContent>
         </Card>
-      </Grid> */}
+      </Grid>
     </Grid>
   );
 };

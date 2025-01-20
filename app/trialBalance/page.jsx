@@ -76,8 +76,8 @@ const CombinedTable = () => {
     if (item.bank_name) {
       const amount = parseFloat(item.balance || 0);
       return {
-        debit: amount > 0 ? amount.toFixed(2) : "-",
-        credit: amount < 0 ? Math.abs(amount).toFixed(2) : "-",
+        credit: amount > 0 ? amount.toFixed(2) : "-",
+        debit: amount < 0 ? Math.abs(amount).toFixed(2) : "-",
       };
     }
 

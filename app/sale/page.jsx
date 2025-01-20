@@ -78,7 +78,7 @@ const Page = () => {
   return (
     <div className={styles.pageContainer}>
       <Buttons
-        leftSectionText="Stock"
+        leftSectionText="Sale"
         addButtonLink="/addSale"
       />
 
