@@ -1,6 +1,5 @@
 // const baseURL = "https://backend-ghulambari.worldcitizenconsultants.com";
-const baseURL =
-  "https://pre-backend-ghulambari.worldcitizenconsultants.com/public";
+const baseURL =  "https://pre-backend-ghulambari.worldcitizenconsultants.com/public";
 const apiPrefix = baseURL + "/api";
 
 export const banks = apiPrefix + "/bank";
@@ -21,11 +20,15 @@ export const stocks = apiPrefix + "/product_stock";
 
 export const suppliers = apiPrefix + "/supplier";
 
+export const investors = apiPrefix + "/investor";
+
 export const buyer = apiPrefix + "/buyer";
 
 export const buyerLedger = apiPrefix + "/buyer_ledger";
 
 export const supplierLedger = apiPrefix + "/supplier_ledger";
+
+export const investorLedger = apiPrefix + "/investor_ledger";
 
 export const login = apiPrefix + "/login";
 

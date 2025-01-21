@@ -2,11 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
-import {
-  expense,
-  getSupplierPaidAmounts,
-} from "../../networkApi/Constants";
-import { format } from "date-fns";
+import { expense, getSupplierPaidAmounts } from "../../networkApi/Constants";
+import { format, startOfMonth, endOfMonth, getYear, getMonth } from "date-fns";
 import {
   Table,
   TableBody,
@@ -44,9 +41,14 @@ const Page = () => {
         queryParams.push(`start_date=${startDate}`);
         queryParams.push(`end_date=${endDate}`);
       } else {
-        const currentDate = format(new Date(), "yyyy-MM-dd");
-        queryParams.push(`start_date=${currentDate}`);
-        queryParams.push(`end_date=${currentDate}`);
+        // Default to current month
+        const now = new Date();
+        const year = getYear(now);
+        const month = getMonth(now) + 1; // getMonth returns 0-11
+        const monthStart = `${year}-${month.toString().padStart(2, "0")}-01`;
+        const monthEnd = `${year}-${month.toString().padStart(2, "0")}-30`;
+        queryParams.push(`start_date=${monthStart}`);
+        queryParams.push(`end_date=${monthEnd}`);
       }
       const queryString = queryParams.join("&");
 
@@ -57,7 +59,6 @@ const Page = () => {
       ]);
 
       const expenseData = expenseResponse.data;
-      console.log(`${expense}?${queryString}`);
       const supplierData = supplierResponse.data;
 
       // Check if both responses are arrays
@@ -76,23 +77,32 @@ const Page = () => {
   };
 
   const handleDateChange = (start, end) => {
-    setStartDate(start);
-    setEndDate(end);
+    if (start === "this-month") {
+      const now = new Date();
+      const year = getYear(now);
+      const month = getMonth(now) + 1; // getMonth returns 0-11
+      const monthStart = `${year}-${month.toString().padStart(2, "0")}-01`;
+      const monthEnd = `${year}-${month.toString().padStart(2, "0")}-30`;
+      setStartDate(monthStart);
+      setEndDate(monthEnd);
+    } else {
+      setStartDate(start);
+      setEndDate(end);
+    }
   };
 
   const calculateTotalAmount = () => {
-      var allCRS = 0;
-      var allCash = 0;
-    tableData.map((row, index) => {
+    var allCRS = 0;
+    var allCash = 0;
+    tableData.map((row) => {
       if (row.cr_amount) {
         allCRS += parseFloat(row.cr_amount) || 0;
       } else {
         allCash += parseFloat(row.cash_amount) || 0;
       }
-    },);
+    });
 
     var sum = allCRS + allCash;
-    
 
     return sum.toLocaleString("en-IN", {
       maximumFractionDigits: 2,
@@ -100,13 +110,6 @@ const Page = () => {
       currency: "PKR",
     });
   };
-
-  //   return total.toLocaleString("en-IN", {
-  //     maximumFractionDigits: 2,
-  //     style: "currency",
-  //     currency: "PKR",
-  //   });
-  // };
 
   return (
     <div>
@@ -120,16 +123,15 @@ const Page = () => {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell> Sr No </TableCell>
+              <TableCell>Sr No</TableCell>
               <TableCell>Payment Type</TableCell>
               <TableCell>Person</TableCell>
-              <TableCell> Expense Category </TableCell>
+              <TableCell>Expense Category</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Bank Name</TableCell>
               <TableCell>Cheque No</TableCell>
               <TableCell>Cheque Date</TableCell>
               <TableCell>Credit Amount</TableCell>
-
               <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
@@ -138,7 +140,7 @@ const Page = () => {
               ? // Skeleton loader
                 [...Array(5)].map((_, index) => (
                   <TableRow key={index}>
-                    {[...Array(7)].map((_, cellIndex) => (
+                    {[...Array(10)].map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
                         <Skeleton animation="wave" />
                       </TableCell>
@@ -147,23 +149,25 @@ const Page = () => {
                 ))
               : // Actual data
                 tableData
-                .filter((row) => row.cr_amount > 0) 
-                .map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.payment_type}</TableCell>
-                    <TableCell>{row.customer?.person_name || "N/A"}</TableCell>
-                    <TableCell>
-                      {row.expense_category?.expense_category || "N/A"}
-                    </TableCell>
-                    <TableCell>{row.description || "N/A"}</TableCell>
-                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>{" "}
-                    <TableCell>{row.cheque_no || "N/A"}</TableCell>
-                    <TableCell>{row.cheque_date || "N/A"}</TableCell>
-                    <TableCell>{row.cr_amount || row.cash_amount}</TableCell>
-                    <TableCell>{row.balance || "Expense"}</TableCell>
-                  </TableRow>
-                ))}
+                  .filter((row) => row.cr_amount > 0)
+                  .map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{row.payment_type}</TableCell>
+                      <TableCell>
+                        {row.customer?.person_name || "N/A"}
+                      </TableCell>
+                      <TableCell>
+                        {row.expense_category?.expense_category || "N/A"}
+                      </TableCell>
+                      <TableCell>{row.description || "N/A"}</TableCell>
+                      <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
+                      <TableCell>{row.cheque_no || "N/A"}</TableCell>
+                      <TableCell>{row.cheque_date || "N/A"}</TableCell>
+                      <TableCell>{row.cr_amount || row.cash_amount}</TableCell>
+                      <TableCell>{row.balance || "Expense"}</TableCell>
+                    </TableRow>
+                  ))}
           </TableBody>
         </Table>
       </TableContainer>
