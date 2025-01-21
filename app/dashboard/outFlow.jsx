@@ -192,11 +192,11 @@ const Page = () => {
       {!loading && (
         <Grid container className={styles.tableTotalRow}>
           <Grid item xs={12} sm={6}>
-            <Typography>Total Cash: {cashTotal.toFixed(2)}</Typography>
+            <Typography> Cash Payments: {cashTotal.toFixed(2)}</Typography>
           </Grid>
           <Grid item xs={12} sm={6}>
             <Typography>
-              Total Cheque/Online: {chequeOnlineTotal.toFixed(2)}
+              Cheque/Online Payments: {chequeOnlineTotal.toFixed(2)}
             </Typography>
           </Grid>
         </Grid>

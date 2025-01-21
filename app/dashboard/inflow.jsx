@@ -130,12 +130,11 @@ const Page = () => {
 
   const calculateOnlineChequeTotal = () => {
     const total = combinedData.reduce((total, row) => {
-      const paymentType = (row.payment_type || "").toLowerCase();
-      if (paymentType === "online" || paymentType === "cheque") {
+      if (row?.payment_type === "online" || row?.payment_type === "cheque") {
         return (
           total +
           parseFloat(row.cash_amount || 0) +
-          parseFloat(row.cr_amount || 0)
+          parseFloat(row.cheque_amount || 0)
         );
       }
       return total;
@@ -202,7 +201,7 @@ const Page = () => {
                     <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
                     <TableCell>{row.cheque_no || "N/A"}</TableCell>
                     <TableCell>{row.cheque_date || "N/A"}</TableCell>
-                    <TableCell>{row.cr_amount}</TableCell>
+                    <TableCell>{row.cash_amount}</TableCell>
                     <TableCell
                       style={{
                         color: parseFloat(row.balance) < 0 ? "red" : "inherit",
@@ -219,11 +218,11 @@ const Page = () => {
       {!isLoading && (
         <Grid container className={styles.tableTotalRow}>
           <Grid item xs={12} md={6}>
-            <Typography>Cash Amount Total: {calculateCashTotal()}</Typography>
+            <Typography>Cash Receive: {calculateCashTotal()}</Typography>
           </Grid>
           <Grid item xs={12} md={6}>
             <Typography>
-              Online/Cheque Balance Total: {calculateOnlineChequeTotal()}
+              Online/Cheque Balance Receive: {calculateOnlineChequeTotal()}
             </Typography>
           </Grid>
         </Grid>
