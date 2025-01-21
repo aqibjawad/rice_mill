@@ -120,7 +120,7 @@ const Page = () => {
   const calculateCashTotal = () => {
     const total = combinedData.reduce((total, row) => {
       const paymentType = (row.payment_type || "").toLowerCase();
-      if (paymentType === "cash") {
+      if (paymentType === "cash" && row.description !== "Opening Balance") {
         return total + parseFloat(row.cash_amount || 0);
       }
       return total;
@@ -130,7 +130,11 @@ const Page = () => {
 
   const calculateOnlineChequeTotal = () => {
     const total = combinedData.reduce((total, row) => {
-      if (row?.payment_type === "online" || row?.payment_type === "cheque") {
+      if (
+        row?.payment_type === "online" ||
+        (row?.payment_type === "cheque" &&
+          row.description !== "Opening Balance")
+      ) {
         return (
           total +
           parseFloat(row.cash_amount || 0) +
@@ -192,25 +196,30 @@ const Page = () => {
                     ))}
                   </TableRow>
                 ))
-              : combinedData.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.payment_type}</TableCell>
-                    <TableCell>{row.customer?.person_name}</TableCell>
-                    <TableCell>{row.description}</TableCell>
-                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
-                    <TableCell>{row.cheque_no || "N/A"}</TableCell>
-                    <TableCell>{row.cheque_date || "N/A"}</TableCell>
-                    <TableCell>{row.cash_amount}</TableCell>
-                    <TableCell
-                      style={{
-                        color: parseFloat(row.balance) < 0 ? "red" : "inherit",
-                      }}
-                    >
-                      {row.balance}
-                    </TableCell>
-                  </TableRow>
-                ))}
+              : combinedData
+                  .filter(
+                    (row) => row.description !== "Opening Balance"
+                  )
+                  .map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{row.payment_type}</TableCell>
+                      <TableCell>{row.customer?.person_name}</TableCell>
+                      <TableCell>{row.description}</TableCell>
+                      <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
+                      <TableCell>{row.cheque_no || "N/A"}</TableCell>
+                      <TableCell>{row.cheque_date || "N/A"}</TableCell>
+                      <TableCell>{row.cash_amount}</TableCell>
+                      <TableCell
+                        style={{
+                          color:
+                            parseFloat(row.balance) < 0 ? "red" : "inherit",
+                        }}
+                      >
+                        {row.balance}
+                      </TableCell>
+                    </TableRow>
+                  ))}
           </TableBody>
         </Table>
       </TableContainer>
