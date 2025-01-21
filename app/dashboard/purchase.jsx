@@ -101,8 +101,21 @@ const Purchase = () => {
         onSearch={handleSearch}
       />
 
-      <TableContainer component={Paper} className={styles.tableSection}>
-        <Table>
+      <TableContainer
+        sx={{
+          maxHeight: "400px",
+          overflow: "auto",
+        }}
+        component={Paper}
+        className={styles.tableSection}
+      >
+        <Table
+          sx={{
+            minWidth: 650,
+            position: "relative", // Important for proper alignment
+            borderCollapse: "separate",
+          }}
+        >
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>

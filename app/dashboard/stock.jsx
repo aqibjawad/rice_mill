@@ -147,8 +147,21 @@ const Page = () => {
         </Grid>
       </div>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="stock table">
+      <TableContainer
+        sx={{
+          maxHeight: "400px",
+          overflow: "auto",
+        }}
+        component={Paper}
+      >
+        <Table
+          sx={{
+            minWidth: 650,
+            position: "relative",
+            borderCollapse: "separate",
+          }}
+          aria-label="stock table"
+        >
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>

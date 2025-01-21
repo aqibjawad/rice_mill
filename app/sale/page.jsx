@@ -77,14 +77,23 @@ const Page = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <Buttons
-        leftSectionText="Sale"
-        addButtonLink="/addSale"
-      />
+      <Buttons leftSectionText="Sale" addButtonLink="/addSale" />
 
       <div className={styles.contentContainer}>
-        <TableContainer component={Paper}>
-          <Table>
+        <TableContainer
+          sx={{
+            maxHeight: "400px",
+            overflow: "auto",
+          }}
+          component={Paper}
+        >
+          <Table
+            sx={{
+              minWidth: 650,
+              position: "relative",
+              borderCollapse: "separate",
+            }}
+          >
             <TableHead>
               <TableRow>
                 <TableCell>Sr.</TableCell>

@@ -20,7 +20,7 @@ import {
   Paper,
   Skeleton,
   Grid,
-  Typography
+  Typography,
 } from "@mui/material";
 
 import Buttons from "../../components/buttons";
@@ -128,8 +128,21 @@ const Page = () => {
         onDateChange={handleDateChange}
       />
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      <TableContainer
+        sx={{
+          maxHeight: "400px",
+          overflow: "auto",
+        }}
+        component={Paper}
+      >
+        <Table
+          sx={{
+            minWidth: 650,
+            position: "relative",
+            borderCollapse: "separate",
+          }}
+          aria-label="simple table"
+        >
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
