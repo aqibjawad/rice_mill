@@ -16,9 +16,10 @@ import {
   buyer,
   banks,
   buyerLedger,
-  bankCheque,
   suppliers,
+  investors,
   supplierLedger,
+  investorLedger,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
@@ -31,6 +32,7 @@ const Page = () => {
   const [formData, setFormData] = useState({
     buyer_id: "",
     sup_id: "",
+    investor_id: "",
     payment_type: "cash",
     description: "",
     cash_amount: "",
@@ -48,13 +50,14 @@ const Page = () => {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [activeTab, setActiveTab] = useState("cash");
   const [tablePartyData, setPartyData] = useState([]);
-  const [dataFetched, setDataFetched] = useState(false); // Flag to track if both data have been fetched
+  const [dataFetched, setDataFetched] = useState(false);
   const [responseData, setResponseData] = useState();
 
   useEffect(() => {
     fetchData();
     fetchBankData();
     fetchSupplierData();
+    fetchInvestorsData();
   }, []);
 
   const fetchData = async () => {
@@ -95,6 +98,36 @@ const Page = () => {
       if (Array.isArray(data)) {
         const formattedData = data.map((supplier) => ({
           label: `${supplier.person_name} (Supplier)`,
+          customer_type: supplier.customer_type,
+          id: supplier.id,
+        }));
+
+        setPartyData((prevData) => {
+          // Avoid duplicating data by checking if it's already present
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
+      } else {
+        throw new Error("Fetched supplier data is not an array");
+      }
+    } catch (error) {
+      console.error("Error fetching supplier data:", error.message);
+    } finally {
+      setLoading(false);
+      setDataFetched(true); // Mark as fetched
+    }
+  };
+
+  const fetchInvestorsData = async () => {
+    try {
+      const response = await api.getDataWithToken(investors);
+      const data = response.data;
+      if (Array.isArray(data)) {
+        const formattedData = data.map((supplier) => ({
+          label: `${supplier.person_name} (Investor)`,
           customer_type: supplier.customer_type,
           id: supplier.id,
         }));
@@ -164,17 +197,29 @@ const Page = () => {
     if (selectedOption) {
       setSelectedParty(selectedOption); // Store the selected party
 
+      // Reset all IDs first
+      setFormData((prevState) => ({
+        ...prevState,
+        buyer_id: "",
+        sup_id: "",
+        investor_id: "",
+      }));
+
+      // Set the appropriate ID based on customer type
       if (selectedOption.customer_type === "buyer") {
         setFormData((prevState) => ({
           ...prevState,
           buyer_id: selectedOption.id,
-          sup_id: "",
         }));
       } else if (selectedOption.customer_type === "supplier") {
         setFormData((prevState) => ({
           ...prevState,
           sup_id: selectedOption.id,
-          buyer_id: "",
+        }));
+      } else if (selectedOption.customer_type === "investor") {
+        setFormData((prevState) => ({
+          ...prevState,
+          investor_id: selectedOption.id,
         }));
       }
     }
@@ -195,15 +240,8 @@ const Page = () => {
       let response;
       let requestData = { ...formData };
 
-      // Find the selected party based on buyer_id or sup_id
-      const selectedParty = tablePartyData.find(
-        (party) =>
-          party.id === formData.buyer_id || party.id === formData.sup_id
-      );
-
       if (selectedParty) {
         if (selectedParty.customer_type === "buyer") {
-          // For buyers, use buyerLedger API
           requestData = {
             ...formData,
             buyer_id: formData.buyer_id,
@@ -225,6 +263,16 @@ const Page = () => {
 
           // Navigate to supplier page
           router.push("/supplier");
+        } else if (selectedParty.customer_type === "investor") {
+          // For investors, use investorLedger API
+          requestData = {
+            ...formData,
+            investor_id: formData.investor_id,
+          };
+          response = await api.postDataWithToken(investorLedger, requestData);
+
+          // Navigate to investor page
+          // router.push("/Investor");
         } else {
           throw new Error("Invalid customer type");
         }
@@ -236,11 +284,12 @@ const Page = () => {
       }
     } catch (error) {
       console.error("Error submitting data:", error.message);
+      Swal.fire("Error", "Failed to submit data. Please try again.", "error");
     } finally {
       setLoadingSubmit(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden px-4 md:px-6">
       <div className={styles.recievesHead}>Add Amount Receives</div>

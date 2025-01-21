@@ -15,7 +15,7 @@ import {
   buyer,
   banks,
   buyerLedger,
-  bankCheque,
+  investors,
   suppliers,
   supplierLedger,
 } from "../../networkApi/Constants";
@@ -53,6 +53,7 @@ const Page = () => {
     fetchData();
     fetchBankData();
     fetchSupplierData();
+    fetchInvestorsData();
   }, []);
 
   const fetchData = async () => {
@@ -99,6 +100,35 @@ const Page = () => {
 
         setPartyData((prevData) => {
           // Avoid duplicating data by checking if it's already present
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
+      } else {
+        throw new Error("Fetched supplier data is not an array");
+      }
+    } catch (error) {
+      console.error("Error fetching supplier data:", error.message);
+    } finally {
+      setLoading(false);
+      setDataFetched(true); // Mark as fetched
+    }
+  };
+
+  const fetchInvestorsData = async () => {
+    try {
+      const response = await api.getDataWithToken(investors);
+      const data = response.data;
+      if (Array.isArray(data)) {
+        const formattedData = data.map((supplier) => ({
+          label: `${supplier.person_name} (Investor)`,
+          customer_type: supplier.customer_type,
+          id: supplier.id,
+        }));
+
+        setPartyData((prevData) => {
           const existingIds = new Set(prevData.map((item) => item.id));
           const newData = formattedData.filter(
             (item) => !existingIds.has(item.id)
