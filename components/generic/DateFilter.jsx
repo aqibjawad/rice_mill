@@ -1,179 +1,159 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Popover from "@mui/material/Popover";
 import PropTypes from "prop-types";
+import DatePicker from "react-datepicker"; // For custom range selection
+import "react-datepicker/dist/react-datepicker.css"; // Import DatePicker styles
 import styles from "../../styles/dateFilter.module.css";
+import {
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  subMonths,
+  format,
+} from "date-fns";
 
-const DateFilters = ({ onOptionChange, onDateChange }) => {
+const DateFilters = ({ onDateChange }) => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOption, setSelectedOption] = useState("This Month");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [title, setTitle] = useState("Select Date");
+  const [title, setTitle] = useState("This Month");
+  const [customRange, setCustomRange] = useState(false);
 
   const handleOptionClick = (option) => {
-    setSelectedOption(option);
+    const today = new Date();
     let start, end;
 
     switch (option) {
-      case "today":
-        start = end = new Date().toISOString().split("T")[0];
-        break;
       case "This Month":
-        start = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-          .toISOString()
-          .split("T")[0];
-        end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
-          .toISOString()
-          .split("T")[0];
+        start = startOfMonth(today);
+        end = endOfMonth(today);
+        setCustomRange(false);
+        setAnchorEl(null); // Close popover for non-custom options
         break;
-      case "This Year":
-        start = new Date(new Date().getFullYear(), 0, 1)
-          .toISOString()
-          .split("T")[0];
-        end = new Date(new Date().getFullYear(), 11, 31)
-          .toISOString()
-          .split("T")[0];
+
+      case "Last Month":
+        const lastMonth = subMonths(today, 1);
+        start = startOfMonth(lastMonth);
+        end = endOfMonth(lastMonth);
+        setCustomRange(false);
+        setAnchorEl(null); // Close popover for non-custom options
         break;
-      case "dateRange":
-        // Don't set dates here, let the user pick them
+
+      case "This Week":
+        start = startOfWeek(today, { weekStartsOn: 1 });
+        end = endOfWeek(today, { weekStartsOn: 1 });
+        setCustomRange(false);
+        setAnchorEl(null); // Close popover for non-custom options
         break;
+
+      case "Custom Range":
+        setCustomRange(true);
+        start = null;
+        end = null;
+        // Don't close the popover here
+        break;
+
       default:
-        console.error("Unknown option selected");
-        return;
+        break;
     }
 
     setStartDate(start);
     setEndDate(end);
+    setSelectedOption(option);
     setTitle(option);
 
-    if (option !== "dateRange") {
-      handleClose();
-      if (typeof onDateChange === "function") {
-        onDateChange(start, end);
-      } else {
-        console.error("onDateChange is not a function");
-      }
-    }
-  };
-  const handleStartDateChange = (event) => {
-    const date = event.target.value;
-    setStartDate(date);
-    if (startDate !== undefined || endDate !== undefined) {
-      if (typeof onDateChange === "function") {
-        onDateChange(startDate, endDate);
-      } else {
-        console.error("onDateChange is not a function");
-      }
+    if (onDateChange && start && end) {
+      const formattedStart = format(start, "yyyy-MM-dd");
+      const formattedEnd = format(end, "yyyy-MM-dd");
+      onDateChange(formattedStart, formattedEnd);
     }
   };
 
-  const handleEndDateChange = (event) => {
-    const date = event.target.value;
-    setEndDate(date);
-    if (startDate !== undefined || endDate !== undefined) {
-      setTitle(formatDate(startDate) + " - " + formatDate(endDate));
-      if (typeof onDateChange === "function") {
-        onDateChange(startDate, endDate);
-      } else {
-        console.error("onDateChange is not a function");
-      }
+  const formatDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return d.toISOString().split("T")[0];
+  };
+
+  useEffect(() => {
+    handleOptionClick("This Month");
+  }, []);
+
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
+  const handleCustomRangeSubmit = () => {
+    if (startDate && endDate && onDateChange) {
+      // Format dates to YYYY-MM-DD
+      const formattedStartDate = format(startDate, "yyyy-MM-dd");
+      const formattedEndDate = format(endDate, "yyyy-MM-dd");
+
+      onDateChange(formattedStartDate, formattedEndDate);
     }
-  };
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+    // Update title with a more readable format
+    setTitle(
+      `${format(startDate, "MM/dd/yyyy")} - ${format(endDate, "MM/dd/yyyy")}`
+    );
 
-  const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? "date-filters-popover" : undefined;
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const options = { month: "long", year: "numeric", day: "2-digit" };
-    return date.toLocaleDateString("en-GB", options);
+    setCustomRange(false);
   };
 
   return (
     <div>
-      <button
-        className={styles.datePicker}
-        aria-describedby={id}
-        variant="outlined"
-        onClick={handleClick}
-      >
+      <button onClick={handleClick} className={styles.filterButton}>
         {title}
       </button>
       <Popover
-        id={id}
-        open={open}
+        open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-        PaperProps={{
-          style: {
-            background: "white",
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            padding: "1rem",
-          },
-        }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
-        <div>
-          <div
-            className={styles.dateItem}
-            onClick={() => handleOptionClick("today")}
-          >
-            Today
-          </div>
-
-          <div>
-            <div
-              className={styles.dateItem}
-              style={{ border: "none" }}
-              onClick={() => handleOptionClick("This Month")}
-            >
-              This Month
-            </div>
-          </div>
-          <div>
-            <div
-              className={styles.dateItem}
-              style={{ border: "none" }}
-              onClick={() => handleOptionClick("This Year")}
-            >
-              This Year
-            </div>
-          </div>
-          <div
-            className={styles.dateItem}
-            onClick={() => handleOptionClick("dateRange")}
-          >
-            Date Range
-          </div>
-          {selectedOption === "dateRange" && (
-            <div className={styles.dateItem}>
-              <input
-                type="date"
-                value={startDate || ""}
-                onChange={handleStartDateChange}
+        <div className={styles.popoverContent}>
+          {["This Month", "Last Month", "This Week", "Custom Range"].map(
+            (option) => (
+              <div
+                key={option}
+                onClick={() => handleOptionClick(option)}
+                className={`${styles.option} ${
+                  selectedOption === option ? styles.selected : ""
+                }`}
+              >
+                {option}
+              </div>
+            )
+          )}
+          {customRange && (
+            <div className={styles.customRangeContainer}>
+              <DatePicker
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                placeholderText="Start Date"
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+                className={styles.datePicker}
               />
-              <input
-                type="date"
-                value={endDate || ""}
-                onChange={handleEndDateChange}
+              <DatePicker
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
+                placeholderText="End Date"
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                className={styles.datePicker}
               />
+              <button
+                onClick={handleCustomRangeSubmit}
+                className={styles.customRangeSubmitButton}
+                disabled={!startDate || !endDate}
+              >
+                Apply
+              </button>
             </div>
           )}
         </div>
@@ -182,16 +162,8 @@ const DateFilters = ({ onOptionChange, onDateChange }) => {
   );
 };
 
-// Define prop types for DateFilters
 DateFilters.propTypes = {
-  onOptionChange: PropTypes.func.isRequired,
   onDateChange: PropTypes.func.isRequired,
-};
-
-// Default props if necessary
-DateFilters.defaultProps = {
-  onOptionChange: () => {},
-  onDateChange: () => {},
 };
 
 export default DateFilters;

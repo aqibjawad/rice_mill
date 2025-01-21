@@ -4,7 +4,7 @@
   font-family: "regular";
 }
 
-.datePicker {
+.filterButton {
   width: 120px;
   height: 35px;
   border-radius: 13px;
@@ -15,6 +15,75 @@
   line-height: 29.05px;
   text-align: center;
   display: flex;
-  justify-content: center; 
+  justify-content: center;
   align-items: center;
+}
+
+/* .filterButton:hover {
+  background-color: #218838;
+} */
+
+.popoverContent {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 10px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.option {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: left;
+  transition: background-color 0.3s, color 0.3s;
+  color: #333;
+}
+
+.option:hover {
+  background-color: #f8f9fa;
+  color: #28a745;
+}
+
+.selected {
+  background-color: #28a745; /* Green color for the button */
+  color: white;
+}
+
+.customRangeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.datePicker {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.customRangeSubmitButton {
+  background-color: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.customRangeSubmitButton:hover {
+  background-color: #28a745;
+}
+
+.customRangeSubmitButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
