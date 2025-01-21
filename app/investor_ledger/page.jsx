@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 const Page = () => {
   const router = useRouter();
 
-  const investorId = getLocalStorage("supplerId");
+  const investorId = getLocalStorage("investorId");
 
   const api = new APICall();
   const [tableData, setTableData] = useState([]);
@@ -49,7 +49,7 @@ const Page = () => {
     setLoading(true);
     try {
       const response = await api.getDataWithToken(
-        `${investorLedger}?sup_id=${investorId}`
+        `${investorLedger}?investor_id=${investorId}`
       );
 
       const data = response.data;
@@ -100,14 +100,14 @@ const Page = () => {
         >
           Share on WhatsApp
         </Button> */}
-        <Button
+        {/* <Button
           className={styles.hideOnPrint}
           variant="contained"
           color="primary"
           onClick={handlePrint}
         >
           PDF Generate
-        </Button>
+        </Button> */}
       </div>
       <div className={styles.leftContact}>{rowData?.contact}</div>
 

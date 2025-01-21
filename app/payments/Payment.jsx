@@ -18,6 +18,7 @@ import {
   investors,
   suppliers,
   supplierLedger,
+  investorLedger
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
@@ -192,17 +193,29 @@ const Page = () => {
     if (selectedOption) {
       setSelectedParty(selectedOption); // Store the selected party
 
+      // Reset all IDs first
+      setFormData((prevState) => ({
+        ...prevState,
+        buyer_id: "",
+        sup_id: "",
+        investor_id: "",
+      }));
+
+      // Set the appropriate ID based on customer type
       if (selectedOption.customer_type === "buyer") {
         setFormData((prevState) => ({
           ...prevState,
           buyer_id: selectedOption.id,
-          sup_id: "",
         }));
       } else if (selectedOption.customer_type === "supplier") {
         setFormData((prevState) => ({
           ...prevState,
           sup_id: selectedOption.id,
-          buyer_id: "",
+        }));
+      } else if (selectedOption.customer_type === "investor") {
+        setFormData((prevState) => ({
+          ...prevState,
+          investor_id: selectedOption.id,
         }));
       }
     }
@@ -223,38 +236,51 @@ const Page = () => {
       let response;
       let requestData = { ...formData };
 
-      // Find the selected party based on buyer_id or sup_id
+      // Find the selected party based on buyer_id, sup_id, or investor_id
       const selectedParty = tablePartyData.find(
         (party) =>
-          party.id === formData.buyer_id || party.id === formData.sup_id
+          party.id === formData.buyer_id ||
+          party.id === formData.sup_id ||
+          party.id === formData.investor_id
       );
 
       if (selectedParty) {
-        if (selectedParty.customer_type === "buyer") {
-          // For buyers, use buyerLedger API
-          requestData = {
-            ...formData,
-            buyer_id: formData.buyer_id,
-            cash_amount: formData.cash_amount
-              ? -Math.abs(formData.cash_amount)
-              : "",
-          };
-          response = await api.postDataWithToken(buyerLedger, requestData);
+        switch (selectedParty.customer_type) {
+          case "buyer":
+            requestData = {
+              ...formData,
+              buyer_id: formData.buyer_id,
+              cash_amount: formData.cash_amount
+                ? -Math.abs(formData.cash_amount)
+                : "",
+            };
+            response = await api.postDataWithToken(buyerLedger, requestData);
+            router.push("/Buyer");
+            break;
 
-          // Navigate to buyer page
-          router.push("/Buyer");
-        } else if (selectedParty.customer_type === "supplier") {
-          // For suppliers, set the cash_amount as negative
-          requestData = {
-            ...formData,
-            sup_id: formData.sup_id,
-          };
-          response = await api.postDataWithToken(supplierLedger, requestData);
+          case "supplier":
+            requestData = {
+              ...formData,
+              sup_id: formData.sup_id,
+            };
+            response = await api.postDataWithToken(supplierLedger, requestData);
+            router.push("/supplier");
+            break;
 
-          // Navigate to supplier page
-          router.push("/supplier");
-        } else {
-          throw new Error("Invalid customer type");
+          case "investor":
+            requestData = {
+              ...formData,
+              investor_id: formData.investor_id,
+              cash_amount: formData.cash_amount
+                ? -Math.abs(formData.cash_amount)
+                : "",
+            };
+            response = await api.postDataWithToken(investorLedger, requestData);
+            router.push("/investor");
+            break;
+
+          default:
+            throw new Error("Invalid customer type");
         }
 
         setResponseData(response);
@@ -264,6 +290,7 @@ const Page = () => {
       }
     } catch (error) {
       console.error("Error submitting data:", error.message);
+      Swal.fire("Error", error.message, "error");
     } finally {
       setLoadingSubmit(false);
     }

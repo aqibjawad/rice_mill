@@ -7,18 +7,18 @@ import styles from "../../styles/dateFilter.module.css";
 import {
   startOfMonth,
   endOfMonth,
-  startOfWeek,
-  endOfWeek,
+  startOfDay,
+  endOfDay,
   subMonths,
   format,
 } from "date-fns";
 
 const DateFilters = ({ onDateChange }) => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedOption, setSelectedOption] = useState("This Month");
+  const [selectedOption, setSelectedOption] = useState("Today");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [title, setTitle] = useState("This Month");
+  const [title, setTitle] = useState("Today");
   const [customRange, setCustomRange] = useState(false);
 
   const handleOptionClick = (option) => {
@@ -26,6 +26,13 @@ const DateFilters = ({ onDateChange }) => {
     let start, end;
 
     switch (option) {
+      case "Today":
+        start = startOfDay(new Date()); // Today's start
+        end = endOfDay(new Date()); // Today's end
+        setCustomRange(false);
+        setAnchorEl(null);
+        break;
+
       case "This Month":
         start = startOfMonth(today);
         end = endOfMonth(today);
@@ -37,13 +44,6 @@ const DateFilters = ({ onDateChange }) => {
         const lastMonth = subMonths(today, 1);
         start = startOfMonth(lastMonth);
         end = endOfMonth(lastMonth);
-        setCustomRange(false);
-        setAnchorEl(null); // Close popover for non-custom options
-        break;
-
-      case "This Week":
-        start = startOfWeek(today, { weekStartsOn: 1 });
-        end = endOfWeek(today, { weekStartsOn: 1 });
         setCustomRange(false);
         setAnchorEl(null); // Close popover for non-custom options
         break;
@@ -78,7 +78,7 @@ const DateFilters = ({ onDateChange }) => {
   };
 
   useEffect(() => {
-    handleOptionClick("This Month");
+    handleOptionClick("Today");
   }, []);
 
   const handleClick = (event) => setAnchorEl(event.currentTarget);
@@ -114,7 +114,7 @@ const DateFilters = ({ onDateChange }) => {
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <div className={styles.popoverContent}>
-          {["This Month", "Last Month", "This Week", "Custom Range"].map(
+          {["Today", "This Month", "Last Month", "Custom Range"].map(
             (option) => (
               <div
                 key={option}

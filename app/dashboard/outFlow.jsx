@@ -3,7 +3,13 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
 import { expense, getSupplierPaidAmounts } from "../../networkApi/Constants";
-import { format, startOfMonth, endOfMonth, getYear, getMonth } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
 import {
   Table,
   TableBody,
@@ -13,6 +19,8 @@ import {
   TableRow,
   Paper,
   Skeleton,
+  Grid,
+  Typography
 } from "@mui/material";
 
 import Buttons from "../../components/buttons";
@@ -28,6 +36,9 @@ const Page = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
+  const [cashTotal, setCashTotal] = useState(0);
+  const [chequeOnlineTotal, setChequeOnlineTotal] = useState(0);
+
   useEffect(() => {
     fetchData();
   }, [startDate, endDate]);
@@ -41,18 +52,18 @@ const Page = () => {
         queryParams.push(`start_date=${startDate}`);
         queryParams.push(`end_date=${endDate}`);
       } else {
-        // Default to current month
         const now = new Date();
-        const year = getYear(now);
-        const month = getMonth(now) + 1; // getMonth returns 0-11
-        const monthStart = `${year}-${month.toString().padStart(2, "0")}-01`;
-        const monthEnd = `${year}-${month.toString().padStart(2, "0")}-30`;
-        queryParams.push(`start_date=${monthStart}`);
-        queryParams.push(`end_date=${monthEnd}`);
+        const monthStartDate = startOfDay(now);
+        const monthEndDate = endOfDay(now);
+
+        const formattedStartDate = format(monthStartDate, "yyyy-MM-dd");
+        const formattedEndDate = format(monthEndDate, "yyyy-MM-dd");
+
+        queryParams.push(`start_date=${formattedStartDate}`);
+        queryParams.push(`end_date=${formattedEndDate}`);
       }
       const queryString = queryParams.join("&");
 
-      // Fetch data from both endpoints with the date filter
       const [expenseResponse, supplierResponse] = await Promise.all([
         api.getDataWithToken(`${expense}?${queryString}`),
         api.getDataWithToken(`${getSupplierPaidAmounts}?${queryString}`),
@@ -61,13 +72,12 @@ const Page = () => {
       const expenseData = expenseResponse.data;
       const supplierData = supplierResponse.data;
 
-      // Check if both responses are arrays
       if (Array.isArray(expenseData) && Array.isArray(supplierData)) {
-        // Combine both arrays into one
         const combinedData = [...expenseData, ...supplierData];
         setTableData(combinedData);
+        calculateTotals(combinedData);
       } else {
-        throw new Error("Fetched data is not an array");
+        throw new Error("Fetched data is not in array format");
       }
     } catch (error) {
       setError(error.message);
@@ -76,39 +86,38 @@ const Page = () => {
     }
   };
 
+  const calculateTotals = (data) => {
+    let cashSum = 0;
+    let chequeOnlineSum = 0;
+
+    data.forEach((row) => {
+      if (row.payment_type === "cash") {
+        cashSum += parseFloat(row.cash_amount || 0);
+      } else if (["cheque", "online"].includes(row.payment_type)) {
+        chequeOnlineSum +=
+          parseFloat(row.cash_amount || 0) + parseFloat(row.cr_amount || 0);
+      }
+    });
+
+    setCashTotal(cashSum);
+    setChequeOnlineTotal(chequeOnlineSum);
+  };
+
   const handleDateChange = (start, end) => {
     if (start === "this-month") {
       const now = new Date();
-      const year = getYear(now);
-      const month = getMonth(now) + 1; // getMonth returns 0-11
-      const monthStart = `${year}-${month.toString().padStart(2, "0")}-01`;
-      const monthEnd = `${year}-${month.toString().padStart(2, "0")}-30`;
-      setStartDate(monthStart);
-      setEndDate(monthEnd);
+      const monthStartDate = startOfMonth(now);
+      const monthEndDate = endOfMonth(now);
+
+      const formattedStartDate = format(monthStartDate, "yyyy-MM-dd");
+      const formattedEndDate = format(monthEndDate, "yyyy-MM-dd");
+
+      setStartDate(formattedStartDate);
+      setEndDate(formattedEndDate);
     } else {
       setStartDate(start);
       setEndDate(end);
     }
-  };
-
-  const calculateTotalAmount = () => {
-    var allCRS = 0;
-    var allCash = 0;
-    tableData.map((row) => {
-      if (row.cr_amount) {
-        allCRS += parseFloat(row.cr_amount) || 0;
-      } else {
-        allCash += parseFloat(row.cash_amount) || 0;
-      }
-    });
-
-    var sum = allCRS + allCash;
-
-    return sum.toLocaleString("en-IN", {
-      maximumFractionDigits: 2,
-      style: "currency",
-      currency: "PKR",
-    });
   };
 
   return (
@@ -137,8 +146,7 @@ const Page = () => {
           </TableHead>
           <TableBody>
             {loading
-              ? // Skeleton loader
-                [...Array(5)].map((_, index) => (
+              ? [...Array(5)].map((_, index) => (
                   <TableRow key={index}>
                     {[...Array(10)].map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
@@ -147,33 +155,37 @@ const Page = () => {
                     ))}
                   </TableRow>
                 ))
-              : // Actual data
-                tableData
-                  .filter((row) => row.cr_amount > 0)
-                  .map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{row.payment_type}</TableCell>
-                      <TableCell>
-                        {row.customer?.person_name || "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {row.expense_category?.expense_category || "N/A"}
-                      </TableCell>
-                      <TableCell>{row.description || "N/A"}</TableCell>
-                      <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
-                      <TableCell>{row.cheque_no || "N/A"}</TableCell>
-                      <TableCell>{row.cheque_date || "N/A"}</TableCell>
-                      <TableCell>{row.cr_amount || row.cash_amount}</TableCell>
-                      <TableCell>{row.balance || "Expense"}</TableCell>
-                    </TableRow>
-                  ))}
+              : tableData.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{row.payment_type}</TableCell>
+                    <TableCell>{row.customer?.person_name || "N/A"}</TableCell>
+                    <TableCell>
+                      {row.expense_category?.expense_category || "N/A"}
+                    </TableCell>
+                    <TableCell>{row.description || "N/A"}</TableCell>
+                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
+                    <TableCell>{row.cheque_no || "N/A"}</TableCell>
+                    <TableCell>{row.cheque_date || "N/A"}</TableCell>
+                    <TableCell>{row.cr_amount || row.cash_amount}</TableCell>
+                    <TableCell>{row.balance || "Expense"}</TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </TableContainer>
-      <div className={styles.tableTotalRow}>
-        Total: {calculateTotalAmount()}
-      </div>
+
+      {/* Total Section with MUI Grid */}
+      <Grid container spacing={2} className={styles.tableTotalRow}>
+        <Grid item xs={12} sm={6}>
+          <Typography>Total Cash: {cashTotal.toFixed(2)}</Typography>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Typography>
+            Total Cheque/Online: {chequeOnlineTotal.toFixed(2)}
+          </Typography>
+        </Grid>
+      </Grid>
     </div>
   );
 };
