@@ -3,8 +3,9 @@ import styles from "../styles/buttons.module.css";
 import { Grid } from "@mui/material";
 import Link from "next/link";
 import DateFilter from "./generic/DateFilter";
+import SearchInput from "./generic/searchInput";
 
-const Buttons = ({ leftSectionText, addButtonLink, onDateChange }) => {
+const Buttons = ({ leftSectionText, addButtonLink, onDateChange, onSearch }) => {
   return (
     <Grid container spacing={2}>
       <Grid item lg={8} sm={12} xs={12} md={4}>
@@ -24,7 +25,6 @@ const Buttons = ({ leftSectionText, addButtonLink, onDateChange }) => {
               </Grid>
               <Grid lg={6} item xs={6} sm={6} md={6}>
                 <DateFilter onDateChange={onDateChange} />{" "}
-                {/* Use DateFilter */}
               </Grid>
             </Grid>
           </div>

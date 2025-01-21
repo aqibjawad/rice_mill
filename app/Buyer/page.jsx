@@ -11,7 +11,8 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button
+  Button,
+  Grid
 } from "@mui/material";
 import { MdDelete, MdEdit } from "react-icons/md"; // Importing icons from react-icons
 import AddBuyer from "../../components/stock/addBuyer";
@@ -19,7 +20,7 @@ import { buyer } from "../../networkApi/Constants";
 import APICall from "@/networkApi/APICall";
 import Swal from "sweetalert2";
 
-import Link from "next/link";
+import SearchInput from "@/components/generic/searchInput";
 
 import { useRouter } from "next/navigation";
 
@@ -32,6 +33,9 @@ const Page = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [filteredData, setFilteredData] = useState([]);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -48,6 +52,21 @@ const Page = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredData(tableData);
+    } else {
+      const filtered = tableData.filter((item) =>
+        item.person_name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  }, [searchQuery, tableData]);
+
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -97,18 +116,43 @@ const Page = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <div className={styles.container}>
-        <div className={styles.leftSection}>Buyer</div>
-        <div className={styles.rightSection}>
-          <div className={styles.rightItemExp} onClick={handleOpen}>
-            <div className={styles.addText}>
-              + Add 
+      <Grid container spacing={2}>
+        <Grid item lg={6} sm={12} xs={12} md={4} className={styles.leftSection}>
+          Buyer
+        </Grid>
+
+        <Grid item lg={6} sm={12} xs={12} md={8}>
+          <div className="flex">
+            <div className="flex-grow"></div>
+            <div>
+              <Grid container spacing={2}>
+                <Grid lg={8} item xs={6} sm={6} md={6}>
+                  <SearchInput
+                    placeholder="Search by person name"
+                    value={searchQuery}
+                    onSearch={handleSearch}
+                  />
+                </Grid>
+                <Grid
+                  lg={4}
+                  item
+                  xs={6}
+                  sm={6}
+                  md={6}
+                  className={styles.rightSection}
+                >
+                  <div className={styles.rightItemExp} onClick={handleOpen}>
+                    + Add
+                  </div>
+                </Grid>
+              </Grid>
             </div>
           </div>
-        </div>
-      </div>
+        </Grid>
+      </Grid>
+
       <div className={styles.contentContainer}>
-        <TableContainer component={Paper}>
+        <TableContainer className="mt-5" component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -117,7 +161,7 @@ const Page = () => {
                 <TableCell>Contact</TableCell>
                 <TableCell>Address</TableCell>
                 <TableCell>Firm Name</TableCell>
-                <TableCell>Current Balance</TableCell>
+                <TableCell>Balance</TableCell>
                 <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
@@ -142,9 +186,9 @@ const Page = () => {
                   <TableCell colSpan={8}>Error: {error}</TableCell>
                 </TableRow>
               ) : (
-                tableData.map((row) => (
+                filteredData.map((row, index) => (
                   <TableRow key={row.id}>
-                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.person_name}</TableCell>
                     <TableCell>{row.contact}</TableCell>
                     <TableCell>{row.address}</TableCell>
@@ -162,24 +206,14 @@ const Page = () => {
                           <Button onClick={() => handleViewDetails(row.id)}>
                             View Details
                           </Button>
-                          {/* <Link href={`/buyer_ledger?`}>
-                            View Details
-                          </Link> */}
                         </div>
-
-                        {/* <MdEdit
-                          onClick={() => handleEdit(row)}
-                          className={styles.editButton}
-                          style={{ cursor: "pointer", color: "#316AFF" }}
-                        /> */}
                         <MdDelete
                           onClick={() => handleDelete(row.id)}
                           className={styles.deleteButton}
-                          style={{
-                            cursor: "pointer",
-                            color: "red",
-                            marginLeft: "10px",
-                          }}
+                        />
+                        <MdEdit
+                          onClick={() => handleEdit(row)}
+                          className={styles.editButton}
                         />
                       </div>
                     </TableCell>
@@ -190,6 +224,7 @@ const Page = () => {
           </Table>
         </TableContainer>
       </div>
+
       <AddBuyer open={open} handleClose={handleClose} editData={editingData} />
     </div>
   );

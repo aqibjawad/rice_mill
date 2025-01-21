@@ -12,25 +12,26 @@ import {
   TableRow,
   Paper,
   Button,
+  Grid,
 } from "@mui/material";
 import { MdDelete, MdEdit } from "react-icons/md";
 import AddSupplier from "../../components/stock/addSupplier";
 import { suppliers } from "../../networkApi/Constants";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
-
 import APICall from "@/networkApi/APICall";
+import SearchInput from "@/components/generic/searchInput";
 
 const Page = () => {
   const api = new APICall();
-
   const router = useRouter();
 
   const [tableData, setTableData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
-
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
@@ -49,15 +50,27 @@ const Page = () => {
     fetchData();
   }, []);
 
+  // New effect to handle search filtering
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredData(tableData);
+    } else {
+      const filtered = tableData.filter((item) =>
+        item.person_name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  }, [searchQuery, tableData]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
       const response = await api.getDataWithToken(suppliers);
-
       const data = response.data;
 
       if (Array.isArray(data)) {
         setTableData(data);
+        setFilteredData(data);
       } else {
         throw new Error("Fetched data is not an array");
       }
@@ -74,8 +87,12 @@ const Page = () => {
         method: "DELETE",
       });
 
-      if ((response.status = "success")) {
-        setTableData((prevData) => prevData.filter((item) => item.id !== id));
+      if (response.status === "success") {
+        setTableData((prevData) => {
+          const newData = prevData.filter((item) => item.id !== id);
+          setFilteredData(newData);
+          return newData;
+        });
 
         Swal.fire({
           title: "Deleted!",
@@ -83,13 +100,13 @@ const Page = () => {
           icon: "success",
           confirmButtonText: "OK",
         });
-      } else{
+      } else {
         Swal.fire({
-        title: "Error!",
-        text: "Failed to delete the stock item.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+          title: "Error!",
+          text: "Failed to delete the stock item.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
       }
     } catch (error) {
       console.error("Error deleting Stock:", error);
@@ -101,19 +118,50 @@ const Page = () => {
     router.push("/supplier_ledger");
   };
 
+  // New handler for search input
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+  };
+
   return (
     <div className={styles.pageContainer}>
-      <div className={styles.container}>
-        <div className={styles.leftSection}>Supplier</div>
-        <div className={styles.rightSection}>
-          <div className={styles.rightItemExp} onClick={handleOpen}>
-            + Add
+      <Grid container spacing={2}>
+        <Grid item lg={6} sm={12} xs={12} md={4} className={styles.leftSection}>
+          Supplier
+        </Grid>
+
+        <Grid item lg={6} sm={12} xs={12} md={8}>
+          <div className="flex">
+            <div className="flex-grow"></div>
+            <div>
+              <Grid container spacing={2}>
+                <Grid lg={8} item xs={6} sm={6} md={6}>
+                  <SearchInput
+                    placeholder="Search by person name"
+                    value={searchQuery}
+                    onSearch={handleSearch}
+                  />
+                </Grid>
+                <Grid
+                  lg={4}
+                  item
+                  xs={6}
+                  sm={6}
+                  md={6}
+                  className={styles.rightSection}
+                >
+                  <div className={styles.rightItemExp} onClick={handleOpen}>
+                    + Add
+                  </div>
+                </Grid>
+              </Grid>
+            </div>
           </div>
-        </div>
-      </div>
+        </Grid>
+      </Grid>
 
       <div className={styles.contentContainer}>
-        <TableContainer component={Paper}>
+        <TableContainer className="mt-5" component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -147,16 +195,14 @@ const Page = () => {
                   <TableCell colSpan={8}>Error: {error}</TableCell>
                 </TableRow>
               ) : (
-                tableData.map((row, index) => (
+                filteredData.map((row, index) => (
                   <TableRow key={row.id}>
-                    {/* Use index + 1 to display the serial number */}
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.person_name}</TableCell>
                     <TableCell>{row.contact}</TableCell>
                     <TableCell>{row.address}</TableCell>
                     <TableCell>{row.firm_name}</TableCell>
                     <TableCell>{row.current_balance}</TableCell>
-
                     <TableCell>
                       <div className={styles.iconContainer}>
                         <div
@@ -169,9 +215,6 @@ const Page = () => {
                           <Button onClick={() => handleViewDetails(row.id)}>
                             View Details
                           </Button>
-                          {/* <Link href={`/supplier_ledger?sup_id=${row.id}`}>
-                            View Details
-                          </Link> */}
                         </div>
                         <MdDelete
                           onClick={() => handleDelete(row.id)}

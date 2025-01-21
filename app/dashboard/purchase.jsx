@@ -12,30 +12,22 @@ import {
   TableRow,
   Paper,
   Skeleton,
-  Grid
 } from "@mui/material";
 
 import Buttons from "../../components/buttons";
-
-import Link from "next/link";
-
-
+import SearchInput from "../../components/generic/searchInput";
 import withAuth from "@/utils/withAuth";
-
 import { useRouter } from "next/navigation";
-
 import { format } from "date-fns";
-
-import DateFilter from "@/components/generic/DateFilter";
 
 const Purchase = () => {
   const router = useRouter();
   const api = new APICall();
 
   const [tableData, setTableData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
@@ -67,9 +59,9 @@ const Purchase = () => {
         `${purchaseBook}?${queryString}`
       );
 
-      // Check if response.data is an array
       if (Array.isArray(response.data)) {
         setTableData(response.data);
+        setFilteredData(response.data);
       } else {
         throw new Error("Fetched data is not an array");
       }
@@ -80,7 +72,19 @@ const Purchase = () => {
     }
   };
 
+  const handleSearch = (searchTerm) => {
+    if (!searchTerm) {
+      setFilteredData(tableData);
+      return;
+    }
 
+    const filtered = tableData.filter((item) => {
+      const productName = item.product?.product_name?.toLowerCase() || "";
+      return productName.includes(searchTerm.toLowerCase());
+    });
+
+    setFilteredData(filtered);
+  };
 
   const handleViewDetails = (row) => {
     localStorage.setItem("purchaseBookId", row.id);
@@ -89,32 +93,13 @@ const Purchase = () => {
 
   return (
     <div className={styles.container}>
-      <Buttons leftSectionText="Purchase" addButtonLink="/addPurchase"  onDateChange={handleDateChange} />
-
-      {/* <Grid container spacing={2}>
-        <Grid item lg={8} sm={12} xs={12} md={4}>
-          <div className={styles.leftSection}> Purchase </div>
-        </Grid>
-
-        <Grid item lg={4} sm={12} xs={12} md={8}>
-          <div className="flex">
-            <div className="flex-grow"></div>
-
-            <div>
-              <Grid container spacing={2}>
-                <Grid lg={6} item xs={6} sm={6} md={6}>
-                  <Link href="/addPurchase">
-                    <div className={styles.rightItem}>Add</div>
-                  </Link>
-                </Grid>
-                <Grid lg={6} item xs={6} sm={6} md={6}>
-                  <DateFilter onDateChange={handleDateChange} />
-                </Grid>
-              </Grid>
-            </div>
-          </div>
-        </Grid>
-      </Grid> */}
+      {/* <SearchInput  /> */}
+      <Buttons
+        leftSectionText="Purchase"
+        addButtonLink="/addPurchase"
+        onDateChange={handleDateChange}
+        onSearch={handleSearch}
+      />
 
       <TableContainer component={Paper} className={styles.tableSection}>
         <Table>
@@ -122,33 +107,34 @@ const Purchase = () => {
             <TableRow>
               <TableCell>Sr No</TableCell>
               <TableCell>Product</TableCell>
-              <TableCell> Party </TableCell>
-              <TableCell> Weight </TableCell>
-              <TableCell> Amount </TableCell>
-              <TableCell> Action </TableCell>
+              <TableCell>Party</TableCell>
+              <TableCell>Weight</TableCell>
+              <TableCell>Amount</TableCell>
+              <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading
-              ? // Show skeletons while loading
-                Array.from(new Array(5)).map((_, index) => (
+              ? Array.from(new Array(5)).map((_, index) => (
                   <TableRow key={index}>
-                    {Array.from(new Array(22)).map((_, cellIndex) => (
+                    {Array.from(new Array(6)).map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
                         <Skeleton />
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
-              : // Display data
-                tableData.map((row, index) => (
+              : filteredData.map((row, index) => (
                   <TableRow key={index}>
                     <TableCell>{row.id}</TableCell>
                     <TableCell>{row.product?.product_name}</TableCell>
                     <TableCell>{row.supplier?.person_name}</TableCell>
                     <TableCell>{row.net_weight}</TableCell>
                     <TableCell>{row.total_amount}</TableCell>
-                    <TableCell onClick={() => handleViewDetails(row)}>
+                    <TableCell
+                      onClick={() => handleViewDetails(row)}
+                      style={{ cursor: "pointer" }}
+                    >
                       View Details
                     </TableCell>
                   </TableRow>
