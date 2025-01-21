@@ -102,9 +102,9 @@ const Page = () => {
                   </div>
                 </Grid>
 
-                <Grid lg={4} item xs={6} sm={6} md={6}>
+                {/* <Grid lg={4} item xs={6} sm={6} md={6}>
                   <div className={styles.rightItem}>Add Expense</div>
-                </Grid>
+                </Grid> */}
 
                 <Grid item lg={4} xs={6} sm={6} md={5}>
                   <DateFilter onDateChange={handleDateChange} />

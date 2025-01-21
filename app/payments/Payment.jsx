@@ -18,7 +18,7 @@ import {
   investors,
   suppliers,
   supplierLedger,
-  investorLedger
+  investorLedger,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
@@ -236,7 +236,6 @@ const Page = () => {
       let response;
       let requestData = { ...formData };
 
-      // Find the selected party based on buyer_id, sup_id, or investor_id
       const selectedParty = tablePartyData.find(
         (party) =>
           party.id === formData.buyer_id ||
@@ -255,7 +254,6 @@ const Page = () => {
                 : "",
             };
             response = await api.postDataWithToken(buyerLedger, requestData);
-            router.push("/Buyer");
             break;
 
           case "supplier":
@@ -264,7 +262,6 @@ const Page = () => {
               sup_id: formData.sup_id,
             };
             response = await api.postDataWithToken(supplierLedger, requestData);
-            router.push("/supplier");
             break;
 
           case "investor":
@@ -276,15 +273,32 @@ const Page = () => {
                 : "",
             };
             response = await api.postDataWithToken(investorLedger, requestData);
-            router.push("/investor");
             break;
 
           default:
             throw new Error("Invalid customer type");
         }
 
-        setResponseData(response);
-        Swal.fire("Success", "Your data has been added!", "success");
+        // Check if the response status is "success"
+        if (response?.status === "success") {
+          setResponseData(response);
+          Swal.fire("Success", "Your data has been added!", "success");
+
+          // Redirect based on the customer type
+          switch (selectedParty.customer_type) {
+            case "buyer":
+              router.push("/Buyer");
+              break;
+            case "supplier":
+              router.push("/supplier");
+              break;
+            case "investor":
+              router.push("/investor");
+              break;
+          }
+        } else {
+          throw new Error(response?.message || "Failed to process the request");
+        }
       } else {
         throw new Error("Selected party not found");
       }

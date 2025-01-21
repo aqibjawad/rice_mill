@@ -180,11 +180,18 @@ const ExpensePayments = () => {
     setLoadingSubmit(true);
     try {
       const response = await api.postDataWithToken(expense, formData);
-      console.log("Success:", response);
-      Swal.fire("Success", "Expenses Added!", "success");
-      router.push("/outflow");
+
+      // Check if response status is "success"
+      if (response?.status === "success") {
+        console.log("Success:", response);
+        Swal.fire("Success", "Expenses Added!", "success");
+        router.push("/outflow");
+      } else {
+        throw new Error(response?.message || "Failed to add expenses.");
+      }
     } catch (error) {
       console.error("Error:", error);
+      Swal.fire("Error", error.message, "error");
     } finally {
       setLoadingSubmit(false);
     }
