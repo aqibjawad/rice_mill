@@ -133,7 +133,7 @@ const Dashboard = () => {
                 tableData?.cash_outflow
               )}
             </div>
-            <div className={styles.cardTitle}>Payments</div>
+            <div className={styles.cardTitle}> Cash Payments</div>
           </CardContent>
         </Card>
       </Grid>

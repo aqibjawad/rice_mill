@@ -129,18 +129,19 @@ const Page = () => {
       />
 
       <TableContainer
+        component={Paper}
         sx={{
-          maxHeight: "400px",
+          maxHeight: "400px", // Adjust the max height as needed
           overflow: "auto",
         }}
-        component={Paper}
       >
         <Table
           sx={{
             minWidth: 650,
-            position: "relative",
+            position: "relative", // Important for proper alignment
             borderCollapse: "separate",
           }}
+          stickyHeader // Ensures the header stays fixed
           aria-label="simple table"
         >
           <TableHead>
@@ -188,17 +189,18 @@ const Page = () => {
         </Table>
       </TableContainer>
 
-      {/* Total Section with MUI Grid */}
-      <Grid container spacing={2} className={styles.tableTotalRow}>
-        <Grid item xs={12} sm={6}>
-          <Typography>Total Cash: {cashTotal.toFixed(2)}</Typography>
+      {!loading && (
+        <Grid container className={styles.tableTotalRow}>
+          <Grid item xs={12} sm={6}>
+            <Typography>Total Cash: {cashTotal.toFixed(2)}</Typography>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Typography>
+              Total Cheque/Online: {chequeOnlineTotal.toFixed(2)}
+            </Typography>
+          </Grid>
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <Typography>
-            Total Cheque/Online: {chequeOnlineTotal.toFixed(2)}
-          </Typography>
-        </Grid>
-      </Grid>
+      )}
     </div>
   );
 };
