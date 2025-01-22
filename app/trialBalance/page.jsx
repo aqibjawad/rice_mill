@@ -85,7 +85,7 @@ const CombinedTable = () => {
     }
 
     // Handling for investors
-    if (item.current_balance !== undefined) {
+    if (item.current_balance !== undefined && !item.customer_type) {
       const amount = parseFloat(item.current_balance || 0);
       return {
         credit: "-",
@@ -93,20 +93,19 @@ const CombinedTable = () => {
       };
     }
 
-    // Handling for suppliers and buyers
-    const balance = parseFloat(item.current_balance || 0);
-    const isSupplier = item.customer_type === "supplier";
-    const isBuyer = item.customer_type === "buyer";
+    // Handling for both suppliers and buyers
+    if (item.customer_type === "supplier" || item.customer_type === "buyer") {
+      const balance = parseFloat(item.current_balance || 0);
+      return {
+        debit: balance > 0 ? Math.abs(balance).toFixed(2) : "-",
+        credit: balance < 0 ? Math.abs(balance).toFixed(2) : "-",
+      };
+    }
 
+    // Default case
     return {
-      debit:
-        (isSupplier && balance > 0) || (isBuyer && balance < 0)
-          ? Math.abs(balance).toFixed(2)
-          : "-",
-      credit:
-        (isSupplier && balance < 0) || (isBuyer && balance > 0)
-          ? Math.abs(balance).toFixed(2)
-          : "-",
+      credit: "-",
+      debit: "-",
     };
   };
 

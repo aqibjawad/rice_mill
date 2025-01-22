@@ -122,7 +122,7 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
           ...formData,
           // Add negative sign for credit, keep positive for debit
           opening_balance:
-            selectedTab === "credit"
+            selectedTab === "debit"
               ? `-${formData.opening_balance}`
               : formData.opening_balance,
         };
