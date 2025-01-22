@@ -24,16 +24,16 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Divider,
 } from "@mui/material";
-// Define the conversion constants
-const MUND_TO_KG = 40; // 1 mund equals 40 kg
+
+const MUND_TO_KG = 40;
 
 const Page = () => {
   const router = useRouter();
   const api = new APICall();
 
-  const [formData, setFormData] = useState({
+  // Initial state values
+  const initialFormData = {
     id: "",
     buyer_id: "",
     pro_id: "",
@@ -41,48 +41,57 @@ const Page = () => {
     truck_no: "",
     product_description: "",
     reference_no: "",
-    price_mann: 0, // Added price_mann here for demonstration
-
+    price_mann: 0,
     bardaana_deduction: 0,
     khoot: 0,
-
     bardaana_quantity: 0,
     salai_amt_per_bag: 0,
-  });
+  };
 
+  const initialDropdownValues = {
+    buyer_id: null,
+    pro_id: null,
+  };
+
+  // States
+  const [formData, setFormData] = useState(initialFormData);
   const [productList, setProducts] = useState([]);
   const [supplierList, setSuppliers] = useState([]);
   const [refList, setRef] = useState({ id: "", next_ref_no: "" });
-
   const [cartData, setCartData] = useState([]);
   const [currentRefId, setCurrentRefId] = useState("");
-
   const [error, setError] = useState("");
-
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
-
   const [saleData, setSaleDetails] = useState([]);
   const [billTotal, setBilTotal] = useState("");
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-  const [loadingCompleteBill, setLoadingCompleteBill] = useState(false); // New loading state
-
+  const [loadingCompleteBill, setLoadingCompleteBill] = useState(false);
   const [total, setTotal] = useState(0);
   const [silaiTotal, setSilaiTotal] = useState(0);
-
   const [netWeight, setNetWeight] = useState(0);
   const [combinedTotal, setCombinedTotal] = useState(0);
   const [totalsAmounts, setTotalAmount] = useState(0);
-
-  const [dropdownValues, setDropdownValues] = useState({
-    buyer_id: null,
-    pro_id: null,
-  });
-
+  const [dropdownValues, setDropdownValues] = useState(initialDropdownValues);
   const [weight, setWeight] = useState("");
-  const [munds, setMunds] = useState(""); // State to store calculated Munds
-  const [kgs, setKgs] = useState(""); // State to store calculated Kilograms
+  const [munds, setMunds] = useState("");
+  const [kgs, setKgs] = useState("");
 
+  // Reset function
+  const resetAllStates = () => {
+    setFormData(initialFormData);
+    setDropdownValues(initialDropdownValues);
+    setWeight("");
+    setMunds("");
+    setKgs("");
+    setTotal(0);
+    setSilaiTotal(0);
+    setNetWeight(0);
+    setCombinedTotal(0);
+    setTotalAmount(0);
+  };
+
+  // Initial data fetching
   useEffect(() => {
     fetchSuppliers();
     fetchProducts();
@@ -98,11 +107,7 @@ const Page = () => {
         id: response.next_id,
         next_ref_no: response.next_ref_no || "",
       });
-
-      setFormData((prevState) => ({
-        ...prevState,
-        id: response.next_id,
-      }));
+      setFormData((prev) => ({ ...prev, id: response.next_id }));
     } catch (error) {
       console.error("Error fetching reference number:", error);
       setError("Failed to fetch reference number. Please try again.");
@@ -113,7 +118,7 @@ const Page = () => {
     try {
       const response = await api.getDataWithToken(buyer);
       const list = response.data.map((item, index) => ({
-        label: `${item.person_name}`,
+        label: item.person_name,
         index: index,
         id: item.id,
       }));
@@ -129,14 +134,12 @@ const Page = () => {
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
-
       const response = await api.getDataWithToken(products);
       const filteredProducts = response.data.map((item, index) => ({
-        label: `${item.product_name}`,
+        label: item.product_name,
         index: index,
         id: item.id,
       }));
-
       setProducts(filteredProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -148,17 +151,14 @@ const Page = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    // Update formData state
-    setFormData((prevState) => ({
-      ...prevState,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
     }));
 
     if (name === "weight") {
       const numericValue = parseFloat(value) || 0;
       setWeight(numericValue);
-      // calculateMunds(numericValue);
     }
   };
 
@@ -174,82 +174,49 @@ const Page = () => {
     }));
   };
 
-  // Use effect for cauclate bardaana and khoot
-
+  // Calculations
   useEffect(() => {
     const calculateTotal = () => {
       const { bardaana_deduction, khoot } = formData;
       const total = parseFloat(bardaana_deduction) + parseFloat(khoot);
-
       setTotal(total);
     };
-
     calculateTotal();
   }, [formData.bardaana_deduction, formData.khoot]);
 
-  // Use effect for calculte net weight
   useEffect(() => {
-    // Calculate net weight
-    const calculateNetWeight = () => {
-      const netWeight = weight - total;
-
-      setNetWeight(netWeight);
-    };
-
-    calculateNetWeight();
+    const netWeight = weight - total;
+    setNetWeight(netWeight);
   }, [weight, total]);
 
   useEffect(() => {
-    // Calculate munds and kgs from net weight
-    const calculateMundsAndKgsFromNetWeight = () => {
-      const weightInKg = parseFloat(netWeight);
-      if (isNaN(weightInKg)) {
-        setMunds("");
-        setKgs("");
-        return;
-      }
-
+    const weightInKg = parseFloat(netWeight);
+    if (!isNaN(weightInKg)) {
       const fullMunds = Math.floor(weightInKg / MUND_TO_KG);
       const remainderKg = weightInKg % MUND_TO_KG;
-
       setMunds(`${fullMunds}`);
-      setKgs(`${remainderKg}`);
-    };
-
-    calculateMundsAndKgsFromNetWeight();
+      setKgs(`${remainderKg.toFixed(2)}`);
+    } else {
+      setMunds("");
+      setKgs("");
+    }
   }, [netWeight]);
 
-  const calculateAmount = () => {
-    // Calculate the amount based on netWeight
+  useEffect(() => {
     const price_per_munds = formData.price_mann / MUND_TO_KG;
     const totalAmount = price_per_munds * netWeight;
-    const roundedAmount = totalAmount.toFixed(2);
-
-    setTotalAmount(roundedAmount);
-  };
-
-  useEffect(() => {
-    calculateAmount();
+    setTotalAmount(totalAmount.toFixed(2));
   }, [netWeight, formData.price_mann]);
 
   useEffect(() => {
-    const calculateTotal = () => {
-      const { bardaana_quantity, salai_amt_per_bag } = formData;
-      const total =
-        parseFloat(bardaana_quantity) * parseFloat(salai_amt_per_bag);
-
-      setSilaiTotal(total);
-    };
-
-    calculateTotal();
+    const { bardaana_quantity, salai_amt_per_bag } = formData;
+    const total = parseFloat(bardaana_quantity) * parseFloat(salai_amt_per_bag);
+    setSilaiTotal(total);
   }, [formData.bardaana_quantity, formData.salai_amt_per_bag]);
 
   useEffect(() => {
-    const numericSilaiTotal = Number(silaiTotal);
-    const numericTotalAmount = Number(totalsAmounts);
-
-    const combinedTotal = numericSilaiTotal + numericTotalAmount;
-    setCombinedTotal(combinedTotal);
+    const total = Number(silaiTotal) + Number(totalsAmounts);
+    setCombinedTotal(total);
   }, [silaiTotal, totalsAmounts]);
 
   const handleSubmit = async (e) => {
@@ -265,10 +232,8 @@ const Page = () => {
       setSaleDetails(response.data.details);
       setBilTotal(response.data.total_amount);
       localStorage.setItem("saleBookId", response.data.id);
-
-      // Update cart data
-      setCartData((prevData) => [
-        ...prevData,
+      setCartData((prev) => [
+        ...prev,
         {
           product_name: response.data.product_name,
           weight: response.data.weight,
@@ -277,25 +242,22 @@ const Page = () => {
       ]);
       setCurrentRefId(response.data.id);
 
+      // Reset all states
+      resetAllStates();
+      // Refetch reference number for next entry
+      fetchRef();
+
       Swal.fire({
         title: "Success!",
         text: "Data Added.",
         icon: "success",
         confirmButtonText: "OK",
-      }).then(() => {
-        // Clear form fields
-        updateFormData("weight", "");
-        updateFormData("product_description", "");
-        updateFormData("price_mann", 0);
-        setWeight("");
-        setMunds("");
-        setKgs("");
       });
     } catch (error) {
       console.error("Error:", error.message);
       Swal.fire({
         title: "Error!",
-        text: `${error.message}`,
+        text: error.message,
         icon: "error",
         confirmButtonText: "Okay",
       });
@@ -306,12 +268,12 @@ const Page = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    setLoadingCompleteBill(true); // Set loading state to true when starting
-
-    const bilObj = { sale_book_id: currentRefId };
+    setLoadingCompleteBill(true);
 
     try {
-      const response = await api.postFormDataWithToken(`${saleBook}`, bilObj);
+      const response = await api.postFormDataWithToken(`${saleBook}`, {
+        sale_book_id: currentRefId,
+      });
 
       Swal.fire({
         title: "Success!",
@@ -324,19 +286,12 @@ const Page = () => {
         }
       });
 
-      // Clear specific fields after successful submission
-      setFormData((prevData) => ({
-        ...prevData,
-        buyer_id: "",
-        pro_id: "",
-        truck_no: "",
-        product_description: "",
-        weight: "",
-      }));
-
-      // Clear cart data after bill completion
+      // Reset states after completing bill
+      resetAllStates();
       setCartData([]);
       setCurrentRefId("");
+      setSaleDetails([]);
+      setBilTotal("");
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
@@ -346,15 +301,8 @@ const Page = () => {
         confirmButtonText: "Okay",
       });
     } finally {
-      setLoadingCompleteBill(false); // Set loading state to false when done
+      setLoadingCompleteBill(false);
     }
-  };
-
-  const updateFormData = (field, value) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      [field]: value,
-    }));
   };
 
   return (
@@ -526,6 +474,19 @@ const Page = () => {
                           onChange={handleInputChange}
                         />
                       </Grid>
+
+                      <Grid item xs={12} sm={6} md={4}>
+                        <InputWithTitle
+                          title="Silai Total Amount"
+                          name="salai_amt_per_bag"
+                          value={
+                            formData.bardaana_quantity *
+                            formData.salai_amt_per_bag
+                          }
+                          disabled
+                        />
+                      </Grid>
+
                       <Grid item xs={12} sm={12} md={4}>
                         <InputWithTitle
                           title="Total Amount"
