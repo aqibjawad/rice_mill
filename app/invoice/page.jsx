@@ -131,7 +131,7 @@ const Invoice = () => {
           <TableContainer
             component={Paper}
             style={{
-              width: "95%", // Reduced from 100% to 95%
+              width: "98%", // Reduced from 100% to 95%
               margin: "20px auto", // Centered the table
               backgroundColor: "transparent",
               overflowX: "hidden", // Prevent horizontal scroll
@@ -145,28 +145,31 @@ const Invoice = () => {
             >
               <TableHead>
                 <TableRow>
-                  <TableCell style={{ width: "11%", padding: "8px 4px" }}>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
+                    Sr No
+                  </TableCell>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Name
                   </TableCell>
-                  <TableCell style={{ width: "11%", padding: "8px 4px" }}>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Description
                   </TableCell>
-                  <TableCell style={{ width: "11%", padding: "8px 4px" }}>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Bardaana Deduction
                   </TableCell>
-                  <TableCell style={{ width: "11%", padding: "8px 4px" }}>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Khoot
                   </TableCell>
-                  <TableCell style={{ width: "11%", padding: "8px 4px" }}>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Weight
                   </TableCell>
-                  <TableCell style={{ width: "11%", padding: "8px 4px" }}>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Bardaana Quantity
                   </TableCell>
-                  <TableCell style={{ width: "11%", padding: "8px 4px" }}>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Silai
                   </TableCell>
-                  <TableCell style={{ width: "11%", padding: "8px 4px" }}>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Rate
                   </TableCell>
                   <TableCell style={{ width: "12%", padding: "8px 4px" }}>
@@ -177,6 +180,9 @@ const Invoice = () => {
               <TableBody>
                 {salesBook?.map((item, index) => (
                   <TableRow key={index}>
+                    <TableCell style={{ padding: "8px 4px" }}>
+                      {index + 1}
+                    </TableCell>
                     <TableCell style={{ padding: "8px 4px" }}>
                       {item.product_name}
                     </TableCell>

@@ -13,7 +13,7 @@ import {
   Skeleton,
 } from "@mui/material";
 
-import { debitTrial, creditTrial } from "../../networkApi/Constants";
+import { debitTrial, creditTrial, investors } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 
 const CombinedTable = () => {
@@ -27,11 +27,13 @@ const CombinedTable = () => {
     const fetchCombinedData = async () => {
       try {
         const debitResponse = await api.getDataWithToken(`${debitTrial}`);
+        const investorsResponse = await api.getDataWithToken(`${investors}`);
         const creditResponse = await api.getDataWithToken(`${creditTrial}`);
 
         // Add cash as a separate entry if it exists
-        const cashEntry = debitResponse.data.cash ? 
-          [{ is_cash: true, balance: debitResponse.data.cash }] : [];
+        const cashEntry = debitResponse.data.cash
+          ? [{ is_cash: true, balance: debitResponse.data.cash }]
+          : [];
 
         const combinedData = [
           ...cashEntry,
@@ -39,6 +41,7 @@ const CombinedTable = () => {
           ...debitResponse.data.suppliers,
           ...debitResponse.data.banks,
           ...creditResponse.data.buyers,
+          ...investorsResponse.data,
         ];
 
         setTableData(combinedData);
@@ -78,6 +81,15 @@ const CombinedTable = () => {
       return {
         credit: amount > 0 ? amount.toFixed(2) : "-",
         debit: amount < 0 ? Math.abs(amount).toFixed(2) : "-",
+      };
+    }
+
+    // Handling for investors
+    if (item.current_balance !== undefined) {
+      const amount = parseFloat(item.current_balance || 0);
+      return {
+        credit: "-",
+        debit: Math.abs(amount).toFixed(2),
       };
     }
 
@@ -150,13 +162,14 @@ const CombinedTable = () => {
                 return (
                   <TableRow key={index}>
                     <TableCell align="center">
-                      {item.is_cash ? "Cash" : 
-                        item.person_name ||
-                        item.expense_category ||
-                        item.bank_name}
+                      {item.is_cash
+                        ? "Cash"
+                        : item.person_name ||
+                          item.expense_category ||
+                          item.bank_name}
                     </TableCell>
-                    <TableCell align="center">{amounts.debit}</TableCell>
                     <TableCell align="center">{amounts.credit}</TableCell>
+                    <TableCell align="center">{amounts.debit}</TableCell>
                   </TableRow>
                 );
               })}
@@ -165,10 +178,10 @@ const CombinedTable = () => {
                   Total
                 </TableCell>
                 <TableCell align="center" style={{ fontWeight: "bold" }}>
-                  {totalDebit}
+                  {totalCredit}
                 </TableCell>
                 <TableCell align="center" style={{ fontWeight: "bold" }}>
-                  {totalCredit}
+                  {totalDebit}
                 </TableCell>
               </TableRow>
             </TableBody>
