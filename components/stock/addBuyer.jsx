@@ -17,16 +17,16 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "90%", // Make modal width responsive
-  maxWidth: "600px", // Max width for larger screens
+  width: "90%",
+  maxWidth: "600px",
   bgcolor: "background.paper",
   boxShadow: 24,
   borderRadius: 10,
   p: 4,
   outline: "none",
   "@media (max-width: 600px)": {
-    width: "100%", // Full width for very small screens
-    padding: "16px", // Smaller padding on small screens
+    width: "100%",
+    padding: "16px",
   },
 };
 
@@ -35,6 +35,8 @@ const top100Films = [{ label: "Self" }];
 const AddBuyer = ({ open, handleClose, editData = null }) => {
   const api = new APICall();
   const [sendingData, setSendingData] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("credit");
+
   const [formData, setFormData] = useState({
     person_name: "",
     reference_id: "self",
@@ -47,8 +49,16 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
 
   useEffect(() => {
     if (editData) {
+      // Determine initial tab based on opening balance sign
+      const initialTab = editData.opening_balance.startsWith("-")
+        ? "credit"
+        : "debit";
+      setSelectedTab(initialTab);
+
       setFormData({
         ...editData,
+        // Remove negative sign if present for display
+        opening_balance: editData.opening_balance.replace("-", ""),
         reference_id: "self",
       });
     } else {
@@ -66,9 +76,26 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Remove any non-numeric characters for opening_balance
+    if (name === "opening_balance") {
+      const numericValue = value.replace(/[^0-9.]/g, "");
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: numericValue,
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setSelectedTab(tab);
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value,
     }));
   };
 
@@ -89,19 +116,30 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
     } else {
       try {
         setSendingData(true);
+
+        // Prepare submission data with credit/debit logic
+        const submissionData = {
+          ...formData,
+          // Add negative sign for credit, keep positive for debit
+          opening_balance:
+            selectedTab === "credit"
+              ? `-${formData.opening_balance}`
+              : formData.opening_balance,
+        };
+
         const url = editData ? `${buyer}/${editData.id}` : buyer;
-        const response = await api.postDataWithToken(url, formData);
+        const response = await api.postDataWithToken(url, submissionData);
         console.log(
           editData
             ? "Entry updated successfully"
             : "Form submitted successfully"
         );
         handleClose();
-        setSendingData(false);
       } catch (error) {
         console.error("An error occurred", error);
-        showErrorAlert(error); // Show error alert for better user experience
-        setSendingData(false); // Ensure sendingData is reset
+        showErrorAlert(error);
+      } finally {
+        setSendingData(false);
       }
     }
   };
@@ -174,6 +212,28 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
           className="mt-10"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
+          {/* Credit/Debit Tabs */}
+          <div className="mt-8" style={{ flex: 1, marginRight: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-evenly" }}>
+              <button
+                className={`${styles.tabButton} ${
+                  selectedTab === "credit" ? styles.activeTab : ""
+                }`}
+                onClick={() => handleTabChange("credit")}
+              >
+                Credit
+              </button>
+              <button
+                className={`${styles.tabButton} ${
+                  selectedTab === "debit" ? styles.activeTab : ""
+                }`}
+                onClick={() => handleTabChange("debit")}
+              >
+                Debit
+              </button>
+            </div>
+          </div>
+
           <div style={{ flex: 1, marginLeft: "10px" }}>
             <InputWithTitle
               title="Opening Balance"
@@ -182,19 +242,6 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
               name="opening_balance"
               value={formData.opening_balance}
               onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="mt-5" style={{ flex: 1, marginLeft: "10px" }}>
-            <Autocomplete
-              disablePortal
-              id="combo-box-demo"
-              options={top100Films}
-              renderInput={(params) => (
-                <TextField {...params} label="Reference" />
-              )}
-              value={{ label: "Self" }}
-              disabled
             />
           </div>
         </div>

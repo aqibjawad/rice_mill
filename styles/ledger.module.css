@@ -111,7 +111,7 @@
   color: #ffffff;
 }
 
-.addText{
+.addText {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -165,4 +165,23 @@
   .hide-on-print {
     display: none !important;
   }
+}
+
+.tabButton {
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.tabButton:hover {
+  background-color: #eaeaea;
+}
+
+.activeTab {
+  background-color: #007bff;
+  color: #fff;
+  border: 1px solid #007bff;
 }
