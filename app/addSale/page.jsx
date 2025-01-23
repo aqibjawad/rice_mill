@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import styles from "../../styles/addSale.module.css";
 import DropDown from "@/components/generic/dropdown";
 import InputWithTitle from "@/components/generic/InputWithTitle";
-import { buyer, products, saleBook } from "../../networkApi/Constants";
+import { party, products, saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
@@ -116,7 +116,7 @@ const Page = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await api.getDataWithToken(buyer);
+      const response = await api.getDataWithToken(party);
       const list = response.data.map((item, index) => ({
         label: item.person_name,
         index: index,
@@ -124,8 +124,8 @@ const Page = () => {
       }));
       setSuppliers(list);
     } catch (error) {
-      console.error("Error fetching suppliers:", error);
-      setError("Failed to fetch suppliers. Please try again.");
+      console.error("Error fetching parties:", error);
+      setError("Failed to fetch parties. Please try again.");
     } finally {
       setLoadingSuppliers(false);
     }
