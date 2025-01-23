@@ -11,29 +11,20 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Modal,
-  Box,
-  Typography,
 } from "@mui/material";
 import { saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
-import Link from "next/link";
-
-import Buttons from "@/components/buttons";
-
 import { useRouter } from "next/navigation";
+import Buttons from "@/components/buttons";
 
 const Page = () => {
   const api = new APICall();
-
   const router = useRouter();
 
   const [tableData, setTableData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalData, setModalData] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -43,15 +34,22 @@ const Page = () => {
     setLoading(true);
     try {
       const response = await api.getDataWithToken(saleBook);
-      const data = response.data;
+      const data = response.data || [];
 
       if (Array.isArray(data)) {
-        setTableData(data);
+        // Add additional validation to ensure buyer info exists
+        const validData = data.filter((row) => row.party || row.buyer);
+        setTableData(validData);
+
+        if (validData.length === 0) {
+          setError("No valid sale records found");
+        }
       } else {
         throw new Error("Fetched data is not an array");
       }
     } catch (error) {
-      setError(error.message);
+      console.error("Fetch error:", error);
+      setError(error.message || "Failed to fetch sale data");
     } finally {
       setLoading(false);
     }
@@ -62,24 +60,24 @@ const Page = () => {
     router.push("/invoice");
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setModalData(null);
-  };
-
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const filteredData = tableData.filter((row) =>
-    row.buyer?.person_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredData = tableData.filter((row) => {
+    const buyerName = row.party?.person_name || row.buyer?.person_name || "";
+    return buyerName.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   return (
     <div className={styles.pageContainer}>
       <Buttons leftSectionText="Sale" addButtonLink="/addSale" />
 
       <div className={styles.contentContainer}>
+        {/* <input
+          type="text"
+          placeholder="Search by buyer name"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ marginBottom: "10px", width: "100%", padding: "5px" }}
+        /> */}
+
         <TableContainer
           sx={{
             maxHeight: "400px",
@@ -106,23 +104,18 @@ const Page = () => {
               {loading ? (
                 [...Array(5)].map((_, index) => (
                   <TableRow key={index}>
-                    <TableCell>
-                      <Skeleton animation="wave" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton animation="wave" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton animation="wave" width={100} />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton animation="wave" />
-                    </TableCell>
+                    {[...Array(4)].map((_, cellIndex) => (
+                      <TableCell key={cellIndex}>
+                        <Skeleton animation="wave" />
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={4}>Error: {error}</TableCell>
+                  <TableCell colSpan={4} style={{ color: "red" }}>
+                    Error: {error}
+                  </TableCell>
                 </TableRow>
               ) : filteredData.length === 0 ? (
                 <TableRow>
@@ -130,10 +123,18 @@ const Page = () => {
                 </TableRow>
               ) : (
                 filteredData.map((row, index) => (
-                  <TableRow onClick={() => handleViewDetails(row)} key={row.id}>
+                  <TableRow
+                    onClick={() => handleViewDetails(row)}
+                    key={row.id}
+                    hover
+                  >
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.ref_no}</TableCell>
-                    <TableCell>{row.buyer.person_name}</TableCell>
+                    <TableCell>
+                      {row.party?.person_name ||
+                        row.buyer?.person_name ||
+                        "N/A"}
+                    </TableCell>
                     <TableCell>{row.total_amount}</TableCell>
                   </TableRow>
                 ))

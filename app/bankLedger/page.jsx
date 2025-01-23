@@ -19,10 +19,8 @@ import APICall from "../../networkApi/APICall";
 const Page = () => {
   const api = new APICall();
 
-  const [selectedRowId, setSelectedRowId] = useState(null);
   const [tableData, setTableData] = useState([]);
   const [data, setData] = useState([]);
-
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,11 +35,24 @@ const Page = () => {
       const response = await api.getDataWithToken(
         `${banks}/transection/detail/${bankId}`
       );
-      const data = response.data;
-      setData(data);
+      const fetchedData = response.data;
+      setData(fetchedData);
 
-      if (Array.isArray(data.customer_ledger)) {
-        setTableData(data.customer_ledger);
+      if (Array.isArray(fetchedData.customer_ledger)) {
+        const processedData = fetchedData.customer_ledger
+          .map((entry, index) => ({
+            ...entry,
+            srNo: index + 1,
+            customerName: entry.customer?.person_name || "N/A",
+            displayAmount:
+              entry.entry_type === "cr"
+                ? `-${entry.cr_amount}`
+                : entry.dr_amount,
+            amountType: entry.entry_type === "cr" ? "Credit" : "Debit",
+          }))
+          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+        setTableData(processedData);
       } else {
         throw new Error("Fetched data is not an array");
       }
@@ -52,42 +63,17 @@ const Page = () => {
     }
   };
 
-  const showChequeDetails = tableData.some(
-    (row) => row.payment_type === "cheque"
-  );
-
-  const { debitTotal, creditTotal } = tableData.reduce(
-    (totals, row) => {
-      const amount = parseFloat(row.cr_amount) || 0;
-      if (row.customer_type === "buyer") {
-        totals.creditTotal += amount;
-      } else {
-        totals.debitTotal += amount;
-      }
-      return totals;
-    },
-    { debitTotal: 0, creditTotal: 0, finalBalance: 0 }
-  );
-
-  const finalBalance = debitTotal - creditTotal;
+  if (loading)
+    return <Skeleton variant="rectangular" width="100%" height={200} />;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div>
       <div className={styles.container}>
         <Grid container spacing={2}>
           <Grid item lg={8} sm={12} xs={12} md={4}>
-            <div className={styles.leftSection}> {data.bank_name} </div>
-            <div className="mb-5"> {data.balance} </div>
-          </Grid>
-
-          <Grid item lg={4} sm={12} xs={12} md={8}>
-            <div className={styles.rightSection}>
-              <Grid container spacing={2}>
-                <Grid item lg={4} xs={6} sm={6} md={3}>
-                  <div className={styles.rightItemExp}>export</div>
-                </Grid>
-              </Grid>
-            </div>
+            <div className={styles.leftSection}>{data.bank_name}</div>
+            <div className="mb-5">Bank Balance: {data.balance}</div>
           </Grid>
         </Grid>
       </div>
@@ -97,74 +83,26 @@ const Page = () => {
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
+              <TableCell>Description</TableCell>
               <TableCell>Name</TableCell>
+              <TableCell>Payment Type</TableCell>
               <TableCell>Amount Type</TableCell>
-              {showChequeDetails && <TableCell>Cheque Number</TableCell>}
-              {showChequeDetails && <TableCell>Cheque Date</TableCell>}
+              <TableCell>Amount</TableCell>
               <TableCell>Transaction ID</TableCell>
-              <TableCell> Bank Amount</TableCell>
-              <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading
-              ? [...Array(5)].map((_, index) => (
-                  <TableRow key={index}>
-                    {[...Array(7)].map((_, cellIndex) => (
-                      <TableCell key={cellIndex}>
-                        <Skeleton variant="text" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              : tableData.map((row, index) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row?.customer?.person_name || "-"}</TableCell>
-                    <TableCell>
-                      {row.customer_type === "buyer" ? "Debit" : "Credit"}
-                    </TableCell>
-
-                    {/* Show Cheque Details if payment_type is "cheque" */}
-                    {row.payment_type === "cheque" ? (
-                      <>
-                        <TableCell>{row.cheque_no || "-"}</TableCell>
-                        <TableCell>{row.cheque_date || "-"}</TableCell>
-                      </>
-                    ) : (
-                      <>
-                        <TableCell>-</TableCell>
-                        <TableCell>-</TableCell>
-                      </>
-                    )}
-
-                    {/* Show Online Details if payment_type is "online" */}
-                    {row.payment_type === "online" ? (
-                      <>
-                        <TableCell>{row.transaction_id || "-"}</TableCell>
-                        <TableCell>{row.cash_amount || "-"}</TableCell>
-                      </>
-                    ) : (
-                      <>
-                        <TableCell>-</TableCell>
-                        <TableCell>-</TableCell>
-                      </>
-                    )}
-
-                    {/* Display cr_amount in Balance column */}
-                    <TableCell>{row.cr_amount || "-"}</TableCell>
-                  </TableRow>
-                ))}
-
-            {/* Display total balance row */}
-            <TableRow>
-              <TableCell colSpan={7} style={{ fontWeight: "bold" }}>
-                Total Balance
-              </TableCell>
-              <TableCell style={{ fontWeight: "bold" }}>
-                {Math.abs(finalBalance)}
-              </TableCell>
-            </TableRow>
+            {tableData.map((row) => (
+              <TableRow key={row.id}>
+                <TableCell>{row.srNo}</TableCell>
+                <TableCell>{row.description || "N/A"}</TableCell>
+                <TableCell>{row.customerName}</TableCell>
+                <TableCell>{row.payment_type}</TableCell>
+                <TableCell>{row.amountType}</TableCell>
+                <TableCell>{row.displayAmount}</TableCell>
+                <TableCell>{row.transection_id}</TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>

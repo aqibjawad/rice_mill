@@ -11,7 +11,7 @@ import Tabs from "./tabs";
 import Swal from "sweetalert2";
 import {
   purchaseBook,
-  suppliers,
+  party,
   products,
   banks,
 } from "../../networkApi/Constants";
@@ -43,7 +43,7 @@ const AddPurchaseContent = () => {
     freight: "",
     price_mann: "",
     bank_tax: 0,
-    cash_amount: "",
+    cash_amount: "0",
     cheque_amount: "",
     cheque_no: "",
     cheque_date: " ",
@@ -57,57 +57,8 @@ const AddPurchaseContent = () => {
     transection_id: "",
     bank_id: "",
     bardaana_amount: "0",
+    description: "",
   });
-
-  const validateForm = () => {
-    const baseRequiredFields = [
-      "sup_id",
-      "date",
-      "pro_id",
-      "bardaana_type",
-      "truckNumber",
-      "khoot",
-      "chungi",
-      "net_weight",
-      "final_weight",
-      "freight",
-      "price_mann",
-      "cash_amount",
-    ];
-
-    const requiredFields = [...baseRequiredFields];
-    if (["cheque", "both", "online"].includes(formData.payment_type)) {
-      requiredFields.push("bank_id");
-    }
-
-    const missingFields = requiredFields.filter((field) => !formData[field]);
-
-    if (missingFields.length > 0) {
-      Swal.fire({
-        icon: "error",
-        title: "Missing Fields",
-        text: `Please fill in the following fields: ${missingFields.join(
-          ", "
-        )}`,
-      });
-      return false;
-    }
-
-    // Additional validation for cheque payments
-    if (
-      ["cheque", "both"].includes(formData.payment_type) &&
-      !formData.cheque_no
-    ) {
-      Swal.fire({
-        icon: "error",
-        title: "Missing Cheque Number",
-        text: "Please enter the cheque number for cheque payments.",
-      });
-      return false;
-    }
-
-    return true;
-  };
 
   const [dropdownValues, setDropdownValues] = useState({
     sup_id: null,
@@ -200,7 +151,7 @@ const AddPurchaseContent = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await api.getDataWithToken(suppliers);
+      const response = await api.getDataWithToken(party);
       const list = response.data.map((item, index) => ({
         label: `${item.person_name}`,
         index: index,
@@ -297,9 +248,6 @@ const AddPurchaseContent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) return;
-
     setLoadingSubmit(true);
 
     try {
@@ -462,16 +410,6 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        {/* <Grid className="mt-5" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Enter Price Munds"}
-            placeholder={"Enter Price Munds"}
-            name="price_mann"
-            value={formData.price_mann}
-            onChange={handleInputChange}
-          />
-        </Grid> */}
-
         <Grid className="mt-5" item xs={12} sm={4}>
           <TableContainer component={Paper}>
             <Table>
@@ -517,7 +455,18 @@ const AddPurchaseContent = () => {
           <InputWithTitle title={"Amount"} value={totalAmount} readOnly />
         </Grid>
 
-        <Grid className="mt-6" item xs={12} lg={12} md={12} sm={12}>
+        <Grid className="mt-10" item xs={12} sm={4}>
+          <InputWithTitle
+            title={"Description"}
+            placeholder={"Enter description"}
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            type="text"
+          />
+        </Grid>
+
+        {/* <Grid className="mt-6" item xs={12} lg={12} md={12} sm={12}>
           <Tabs activeTab={activeTab} setActiveTab={handleTabChange} />
         </Grid>
 
@@ -709,7 +658,7 @@ const AddPurchaseContent = () => {
               />
             </Grid>
           </>
-        )}
+        )} */}
       </Grid>
 
       <div className={styles.button_container}>

@@ -41,11 +41,11 @@ const Page = () => {
     truck_no: "",
     product_description: "",
     reference_no: "",
-    price_mann: 0,
-    bardaana_deduction: 0,
-    khoot: 0,
-    bardaana_quantity: 0,
-    salai_amt_per_bag: 0,
+    price_mann: "0",
+    bardaana_deduction: "0",
+    khoot: "0",
+    bardaana_quantity: "0",
+    salai_amt_per_bag: "0",
   };
 
   const initialDropdownValues = {
@@ -79,8 +79,11 @@ const Page = () => {
 
   // Reset function
   const resetAllStates = () => {
-    setFormData(initialFormData);
-    setDropdownValues(initialDropdownValues);
+    setFormData((prevFormData) => ({
+      ...initialFormData,
+      truck_no: prevFormData.truck_no,
+      reference_no: prevFormData.reference_no,
+    }));
     setWeight("");
     setMunds("");
     setKgs("");
@@ -153,7 +156,7 @@ const Page = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value === "" ? "" : value,
     }));
 
     if (name === "weight") {
