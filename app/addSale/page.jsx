@@ -39,7 +39,7 @@ const Page = () => {
     pro_id: "",
     weight: "",
     truck_no: "",
-    product_description: "",
+    product_description: "Sale",
     reference_no: "",
     price_mann: "0",
     bardaana_deduction: "0",
@@ -500,14 +500,14 @@ const Page = () => {
                       </Grid>
 
                       {/* Description */}
-                      <Grid item xs={12}>
+                      {/* <Grid item xs={12}>
                         <InputWithTitle
                           title="Enter Description"
                           name="product_description"
                           value={formData.product_description}
                           onChange={handleInputChange}
                         />
-                      </Grid>
+                      </Grid> */}
 
                       {/* Submit Button */}
                       <Grid item xs={12}>

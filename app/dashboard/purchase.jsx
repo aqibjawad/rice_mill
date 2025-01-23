@@ -141,7 +141,7 @@ const Purchase = () => {
                   <TableRow key={index}>
                     <TableCell>{row.id}</TableCell>
                     <TableCell>{row.product?.product_name}</TableCell>
-                    <TableCell>{row.supplier?.person_name}</TableCell>
+                    <TableCell>{row.party?.person_name}</TableCell>
                     <TableCell>{row.net_weight}</TableCell>
                     <TableCell>{row.total_amount}</TableCell>
                     <TableCell

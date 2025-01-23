@@ -7,13 +7,14 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
+  TableFooter,
+  TableContainer,
   Paper,
   Button,
 } from "@mui/material";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
 import AddInvestor from "../../components/stock/addInvestor";
 import { investors } from "../../networkApi/Constants";
 import Swal from "sweetalert2";
@@ -23,14 +24,12 @@ import APICall from "@/networkApi/APICall";
 
 const Page = () => {
   const api = new APICall();
-
   const router = useRouter();
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
-
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
@@ -53,7 +52,6 @@ const Page = () => {
     setLoading(true);
     try {
       const response = await api.getDataWithToken(investors);
-
       const data = response.data;
 
       if (Array.isArray(data)) {
@@ -79,20 +77,20 @@ const Page = () => {
 
         Swal.fire({
           title: "Deleted!",
-          text: "The stock item has been deleted successfully.",
+          text: "The investor has been deleted successfully.",
           icon: "success",
           confirmButtonText: "OK",
         });
       } else {
         Swal.fire({
           title: "Error!",
-          text: "Failed to delete the stock item.",
+          text: "Failed to delete the investor.",
           icon: "error",
           confirmButtonText: "OK",
         });
       }
     } catch (error) {
-      console.error("Error deleting Stock:", error);
+      console.error("Error deleting Investor:", error);
     }
   };
 
@@ -100,6 +98,12 @@ const Page = () => {
     localStorage.setItem("investorId", id);
     router.push("/investor_ledger");
   };
+
+  // Calculate total balance
+  const totalBalance = tableData.reduce(
+    (total, row) => total + parseFloat(row.current_balance || 0),
+    0
+  );
 
   return (
     <div className={styles.pageContainer}>
@@ -149,44 +153,43 @@ const Page = () => {
               ) : (
                 tableData.map((row, index) => (
                   <TableRow key={row.id}>
-                    {/* Use index + 1 to display the serial number */}
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.person_name}</TableCell>
                     <TableCell>{row.contact}</TableCell>
                     <TableCell>{row.address}</TableCell>
                     <TableCell>{row.firm_name}</TableCell>
                     <TableCell>{row.current_balance}</TableCell>
-
                     <TableCell>
                       <div className={styles.iconContainer}>
-                        <div
-                          style={{
-                            color: "#316AFF",
-                            fontSize: "15px",
-                            marginTop: "1rem",
-                          }}
-                        >
-                          <Button onClick={() => handleViewDetails(row.id)}>
-                            View Details
-                          </Button>
-                          {/* <Link href={`/supplier_ledger?sup_id=${row.id}`}>
-                            View Details
-                          </Link> */}
-                        </div>
+                        <Button onClick={() => handleViewDetails(row.id)}>
+                          View Details
+                        </Button>
                         <MdDelete
                           onClick={() => handleDelete(row.id)}
                           className={styles.deleteButton}
                         />
-                        {/* <MdEdit
-                          onClick={() => handleEdit(row)}
-                          className={styles.editButton}
-                        /> */}
                       </div>
                     </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
+            {!loading && !error && (
+              <TableFooter>
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    style={{ fontWeight: "bold", fontSize: "18px" }}
+                  >
+                    Total Balance
+                  </TableCell>
+                  <TableCell style={{ fontWeight: "bold", fontSize: "18px" }}>
+                    {totalBalance.toFixed(2)}
+                  </TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableFooter>
+            )}
           </Table>
         </TableContainer>
       </div>

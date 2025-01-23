@@ -57,7 +57,7 @@ const AddPurchaseContent = () => {
     transection_id: "",
     bank_id: "",
     bardaana_amount: "0",
-    description: "",
+    description: "Purchase",
   });
 
   const [dropdownValues, setDropdownValues] = useState({
@@ -455,7 +455,7 @@ const AddPurchaseContent = () => {
           <InputWithTitle title={"Amount"} value={totalAmount} readOnly />
         </Grid>
 
-        <Grid className="mt-10" item xs={12} sm={4}>
+        {/* <Grid className="mt-10" item xs={12} sm={4}>
           <InputWithTitle
             title={"Description"}
             placeholder={"Enter description"}
@@ -464,7 +464,7 @@ const AddPurchaseContent = () => {
             onChange={handleInputChange}
             type="text"
           />
-        </Grid>
+        </Grid> */}
 
         {/* <Grid className="mt-6" item xs={12} lg={12} md={12} sm={12}>
           <Tabs activeTab={activeTab} setActiveTab={handleTabChange} />
