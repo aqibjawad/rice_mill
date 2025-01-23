@@ -9,7 +9,7 @@ import styles from "../../styles/ledger.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
 import APICall from "@/networkApi/APICall";
-import { buyer } from "../../networkApi/Constants";
+import { party } from "../../networkApi/Constants";
 import { showErrorAlert } from "@/networkApi/Helper";
 
 const style = {
@@ -127,7 +127,7 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
               : formData.opening_balance,
         };
 
-        const url = editData ? `${buyer}/${editData.id}` : buyer;
+        const url = editData ? `${party}/${editData.id}` : party;
         const response = await api.postDataWithToken(url, submissionData);
         console.log(
           editData
@@ -153,7 +153,7 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
     >
       <Box sx={style}>
         <div className={styles.ledgerHead}>
-          {editData ? "Edit buyer" : "Add buyer"}
+          {editData ? "Edit Party" : "Add Party"}
         </div>
 
         <div

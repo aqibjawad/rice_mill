@@ -22,9 +22,9 @@ export const suppliers = apiPrefix + "/supplier";
 
 export const investors = apiPrefix + "/investor";
 
-export const buyer = apiPrefix + "/buyer";
+export const party = apiPrefix + "/party";
 
-export const buyerLedger = apiPrefix + "/buyer_ledger";
+export const partyLedger = apiPrefix + "/party_ledger";
 
 export const supplierLedger = apiPrefix + "/supplier_ledger";
 

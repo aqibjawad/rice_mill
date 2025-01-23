@@ -12,11 +12,11 @@ import {
   TableRow,
   Paper,
   Button,
-  Grid
+  Grid,
 } from "@mui/material";
-import { MdDelete, MdEdit } from "react-icons/md"; // Importing icons from react-icons
+import { MdDelete } from "react-icons/md";
 import AddBuyer from "../../components/stock/addBuyer";
-import { buyer } from "../../networkApi/Constants";
+import { party } from "../../networkApi/Constants";
 import APICall from "@/networkApi/APICall";
 import Swal from "sweetalert2";
 
@@ -71,7 +71,7 @@ const Page = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await api.getDataWithToken(buyer);
+      const response = await api.getDataWithToken(party);
       const data = response.data;
 
       if (Array.isArray(data)) {
@@ -88,7 +88,7 @@ const Page = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await api.deleteDataWithToken(`${buyer}/${id}`);
+      const response = await api.deleteDataWithToken(`${party}/${id}`);
 
       setTableData((prevData) => prevData.filter((item) => item.id !== id));
 
@@ -118,7 +118,7 @@ const Page = () => {
     <div className={styles.pageContainer}>
       <Grid container spacing={2}>
         <Grid item lg={6} sm={12} xs={12} md={4} className={styles.leftSection}>
-          Buyer
+          Party
         </Grid>
 
         <Grid item lg={6} sm={12} xs={12} md={8}>
@@ -210,10 +210,6 @@ const Page = () => {
                         <MdDelete
                           onClick={() => handleDelete(row.id)}
                           className={styles.deleteButton}
-                        />
-                        <MdEdit
-                          onClick={() => handleEdit(row)}
-                          className={styles.editButton}
                         />
                       </div>
                     </TableCell>

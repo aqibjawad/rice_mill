@@ -17,7 +17,7 @@ import {
   IconButton,
 } from "@mui/material";
 import APICall from "@/networkApi/APICall";
-import { buyerLedger, getLocalStorage } from "../../networkApi/Constants";
+import { partyLedger, getLocalStorage } from "../../networkApi/Constants";
 import { useRouter } from "next/navigation";
 
 const Page = () => {
@@ -42,7 +42,7 @@ const Page = () => {
     setLoading(true);
     try {
       const response = await api.getDataWithToken(
-        `${buyerLedger}?buyer_id=${buyerId}`
+        `${partyLedger}?party_id=${buyerId}`
       );
 
       const data = response.data;
