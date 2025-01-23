@@ -13,9 +13,9 @@ import Swal from "sweetalert2"; // Import SweetAlert2
 import PaymentReceipt from "../paymentReciept/page";
 
 import {
-  buyer,
+  party,
   banks,
-  buyerLedger,
+  partyLedger,
   suppliers,
   investors,
   supplierLedger,
@@ -30,7 +30,7 @@ const Page = () => {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    buyer_id: "",
+    party_id: "",
     sup_id: "",
     investor_id: "",
     payment_type: "cash",
@@ -56,20 +56,18 @@ const Page = () => {
   useEffect(() => {
     fetchData();
     fetchBankData();
-    fetchSupplierData();
     fetchInvestorsData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const response = await api.getDataWithToken(buyer);
+      const response = await api.getDataWithToken(party);
       const data = response.data;
-      console.log("Buyer Data:", data); // Log to check buyer data
       if (Array.isArray(data)) {
-        const formattedData = data.map((buyers) => ({
-          label: `${buyers.person_name} (Buyer)`,
-          customer_type: buyers.customer_type,
-          id: buyers.id,
+        const formattedData = data.map((party) => ({
+          label: `${party.person_name} (party)`,
+          customer_type: party.customer_type,
+          id: party.id,
         }));
 
         setPartyData((prevData) => {
@@ -84,37 +82,6 @@ const Page = () => {
       }
     } catch (error) {
       console.error("Error fetching buyer data:", error.message);
-    } finally {
-      setLoading(false);
-      setDataFetched(true); // Mark as fetched
-    }
-  };
-
-  const fetchSupplierData = async () => {
-    try {
-      const response = await api.getDataWithToken(suppliers);
-      const data = response.data;
-      console.log("Supplier Data:", data); // Log to check supplier data
-      if (Array.isArray(data)) {
-        const formattedData = data.map((supplier) => ({
-          label: `${supplier.person_name} (Supplier)`,
-          customer_type: supplier.customer_type,
-          id: supplier.id,
-        }));
-
-        setPartyData((prevData) => {
-          // Avoid duplicating data by checking if it's already present
-          const existingIds = new Set(prevData.map((item) => item.id));
-          const newData = formattedData.filter(
-            (item) => !existingIds.has(item.id)
-          );
-          return [...prevData, ...newData];
-        });
-      } else {
-        throw new Error("Fetched supplier data is not an array");
-      }
-    } catch (error) {
-      console.error("Error fetching supplier data:", error.message);
     } finally {
       setLoading(false);
       setDataFetched(true); // Mark as fetched
@@ -195,26 +162,21 @@ const Page = () => {
 
   const handleDropdownChange = (name, selectedOption) => {
     if (selectedOption) {
-      setSelectedParty(selectedOption); // Store the selected party
+      setSelectedParty(selectedOption);
 
       // Reset all IDs first
       setFormData((prevState) => ({
         ...prevState,
-        buyer_id: "",
-        sup_id: "",
+        party_id: "",
         investor_id: "",
       }));
 
       // Set the appropriate ID based on customer type
-      if (selectedOption.customer_type === "buyer") {
+      if (selectedOption.customer_type === "party") {
         setFormData((prevState) => ({
           ...prevState,
-          buyer_id: selectedOption.id,
-        }));
-      } else if (selectedOption.customer_type === "supplier") {
-        setFormData((prevState) => ({
-          ...prevState,
-          sup_id: selectedOption.id,
+          party_id: selectedOption.id,
+          cash_amount: -Math.abs(parseFloat(formData.cash_amount)),
         }));
       } else if (selectedOption.customer_type === "investor") {
         setFormData((prevState) => ({
@@ -241,38 +203,19 @@ const Page = () => {
       let requestData = { ...formData };
 
       if (selectedParty) {
-        if (selectedParty.customer_type === "buyer") {
+        if (selectedParty.customer_type === "party") {
           requestData = {
             ...formData,
-            buyer_id: formData.buyer_id,
+            party_id: formData.party_id,
+            cash_amount: -Math.abs(parseFloat(formData.cash_amount)),
           };
-          response = await api.postDataWithToken(buyerLedger, requestData);
-
-          // Navigate to buyer page
-          router.push("/Buyer");
-        } else if (selectedParty.customer_type === "supplier") {
-          // For suppliers, set the cash_amount as negative
-          requestData = {
-            ...formData,
-            sup_id: formData.sup_id,
-            cash_amount: formData.cash_amount
-              ? -Math.abs(formData.cash_amount)
-              : "",
-          };
-          response = await api.postDataWithToken(supplierLedger, requestData);
-
-          // Navigate to supplier page
-          router.push("/supplier");
+          response = await api.postDataWithToken(partyLedger, requestData);
         } else if (selectedParty.customer_type === "investor") {
-          // For investors, use investorLedger API
           requestData = {
             ...formData,
             investor_id: formData.investor_id,
           };
           response = await api.postDataWithToken(investorLedger, requestData);
-
-          // Navigate to investor page
-          // router.push("/Investor");
         } else {
           throw new Error("Invalid customer type");
         }
@@ -337,7 +280,7 @@ const Page = () => {
                   onChange={handleDropdownChange}
                   value={selectedParty} // Use the selectedParty state here
                   name={
-                    selectedParty?.customer_type === "supplier"
+                    selectedParty?.customer_type === "party"
                       ? "sup_id"
                       : "buyer_id"
                   }
