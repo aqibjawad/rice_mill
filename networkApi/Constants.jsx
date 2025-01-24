@@ -42,9 +42,9 @@ export const companyLedger = apiPrefix + "/company_ledger";
 
 export const dashboard = apiPrefix + "/dashboard";
 
-export const getAmountReceives = apiPrefix + "/received_buyer_amount";
+export const getAmountReceives = apiPrefix + "/received_party_amount";
 
-export const getSupplierPaidAmounts = apiPrefix + "/get_supplier_paid_amount";
+export const getSupplierPaidAmounts = apiPrefix + "/paid_party_amount";
 
 export const debitTrial = apiPrefix + "/dr/api";
 

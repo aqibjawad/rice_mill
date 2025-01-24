@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
-import styles from "../../styles/ledger1.module.css";
-import { getAmountReceives, investorLedger } from "../../networkApi/Constants";
 import {
   Table,
   TableBody,
@@ -10,96 +8,46 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Skeleton,
-  Grid,
   Typography,
+  Grid,
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
+import { getAmountReceives } from "../../networkApi/Constants";
 import Buttons from "../../components/buttons";
 
 const Page = () => {
   const api = new APICall();
-
-  const [amountReceivesData, setAmountReceivesData] = useState([]);
-  const [investorLedgerData, setInvestorLedgerData] = useState([]);
-  const [combinedData, setCombinedData] = useState([]);
-
-  const [amountReceivesLoading, setAmountReceivesLoading] = useState(true);
-  const [investorLedgerLoading, setInvestorLedgerLoading] = useState(true);
-
-  const [error, setError] = useState(null);
+  const [receivesData, setReceivesData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
-    fetchAmountReceivesData();
-    fetchInvestorLedgerData();
+    fetchData();
   }, [startDate, endDate]);
 
-  useEffect(() => {
-    if (!amountReceivesLoading && !investorLedgerLoading) {
-      const combined = [...amountReceivesData, ...investorLedgerData];
-      setCombinedData(combined);
-    }
-  }, [
-    amountReceivesLoading,
-    investorLedgerLoading,
-    amountReceivesData,
-    investorLedgerData,
-  ]);
-
-  const getQueryParams = () => {
-    if (startDate && endDate) {
-      return [`start_date=${startDate}`, `end_date=${endDate}`];
-    }
-
-    const now = new Date();
-    const monthStartDate = startOfDay(now);
-    const monthEndDate = endOfDay(now);
-
-    return [
-      `start_date=${format(monthStartDate, "yyyy-MM-dd")}`,
-      `end_date=${format(monthEndDate, "yyyy-MM-dd")}`,
-    ];
-  };
-
-  const fetchAmountReceivesData = async () => {
+  const fetchData = async () => {
     try {
-      setAmountReceivesLoading(true);
-      const queryParams = getQueryParams();
+      const queryParams =
+        startDate && endDate
+          ? [
+              `start_date=${format(startOfDay(startDate), "yyyy-MM-dd")}`,
+              `end_date=${format(endOfDay(endDate), "yyyy-MM-dd")}`,
+            ]
+          : [
+              `start_date=${format(startOfDay(new Date()), "yyyy-MM-dd")}`,
+              `end_date=${format(endOfDay(new Date()), "yyyy-MM-dd")}`,
+            ];
+
       const response = await api.getDataWithToken(
         `${getAmountReceives}?${queryParams.join("&")}`
       );
 
-      if (Array.isArray(response.data)) {
-        setAmountReceivesData(response.data);
-      } else {
-        throw new Error("Amount receives data is not an array");
-      }
+      setReceivesData(response.data || []);
     } catch (error) {
-      setError(error.message);
+      console.error("Error fetching data:", error);
     } finally {
-      setAmountReceivesLoading(false);
-    }
-  };
-
-  const fetchInvestorLedgerData = async () => {
-    try {
-      setInvestorLedgerLoading(true);
-      const queryParams = getQueryParams();
-      const response = await api.getDataWithToken(
-        `${investorLedger}?${queryParams.join("&")}`
-      );
-
-      if (Array.isArray(response.data)) {
-        setInvestorLedgerData(response.data);
-      } else {
-        throw new Error("Investor ledger data is not an array");
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setInvestorLedgerLoading(false);
+      setLoading(false);
     }
   };
 
@@ -108,45 +56,19 @@ const Page = () => {
     setEndDate(end);
   };
 
-  const formatCurrency = (amount) => {
-    return amount.toLocaleString("en-IN", {
-      maximumFractionDigits: 2,
-      style: "currency",
-      currency: "PKR",
-      signDisplay: "auto",
-    });
-  };
-
   const calculateCashTotal = () => {
-    const total = combinedData.reduce((total, row) => {
-      const paymentType = (row.payment_type || "").toLowerCase();
-      if (paymentType === "cash" && row.description !== "Opening Balance") {
-        return total + parseFloat(row.cash_amount || 0);
-      }
-      return total;
-    }, 0);
-    return formatCurrency(total);
+    const total = receivesData
+      .filter((row) => row.payment_type === "cash")
+      .reduce((sum, row) => sum + parseFloat(row.cash_amount || 0), 0);
+    return total;
   };
 
-  const calculateOnlineChequeTotal = () => {
-    const total = combinedData.reduce((total, row) => {
-      if (
-        row?.payment_type === "online" ||
-        (row?.payment_type === "cheque" &&
-          row.description !== "Opening Balance")
-      ) {
-        return (
-          total +
-          parseFloat(row.cash_amount || 0) +
-          parseFloat(row.cheque_amount || 0)
-        );
-      }
-      return total;
-    }, 0);
-    return formatCurrency(total);
+  const calculateOnlineTotal = () => {
+    const total = receivesData
+      .filter((row) => row.payment_type === "online")
+      .reduce((sum, row) => sum + parseFloat(row.cash_amount || 0), 0);
+    return total;
   };
-
-  const isLoading = amountReceivesLoading || investorLedgerLoading;
 
   return (
     <div>
@@ -156,86 +78,51 @@ const Page = () => {
         onDateChange={handleDateChange}
       />
 
-      <TableContainer
-        component={Paper}
-        sx={{
-          maxHeight: "400px", // Adjust the max height as needed
-          overflow: "auto",
-        }}
-      >
-        <Table
-          sx={{
-            minWidth: 650,
-            position: "relative", // Important for proper alignment
-            borderCollapse: "separate",
-          }}
-          stickyHeader // Ensures the header stays fixed
-          aria-label="simple table"
-        >
+      <TableContainer component={Paper}>
+        <Table>
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
               <TableCell>Payment Type</TableCell>
               <TableCell>Person</TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Bank Name</TableCell>
+              <TableCell>Bank</TableCell>
               <TableCell>Cheque No</TableCell>
-              <TableCell>Cheque Date</TableCell>
-              <TableCell>Credit Amount</TableCell>
+              <TableCell>Amount</TableCell>
               <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {isLoading
-              ? [...Array(5)].map((_, index) => (
-                  <TableRow key={index}>
-                    {[...Array(9)].map((_, cellIndex) => (
-                      <TableCell key={cellIndex}>
-                        <Skeleton animation="wave" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              : combinedData
-                  .filter(
-                    (row) => row.description !== "Opening Balance"
-                  )
-                  .map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{row.payment_type}</TableCell>
-                      <TableCell>{row.customer?.person_name}</TableCell>
-                      <TableCell>{row.description}</TableCell>
-                      <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
-                      <TableCell>{row.cheque_no || "N/A"}</TableCell>
-                      <TableCell>{row.cheque_date || "N/A"}</TableCell>
-                      <TableCell>{row.cash_amount}</TableCell>
-                      <TableCell
-                        style={{
-                          color:
-                            parseFloat(row.balance) < 0 ? "red" : "inherit",
-                        }}
-                      >
-                        {row.balance}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+            {receivesData.map((row, index) => (
+              <TableRow key={row.id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{row.payment_type}</TableCell>
+                <TableCell>{row.customer?.person_name || "N/A"}</TableCell>
+                <TableCell>{row.description || "N/A"}</TableCell>
+                <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
+                <TableCell>{row.cheque_no || "N/A"}</TableCell>
+                <TableCell>{row.cash_amount}</TableCell>
+                <TableCell
+                  style={{
+                    color: parseFloat(row.balance) < 0 ? "red" : "inherit",
+                  }}
+                >
+                  {row.balance}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {!isLoading && (
-        <Grid container className={styles.tableTotalRow}>
-          <Grid item xs={12} md={6}>
-            <Typography>Cash Receive: {calculateCashTotal()}</Typography>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography>
-              Online/Cheque Balance Receive: {calculateOnlineChequeTotal()}
-            </Typography>
-          </Grid>
+      <Grid container sx={{ mt: 2 }}>
+        <Grid item xs={6}>
+          <Typography>Cash Total: {calculateCashTotal()}</Typography>
         </Grid>
-      )}
+        <Grid item xs={6}>
+          <Typography>Online Total: {calculateOnlineTotal()}</Typography>
+        </Grid>
+      </Grid>
     </div>
   );
 };

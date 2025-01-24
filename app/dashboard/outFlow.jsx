@@ -95,7 +95,7 @@ const Page = () => {
         cashSum += parseFloat(row.cash_amount || 0);
       } else if (["cheque", "online"].includes(row.payment_type)) {
         chequeOnlineSum +=
-          parseFloat(row.cash_amount || 0) + parseFloat(row.cr_amount || 0);
+          parseFloat(row.cr_amount || 0) + parseFloat(row.cr_amount || 0);
       }
     });
 
