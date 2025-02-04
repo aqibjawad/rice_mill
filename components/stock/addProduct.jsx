@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Box, CircularProgress } from "@mui/material";
+import { Modal, Box, CircularProgress, Grid } from "@mui/material";
 import styles from "../../styles/product.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
@@ -35,6 +35,10 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
     product_name: "",
     product_description: "",
     product_type: "",
+    opening_weight: "",
+    opening_price: "",
+    opening_price_mann: "",
+    opening_total_amount: "",
   });
 
   useEffect(() => {
@@ -63,54 +67,6 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
       [name]: selectedOption ? selectedOption.value : "",
     }));
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setIsSubmitting(true);
-
-  //   const data = new FormData();
-  //   for (const key in formData) {
-  //     data.append(key, formData[key]);
-  //   }
-
-  //   try {
-  //     let response;
-  //     if (editData) {
-  //       const url = `${products}/${editData.id}`;
-  //       response = await api.updateFormDataWithToken(url, formData);
-  //     } else {
-  //       const url = products;
-  //       response = await api.postFormDataWithToken(url, formData);
-  //       console.log(response);
-
-  //     }
-
-  //     setResponseMessage(
-  //       response.data.message || "Product has been successfully saved."
-  //     );
-  //     handleClose(); // Close modal after success
-  //   } catch (error) {
-  //     console.error("An error occurred", error);
-
-  //     // Extract error message from the response
-  //     const errorMessage =
-  //       error.error?.message ;
-
-  //       console.log(errorMessage);
-
-  //     // Save the error message in state for later use
-  //     setResponseMessage(errorMessage);
-
-  //     Swal.fire({
-  //       title: "Error!",
-  //       text: errorMessage === "The product name has already been taken.",
-  //       icon: "error",
-  //       confirmButtonText: "OK",
-  //     });
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -158,69 +114,118 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
           {editData ? "Edit Product" : "Add Product"}
         </div>
 
-        <div className="mt-10">
-          <InputWithTitle
-            title="Product Name"
-            type="text"
-            placeholder="Product Name"
-            name="product_name"
-            value={formData.product_name}
-            onChange={handleInputChange}
-            required={true}
-          />
-        </div>
+        <Grid container spacing={2} className="mt-10">
+          <Grid item xs={12}>
+            <InputWithTitle
+              title="Product Name"
+              type="text"
+              placeholder="Product Name"
+              name="product_name"
+              value={formData.product_name}
+              onChange={handleInputChange}
+              required={true}
+            />
+          </Grid>
 
-        <div className="mt-10">
-          <MultilineInput
-            title="Description"
-            placeholder="Description"
-            name="product_description"
-            value={formData.product_description}
-            onChange={handleInputChange}
-            required={true}
-          />
-        </div>
+          <Grid item xs={12} sm={6}>
+            <InputWithTitle
+              title="Opening Weight"
+              type="text"
+              placeholder="Opening Weight"
+              name="opening_weight"
+              value={formData.opening_weight}
+              onChange={handleInputChange}
+              required={true}
+            />
+          </Grid>
 
-        {/* <div className="mt-10">
-          <DropDown
-            title="Select Product Type"
-            options={typeList}
-            name="product_type"
-            value={formData.product_type}
-            onChange={handleDropDownChange}
-          />
-        </div> */}
+          <Grid item xs={12} sm={6}>
+            <InputWithTitle
+              title="Price in Kgs"
+              type="text"
+              placeholder="Price in Kgs"
+              name="opening_price"
+              value={formData.opening_price}
+              onChange={handleInputChange}
+              required={true}
+            />
+          </Grid>
 
-        <div
-          className="mt-5"
-          style={{ display: "flex", justifyContent: "space-between" }}
-        >
-          <div style={{ flex: 1, marginRight: "10px" }}>
-            <div className={styles.cancelBtn} onClick={handleClose}>
-              Cancel
-            </div>
-          </div>
-          <div style={{ flex: 1, marginRight: "10px" }}>
-            <button
-              className={styles.saveBtn}
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {isSubmitting ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : editData ? (
-                "Update"
-              ) : (
-                "Save"
-              )}
-            </button>
-          </div>
-        </div>
+          <Grid item xs={12} sm={6}>
+            <InputWithTitle
+              title="Price in Munds"
+              type="text"
+              placeholder="Price in Munds"
+              name="opening_price_mann"
+              value={formData.opening_price_mann}
+              onChange={handleInputChange}
+              required={true}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <InputWithTitle
+              title="Total Amount"
+              type="text"
+              placeholder="Total Amount"
+              name="opening_total_amount"
+              value={formData.opening_total_amount}
+              onChange={handleInputChange}
+              required={true}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <MultilineInput
+              title="Description"
+              placeholder="Description"
+              name="product_description"
+              value={formData.product_description}
+              onChange={handleInputChange}
+              required={true}
+            />
+          </Grid>
+
+          {/* Uncomment if needed */}
+          {/* <Grid item xs={12}>
+        <DropDown
+          title="Select Product Type"
+          options={typeList}
+          name="product_type"
+          value={formData.product_type}
+          onChange={handleDropDownChange}
+        />
+      </Grid> */}
+
+          <Grid item xs={12} container spacing={2}>
+            <Grid item xs={6}>
+              <div className={styles.cancelBtn} onClick={handleClose}>
+                Cancel
+              </div>
+            </Grid>
+            <Grid item xs={6}>
+              <button
+                className={styles.saveBtn}
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                {isSubmitting ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : editData ? (
+                  "Update"
+                ) : (
+                  "Save"
+                )}
+              </button>
+            </Grid>
+          </Grid>
+        </Grid>
       </Box>
     </Modal>
   );

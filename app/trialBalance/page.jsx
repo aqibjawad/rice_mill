@@ -29,7 +29,6 @@ const CombinedTable = () => {
           api.getDataWithToken(`${investors}`),
         ]);
 
-        // Combine data from different sources
         const mergedData = [
           ...debitResponse.data.expense_categories.map((category) => ({
             ...category,
@@ -48,7 +47,6 @@ const CombinedTable = () => {
             cash_amount: parseFloat(debitResponse.data.cash),
             type: "cash",
           },
-          // Add investors data
           ...investorsResponse.data.map((investor) => ({
             ...investor,
             type: "investor",
@@ -67,42 +65,54 @@ const CombinedTable = () => {
   }, []);
 
   const renderAmount = (item) => {
-    let balance;
-    switch (item.type) {
-      case "party":
-        balance = parseFloat(item.current_balance || 0);
-        break;
-      case "bank":
-        balance = parseFloat(item.balance || 0);
-        break;
-      case "cash":
-        balance = item.cash_amount || 0;
-        break;
-      case "expense_category":
-        balance = parseFloat(item.expenses_sum_total_amount || 0);
-        break;
-      case "investor":
-        balance = parseFloat(item.current_balance || 0);
-        break;
-      default:
-        balance = 0;
+    // Handling for cash
+    if (item.is_cash) {
+      const amount = parseFloat(item.cash_amount || 0);
+      return {
+        credit: amount > 0 ? amount.toFixed(2) : "-",
+        debit: "-",
+      };
     }
 
+    // Handling for expense categories (always show as debit/negative)
+    if (item.expense_category) {
+      const amount = parseFloat(item.expenses_sum_total_amount || 0);
+      return {
+        credit: "-",
+        debit: amount > 0 ? amount.toFixed(2) : "-",
+      };
+    }
+
+    // Handling for banks
+    if (item.bank_name) {
+      const amount = parseFloat(item.balance || 0);
+      return {
+        credit: amount > 0 ? amount.toFixed(2) : "-",
+        debit: amount < 0 ? Math.abs(amount).toFixed(2) : "-",
+      };
+    }
+
+    // Handling for suppliers and buyers
+    const balance = parseFloat(item.current_balance || 0);
+    const isInvestor = item.customer_type === "investor";
+
     return {
-      debit: balance < 0 ? Math.abs(balance) : 0,
-      credit: balance > 0 ? Math.abs(balance) : 0,
+      debit:
+        (isInvestor && balance > 0) || (isInvestor && balance > 0)
+          ? Math.abs(balance).toFixed(2)
+          : "-",
     };
   };
 
-  const totalCredit = combinedData.reduce((sum, item) => {
-    const { credit } = renderAmount(item);
-    return sum + credit;
-  }, 0);
+  const calculateTotals = (dataType) => {
+    return combinedData.reduce((sum, item) => {
+      const amount = renderAmount(item);
+      return sum + parseFloat(amount[dataType] !== "-" ? amount[dataType] : 0);
+    }, 0);
+  };
 
-  const totalDebit = combinedData.reduce((sum, item) => {
-    const { debit } = renderAmount(item);
-    return sum + debit;
-  }, 0);
+  const totalCredit = calculateTotals("credit");
+  const totalDebit = calculateTotals("debit");
 
   return (
     <Container>
@@ -123,7 +133,6 @@ const CombinedTable = () => {
           </TableHead>
           <TableBody>
             {loading ? (
-              // Render Skeleton while loading
               Array.from({ length: 5 }).map((_, index) => (
                 <TableRow key={index}>
                   <TableCell align="center">
@@ -146,23 +155,18 @@ const CombinedTable = () => {
             ) : (
               combinedData.map((item, index) => {
                 const amounts = renderAmount(item);
+                const name = item.is_cash
+                  ? "Cash"
+                  : item.person_name ||
+                    item.expense_category ||
+                    item.bank_name ||
+                    "Unknown";
 
                 return (
                   <TableRow key={index}>
-                    <TableCell align="center">
-                      {item.is_cash
-                        ? "Cash"
-                        : item.person_name ||
-                          item.expense_category ||
-                          item.bank_name ||
-                          "Unknown"}
-                    </TableCell>
-                    <TableCell align="center">
-                      {amounts.credit.toFixed(2)}
-                    </TableCell>
-                    <TableCell align="center">
-                      {amounts.debit.toFixed(2)}
-                    </TableCell>
+                    <TableCell align="center">{name}</TableCell>
+                    <TableCell align="center">{amounts.credit}</TableCell>
+                    <TableCell align="center">{amounts.debit}</TableCell>
                   </TableRow>
                 );
               })
