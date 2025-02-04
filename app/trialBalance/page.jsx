@@ -13,7 +13,7 @@ import {
   Skeleton,
 } from "@mui/material";
 
-import { debitTrial, investors } from "../../networkApi/Constants";
+import { debitTrial, investors, products } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 
 const CombinedTable = () => {
@@ -24,10 +24,12 @@ const CombinedTable = () => {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        const [debitResponse, investorsResponse] = await Promise.all([
-          api.getDataWithToken(`${debitTrial}`),
-          api.getDataWithToken(`${investors}`),
-        ]);
+        const [debitResponse, investorsResponse, productsResponse] =
+          await Promise.all([
+            api.getDataWithToken(`${debitTrial}`),
+            api.getDataWithToken(`${investors}`),
+            api.getDataWithToken(`${products}`),
+          ]);
 
         const mergedData = [
           ...debitResponse.data.expense_categories.map((category) => ({
@@ -51,6 +53,11 @@ const CombinedTable = () => {
             ...investor,
             type: "investor",
           })),
+          ...productsResponse.data.map((product) => ({
+            ...product,
+            balance: product.company_product_stocks[0]?.balance || "0",
+            type: "product",
+          })),
         ];
 
         setCombinedData(mergedData);
@@ -65,7 +72,6 @@ const CombinedTable = () => {
   }, []);
 
   const renderAmount = (item) => {
-    // Handling for cash
     if (item.is_cash) {
       const amount = parseFloat(item.cash_amount || 0);
       return {
@@ -74,7 +80,6 @@ const CombinedTable = () => {
       };
     }
 
-    // Handling for expense categories (always show as debit/negative)
     if (item.expense_category) {
       const amount = parseFloat(item.expenses_sum_total_amount || 0);
       return {
@@ -83,7 +88,6 @@ const CombinedTable = () => {
       };
     }
 
-    // Handling for banks
     if (item.bank_name) {
       const amount = parseFloat(item.balance || 0);
       return {
@@ -92,15 +96,29 @@ const CombinedTable = () => {
       };
     }
 
-    // Handling for suppliers and buyers
+    if (item.type === "party") {
+      const balance = parseFloat(item.current_balance || 0);
+      return {
+        credit: balance > 0 ? balance.toFixed(2) : "-",
+        debit: balance < 0 ? Math.abs(balance).toFixed(2) : "-",
+      };
+    }
+
+    if (item.type === "product") {
+      const balance = parseFloat(item.balance || 0);
+      return {
+        credit: balance > 0 ? balance.toFixed(2) : "-",
+        debit: balance < 0 ? Math.abs(balance).toFixed(2) : "-",
+      };
+    }
+
+    // Handling for investors
     const balance = parseFloat(item.current_balance || 0);
     const isInvestor = item.customer_type === "investor";
 
     return {
-      debit:
-        (isInvestor && balance > 0) || (isInvestor && balance > 0)
-          ? Math.abs(balance).toFixed(2)
-          : "-",
+      credit: !isInvestor && balance > 0 ? balance.toFixed(2) : "-",
+      debit: isInvestor || balance < 0 ? Math.abs(balance).toFixed(2) : "-",
     };
   };
 
@@ -160,6 +178,7 @@ const CombinedTable = () => {
                   : item.person_name ||
                     item.expense_category ||
                     item.bank_name ||
+                    item.product_name ||
                     "Unknown";
 
                 return (

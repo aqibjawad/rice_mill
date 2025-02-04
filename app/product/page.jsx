@@ -20,6 +20,8 @@ import AddProduct from "../../components/stock/addProduct";
 import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
 
+import Link from "next/link";
+
 const Page = () => {
   const api = new APICall();
   const [open, setOpen] = useState(false);
@@ -114,29 +116,24 @@ const Page = () => {
               <TableRow>
                 <TableCell>Sr.</TableCell>
                 <TableCell>Product Name</TableCell>
-                <TableCell>Product Description</TableCell>
+                <TableCell>Weight in Stock</TableCell>
+                <TableCell>Balance</TableCell>
                 <TableCell>Action</TableCell>
+                <TableCell>View Details</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    <Skeleton variant="text" />
-                  </TableCell>
-                </TableRow>
-              ) : error ? (
-                <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    {error}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                tableData.map((row, index) => (
+              {tableData?.map((row, index) => {
+                const stockInfo = row?.company_product_stocks[0] || {};
+
+                return (
                   <TableRow key={row.id}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.product_name}</TableCell>
-                    <TableCell>{row.product_description}</TableCell>
+                    <TableCell>
+                      {stockInfo.remaining_weight || "0.00"}
+                    </TableCell>
+                    <TableCell>{stockInfo.balance || "0.00"}</TableCell>
                     <TableCell>
                       <IconButton
                         onClick={() => handleDelete(row.id)}
@@ -151,9 +148,14 @@ const Page = () => {
                         <MdEdit />
                       </IconButton>
                     </TableCell>
+                    <TableCell>
+                      <Link href={`/productDetails/?id=${row.id}`}>
+                        View Details
+                      </Link>
+                    </TableCell>
                   </TableRow>
-                ))
-              )}
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
