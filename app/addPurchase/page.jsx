@@ -254,21 +254,30 @@ const AddPurchaseContent = () => {
       const payload = { ...formData, bardaana_amount: 0 };
 
       const response = await api.postDataWithToken(purchaseBook, payload);
+      console.log("API Response:", response); // Debugging
 
       if (response.status === "success") {
         Swal.fire({
           icon: "success",
           title: "Success",
           text: "Data has been added successfully!",
+        }).then(() => {
+          router.push("/purchase/");
         });
-        router.push("/purchase/");
-      } else {
+      } else if (response.error?.status === "error") {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Failed to add data. Please try again.",
+          text: response.error?.message || "Something went wrong!",
         });
       }
+    } catch (error) {
+      console.error("Catch Error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error?.message || "An unexpected error occurred!",
+      });
     } finally {
       setLoadingSubmit(false);
     }

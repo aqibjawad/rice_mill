@@ -111,12 +111,6 @@ const Page = () => {
                     ))}
                   </TableRow>
                 ))
-              ) : error ? (
-                <TableRow>
-                  <TableCell colSpan={4} style={{ color: "red" }}>
-                    Error: {error}
-                  </TableCell>
-                </TableRow>
               ) : filteredData.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4}>No data available</TableCell>

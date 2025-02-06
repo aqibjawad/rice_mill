@@ -191,8 +191,8 @@ const Page = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoadingSubmit(true);
+
     try {
       let response;
       let requestData = { ...formData };
@@ -227,29 +227,31 @@ const Page = () => {
             throw new Error("Invalid customer type");
         }
 
-        // Check if the response status is "success"
+        // Check response status
         if (response?.status === "success") {
           setResponseData(response);
           Swal.fire("Success", "Your data has been added!", "success");
 
-          // Redirect based on the customer type
           switch (selectedParty.customer_type) {
             case "buyer":
-              // router.push("/Buyer");
+              // router.push("/dashboard");
               break;
             case "investor":
-              router.push("/investor");
+              router.push("/dashboard");
               break;
           }
         } else {
-          throw new Error(response?.message || "Failed to process the request");
+          // Handle API error response
+          Swal.fire("Error", response?.message || "The cash amount cannot be greater than the available company balance", "error");
         }
       } else {
         throw new Error("Selected party not found");
       }
     } catch (error) {
-      console.error("Error submitting data:", error.message);
-      Swal.fire("Error", error.message, "error");
+      console.error("Error submitting data:", error);
+      const errorMessage =
+        error.response?.message || error.message || "The cash amount cannot be greater than the available company balance";
+      Swal.fire("Error", errorMessage, "error");
     } finally {
       setLoadingSubmit(false);
     }

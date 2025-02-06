@@ -56,7 +56,6 @@ const Page = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-
       {loading ? (
         <CircularProgress />
       ) : error ? (
@@ -90,6 +89,9 @@ const Page = () => {
                     <b>Entry Type</b>
                   </TableCell>
                   <TableCell>
+                    <b> Party </b>
+                  </TableCell>
+                  <TableCell>
                     <b>Price</b>
                   </TableCell>
                   <TableCell>
@@ -103,12 +105,13 @@ const Page = () => {
               <TableBody>
                 {stockDetails.map((stock, index) => (
                   <TableRow key={index}>
-                    <TableCell>{index+1}</TableCell>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{stock.total_weight}</TableCell>
                     <TableCell>{stock.stock_in}</TableCell>
                     <TableCell>{stock.stock_out}</TableCell>
                     <TableCell>{stock.remaining_weight}</TableCell>
                     <TableCell>{stock.entry_type}</TableCell>
+                    <TableCell>{stock?.party?.person_name}</TableCell>
                     <TableCell>{stock.price}</TableCell>
                     <TableCell>{stock.total_amount}</TableCell>
                     <TableCell>{stock.balance}</TableCell>

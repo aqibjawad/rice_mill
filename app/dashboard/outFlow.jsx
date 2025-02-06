@@ -94,8 +94,7 @@ const Page = () => {
       if (row.payment_type === "cash") {
         cashSum += parseFloat(row.cash_amount || 0);
       } else if (["cheque", "online"].includes(row.payment_type)) {
-        chequeOnlineSum +=
-          parseFloat(row.cr_amount || 0) + parseFloat(row.cr_amount || 0);
+        chequeOnlineSum += parseFloat(row.cr_amount || 0); // Fixed here - removed duplicate addition
       }
     });
 
