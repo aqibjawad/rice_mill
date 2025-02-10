@@ -11,56 +11,23 @@
 
 .layout-container {
   display: flex;
-  min-height: 100vh;
-  /* margin-left: 5rem; */
+  flex-direction: column; /* Yeh ensure karega ki sidebar aur content vertically na aaye */
+  height: 100vh;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: row; /* Isse sidebar top pe horizontally show hoga */
+  width: 100%;
+  background-color: #fff;
+  padding: 10px;
+  justify-content: space-around; /* Icons ko evenly distribute karega */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .main-content {
   flex: 1;
-  overflow-y: auto;
-  background-color: #f5f5f5;
-}
-
-.main-content-child {
   padding: 20px;
-}
-
-@media (max-width: 425px) {
-  .header-component {
-    display: none;
-  }
-
-  .layout-container {
-    display: flex;
-    min-height: 100vh;
-    /* margin-left: 2rem; */
-  }
-}
-
-@media (max-width: 768px) {
-  .overlayText {
-    font-size: 20px;
-    top: 45%;
-  }
-
-  .text2 {
-    font-size: 20px;
-    top: 55%;
-  }
-
-  .logoCont {
-    position: absolute;
-    width: 158px;
-    height: 158px;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .layout-container {
-    display: flex;
-    min-height: 100vh;
-    /* margin-left: 5rem; */
-  }
 }
 
 @font-face {

@@ -99,7 +99,7 @@ const Page = () => {
               <TableCell>No of Cheque</TableCell>
               <TableCell>Advance Cheque Amount</TableCell>
               <TableCell>Total Balance</TableCell>
-              <TableCell>View Details</TableCell>
+              <TableCell>View Cheques</TableCell>
               <TableCell>View Ledger</TableCell>
             </TableRow>
           </TableHead>
@@ -127,7 +127,7 @@ const Page = () => {
                     <TableCell>{row.balance}</TableCell>
                     <TableCell>
                       <Button onClick={() => handleViewDetails(row.id)}>
-                        View Details
+                        View Cheques
                       </Button>
                     </TableCell>
 

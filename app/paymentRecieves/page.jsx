@@ -8,17 +8,13 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Skeleton from "@mui/material/Skeleton";
 import Grid from "@mui/material/Grid";
-import Swal from "sweetalert2"; // Import SweetAlert2
-
+import Swal from "sweetalert2";
 import PaymentReceipt from "../paymentReciept/page";
-
 import {
   party,
   banks,
   partyLedger,
-  suppliers,
   investors,
-  supplierLedger,
   investorLedger,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
@@ -31,7 +27,6 @@ const Page = () => {
 
   const [formData, setFormData] = useState({
     party_id: "",
-    sup_id: "",
     investor_id: "",
     payment_type: "cash",
     description: "",
@@ -44,7 +39,6 @@ const Page = () => {
   });
 
   const [selectedParty, setSelectedParty] = useState(null);
-
   const [tableBankData, setTableBankData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
@@ -58,6 +52,18 @@ const Page = () => {
     fetchBankData();
     fetchInvestorsData();
   }, []);
+
+  const displayPositiveAmount = (amount) => {
+    if (!amount) return "";
+    const numAmount = parseFloat(amount);
+    return isNaN(numAmount) ? "" : Math.abs(numAmount).toString();
+  };
+
+  const convertToNegative = (amount) => {
+    if (!amount) return "";
+    const numAmount = parseFloat(amount);
+    return isNaN(numAmount) ? "" : -Math.abs(numAmount);
+  };
 
   const fetchData = async () => {
     try {
@@ -78,13 +84,14 @@ const Page = () => {
           return [...prevData, ...newData];
         });
       } else {
-        throw new Error("Fetched buyer data is not an array");
+        throw new Error("Fetched party data is not an array");
       }
     } catch (error) {
-      console.error("Error fetching buyer data:", error.message);
+      console.error("Error fetching party data:", error.message);
+      Swal.fire("Error", "Failed to fetch party data", "error");
     } finally {
       setLoading(false);
-      setDataFetched(true); // Mark as fetched
+      setDataFetched(true);
     }
   };
 
@@ -93,14 +100,13 @@ const Page = () => {
       const response = await api.getDataWithToken(investors);
       const data = response.data;
       if (Array.isArray(data)) {
-        const formattedData = data.map((supplier) => ({
-          label: `${supplier.person_name} (Investor)`,
-          customer_type: supplier.customer_type,
-          id: supplier.id,
+        const formattedData = data.map((investor) => ({
+          label: `${investor.person_name} (Investor)`,
+          customer_type: investor.customer_type,
+          id: investor.id,
         }));
 
         setPartyData((prevData) => {
-          // Avoid duplicating data by checking if it's already present
           const existingIds = new Set(prevData.map((item) => item.id));
           const newData = formattedData.filter(
             (item) => !existingIds.has(item.id)
@@ -108,21 +114,16 @@ const Page = () => {
           return [...prevData, ...newData];
         });
       } else {
-        throw new Error("Fetched supplier data is not an array");
+        throw new Error("Fetched investor data is not an array");
       }
     } catch (error) {
-      console.error("Error fetching supplier data:", error.message);
+      console.error("Error fetching investor data:", error.message);
+      Swal.fire("Error", "Failed to fetch investor data", "error");
     } finally {
       setLoading(false);
-      setDataFetched(true); // Mark as fetched
+      setDataFetched(true);
     }
   };
-
-  useEffect(() => {
-    if (dataFetched) {
-      console.log("Combined Party Data:", tablePartyData);
-    }
-  }, [tablePartyData, dataFetched]);
 
   const fetchBankData = async () => {
     try {
@@ -135,10 +136,11 @@ const Page = () => {
         }));
         setTableBankData(formattedData);
       } else {
-        throw new Error("Fetched data is not an array");
+        throw new Error("Fetched bank data is not an array");
       }
     } catch (error) {
       console.error("Error fetching bank data:", error.message);
+      Swal.fire("Error", "Failed to fetch bank data", "error");
     } finally {
       setLoading(false);
     }
@@ -149,34 +151,58 @@ const Page = () => {
     setFormData((prevState) => ({
       ...prevState,
       payment_type: tab,
+      cash_amount: "",
+      cheque_amount: "",
     }));
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+
+    if (name === "cash_amount" || name === "cheque_amount") {
+      const cleanValue = value.replace(/[^\d.]/g, "");
+
+      if (selectedParty.customer_type === "investor") {
+        // For investors, keep positive value
+        setFormData((prevState) => ({
+          ...prevState,
+          [name]: cleanValue,
+        }));
+      } else {
+        setFormData((prevState) => ({
+          ...prevState,
+          [name]: convertToNegative(cleanValue),
+        }));
+      }
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
   };
 
   const handleDropdownChange = (name, selectedOption) => {
     if (selectedOption) {
       setSelectedParty(selectedOption);
 
-      // Reset all IDs first
       setFormData((prevState) => ({
         ...prevState,
         party_id: "",
         investor_id: "",
+        cash_amount: "",
+        cheque_amount: "",
+        description: "",
+        bank_id: "",
+        cheque_no: "",
+        cheque_date: "",
+        transection_id: "",
       }));
 
-      // Set the appropriate ID based on customer type
       if (selectedOption.customer_type === "party") {
         setFormData((prevState) => ({
           ...prevState,
           party_id: selectedOption.id,
-          cash_amount: -Math.abs(parseFloat(formData.cash_amount)),
         }));
       } else if (selectedOption.customer_type === "investor") {
         setFormData((prevState) => ({
@@ -194,40 +220,99 @@ const Page = () => {
     }));
   };
 
+  const validateForm = () => {
+    if (!selectedParty) {
+      Swal.fire("Error", "Please select a party", "error");
+      return false;
+    }
+
+    if (activeTab === "cash" && !formData.cash_amount) {
+      Swal.fire("Error", "Please enter cash amount", "error");
+      return false;
+    }
+
+    if (activeTab === "cheque") {
+      if (!formData.bank_id) {
+        Swal.fire("Error", "Please select a bank", "error");
+        return false;
+      }
+      if (!formData.cheque_no) {
+        Swal.fire("Error", "Please enter cheque number", "error");
+        return false;
+      }
+      if (!formData.cheque_date) {
+        Swal.fire("Error", "Please enter cheque date", "error");
+        return false;
+      }
+      if (!formData.cheque_amount) {
+        Swal.fire("Error", "Please enter cheque amount", "error");
+        return false;
+      }
+    }
+
+    if (activeTab === "online") {
+      if (!formData.bank_id) {
+        Swal.fire("Error", "Please select a bank", "error");
+        return false;
+      }
+      if (!formData.transection_id) {
+        Swal.fire("Error", "Please enter transaction ID", "error");
+        return false;
+      }
+      if (!formData.cash_amount) {
+        Swal.fire("Error", "Please enter transaction amount", "error");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
 
     setLoadingSubmit(true);
     try {
       let response;
       let requestData = { ...formData };
 
-      if (selectedParty) {
-        if (selectedParty.customer_type === "party") {
-          requestData = {
-            ...formData,
-            party_id: formData.party_id,
-            cash_amount: -Math.abs(parseFloat(formData.cash_amount)),
-          };
-          response = await api.postDataWithToken(partyLedger, requestData);
-        } else if (selectedParty.customer_type === "investor") {
-          requestData = {
-            ...formData,
-            investor_id: formData.investor_id,
-          };
-          response = await api.postDataWithToken(investorLedger, requestData);
-        } else {
-          throw new Error("Invalid customer type");
-        }
+      if (selectedParty.customer_type === "party") {
+        requestData = {
+          ...requestData,
+          party_id: formData.party_id,
+        };
+        response = await api.postDataWithToken(partyLedger, requestData);
+      } else if (selectedParty.customer_type === "investor") {
+        requestData = {
+          ...requestData,
+          investor_id: formData.investor_id,
+        };
+        response = await api.postDataWithToken(investorLedger, requestData);
+      }
 
+      if (response?.status === "success") {
         setResponseData(response);
-        Swal.fire("Success", "Your data has been added!", "success");
+        Swal.fire({
+          title: "Success",
+          text: "Payment recorded successfully!",
+          icon: "success",
+          cancelButtonText: "Close",
+        });
+        router.push("/dashboard");
       } else {
-        throw new Error("Selected party not found");
+        throw new Error(response?.message || "Failed to submit payment");
       }
     } catch (error) {
-      console.error("Error submitting data:", error.message);
-      Swal.fire("Error", "Failed to submit data. Please try again.", "error");
+      console.error("Error submitting data:", error);
+      Swal.fire(
+        "Error",
+        error.message || "Failed to submit payment. Please try again.",
+        "error"
+      );
     } finally {
       setLoadingSubmit(false);
     }
@@ -247,15 +332,6 @@ const Page = () => {
           >
             Cash
           </button>
-          <button
-            className={`${styles.tabPaymentButton} ${
-              activeTab === "cheque" ? styles.active : ""
-            }`}
-            onClick={() => handleTabClick("cheque")}
-          >
-            Cheque
-          </button>
-
           <button
             className={`${styles.tabPaymentButton} ${
               activeTab === "online" ? styles.active : ""
@@ -278,11 +354,11 @@ const Page = () => {
                   title="Select Party"
                   options={tablePartyData}
                   onChange={handleDropdownChange}
-                  value={selectedParty} // Use the selectedParty state here
+                  value={selectedParty}
                   name={
                     selectedParty?.customer_type === "party"
-                      ? "sup_id"
-                      : "buyer_id"
+                      ? "party_id"
+                      : "investor_id"
                   }
                 />
               </div>
@@ -294,7 +370,7 @@ const Page = () => {
                 title="Amount"
                 type="text"
                 placeholder="Amount"
-                value={formData.cash_amount}
+                value={displayPositiveAmount(formData.cash_amount)}
                 name="cash_amount"
                 onChange={handleInputChange}
               />
@@ -304,7 +380,7 @@ const Page = () => {
 
         <div className="mt-10">
           <div className={styles.tabPaymentContent}>
-            {(activeTab === "cheque" || activeTab === "both") && (
+            {activeTab === "cheque" && (
               <Grid container spacing={2} className="mt-10">
                 <Grid item xs={12} md={4} className="mt-5">
                   <Autocomplete
@@ -346,7 +422,7 @@ const Page = () => {
                     type="text"
                     placeholder="Cheque Amount"
                     name="cheque_amount"
-                    value={formData.cheque_amount}
+                    value={displayPositiveAmount(formData.cheque_amount)}
                     onChange={handleInputChange}
                   />
                 </Grid>
@@ -384,7 +460,7 @@ const Page = () => {
                     type="text"
                     placeholder="Transaction Amount"
                     name="cash_amount"
-                    value={formData.cash_amount}
+                    value={displayPositiveAmount(formData.cash_amount)}
                     onChange={handleInputChange}
                   />
                 </Grid>
@@ -409,12 +485,23 @@ const Page = () => {
             onClick={handleSubmit}
             disabled={loadingSubmit}
           >
-            {loadingSubmit ? "Submitting..." : "Submit Payments"}
+            {loadingSubmit ? (
+              <span>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Processing...
+              </span>
+            ) : (
+              "Submit Payment"
+            )}
           </button>
         </div>
       </div>
 
-      {responseData && <PaymentReceipt data={responseData} />}
+      {/* {responseData && <PaymentReceipt data={responseData} />} */}
     </div>
   );
 };

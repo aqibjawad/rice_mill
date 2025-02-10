@@ -185,13 +185,6 @@ const Page = () => {
             <TableContainer component={Paper} sx={{ mt: 2 }}>
               <Table>
                 <TableHead>
-                  {/* <TableRow>
-                    <TableCell>
-                      <strong>Product:</strong>
-                    </TableCell>
-                    <TableCell>{modalData.payment_type}</TableCell>
-                  </TableRow> */}
-
                   <TableRow>
                     <TableCell>
                       <strong>Field</strong>

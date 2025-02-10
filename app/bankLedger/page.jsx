@@ -44,6 +44,7 @@ const Page = () => {
             ...entry,
             srNo: index + 1,
             customerName: entry.customer?.person_name || "N/A",
+            customerType: entry.customer?.customer_type || "N/A",
             displayAmount:
               entry.entry_type === "cr"
                 ? `-${entry.cr_amount}`
@@ -85,6 +86,7 @@ const Page = () => {
               <TableCell>Sr No</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Name</TableCell>
+              <TableCell>Customer Type</TableCell>
               <TableCell>Payment Type</TableCell>
               <TableCell>Amount Type</TableCell>
               <TableCell>Amount</TableCell>
@@ -97,6 +99,7 @@ const Page = () => {
                 <TableCell>{row.srNo}</TableCell>
                 <TableCell>{row.description || "N/A"}</TableCell>
                 <TableCell>{row.customerName}</TableCell>
+                <TableCell>{row.customerType}</TableCell>
                 <TableCell>{row.payment_type}</TableCell>
                 <TableCell>{row.amountType}</TableCell>
                 <TableCell>{row.displayAmount}</TableCell>
