@@ -33,7 +33,7 @@ const AddButton = styled(Button)(({ theme }) => ({
   marginRight: theme.spacing(2),
 }));
 
-const Buttons = ({ leftSectionText, addButtonLink, onDateChange }) => {
+const ButtonsWithOutDate = ({ leftSectionText, addButtonLink }) => {
   return (
     <HeaderPaper elevation={1}>
       <Grid container spacing={2} alignItems="center">
@@ -42,7 +42,7 @@ const Buttons = ({ leftSectionText, addButtonLink, onDateChange }) => {
           <PageTitle variant="h5">{leftSectionText}</PageTitle>
         </Grid>
 
-        {/* Right section with buttons */}
+        {/* Right section with buttonsWithOutDate */}
         <Grid item xs={12} md={8}>
           <Box
             display="flex"
@@ -59,10 +59,6 @@ const Buttons = ({ leftSectionText, addButtonLink, onDateChange }) => {
                 Add New
               </AddButton>
             </Link>
-
-            <Box sx={{ minWidth: { xs: "100%", sm: "200px" } }}>
-              <DateFilter onDateChange={onDateChange} />
-            </Box>
           </Box>
         </Grid>
       </Grid>
@@ -70,4 +66,4 @@ const Buttons = ({ leftSectionText, addButtonLink, onDateChange }) => {
   );
 };
 
-export default Buttons;
+export default ButtonsWithOutDate;

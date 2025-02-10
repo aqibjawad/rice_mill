@@ -11,10 +11,22 @@ import {
   TableRow,
   Paper,
   Skeleton,
+  Button,
 } from "@mui/material";
-
+import { styled } from "@mui/system";
+import { AiFillFilePdf } from "react-icons/ai";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import { debitTrial, investors, products } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
+
+// Custom Styled Table Components
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  marginTop: "20px",
+  boxShadow: theme.shadows,
+  borderRadius: "8px",
+  overflow: "hidden",
+}));
 
 const CombinedTable = () => {
   const api = new APICall();
@@ -96,29 +108,17 @@ const CombinedTable = () => {
       };
     }
 
-    if (item.type === "party") {
-      const balance = parseFloat(item.current_balance || 0);
+    if (item.type === "party" || item.type === "product") {
+      const balance = parseFloat(item.current_balance || item.balance || 0);
       return {
         credit: balance > 0 ? balance.toFixed(2) : "-",
         debit: balance < 0 ? Math.abs(balance).toFixed(2) : "-",
       };
     }
-
-    if (item.type === "product") {
-      const balance = parseFloat(item.balance || 0);
-      return {
-        credit: balance > 0 ? balance.toFixed(2) : "-",
-        debit: balance < 0 ? Math.abs(balance).toFixed(2) : "-",
-      };
-    }
-
-    // Handling for investors
-    const balance = parseFloat(item.current_balance || 0);
-    const isInvestor = item.customer_type === "investor";
 
     return {
-      credit: !isInvestor && balance > 0 ? balance.toFixed(2) : "-",
-      debit: isInvestor || balance < 0 ? Math.abs(balance).toFixed(2) : "-",
+      credit: "-",
+      debit: "-",
     };
   };
 
@@ -132,80 +132,158 @@ const CombinedTable = () => {
   const totalCredit = calculateTotals("credit");
   const totalDebit = calculateTotals("debit");
 
+  // PDF Generation Function
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Financial Report", 14, 15);
+    doc.setFontSize(12);
+
+    const tableColumn = ["Name", "Credit", "Debit"];
+    const tableRows = [];
+
+    combinedData.forEach((item) => {
+      const amounts = renderAmount(item);
+      const name = item.is_cash
+        ? "Cash"
+        : item.person_name ||
+          item.expense_category ||
+          item.bank_name ||
+          item.product_name ||
+          "Unknown";
+
+      tableRows.push([name, amounts.credit, amounts.debit]);
+    });
+
+    // Add totals
+    tableRows.push(["Total", totalCredit.toFixed(2), totalDebit.toFixed(2)]);
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
+
+    doc.save("financial_report.pdf");
+  };
+
+  const getRowColor = (type) => {
+    switch (type) {
+      case "expense_category":
+        return "#f5f5f5"; // Light gray
+      case "party":
+        return "#e3f2fd"; // Light blue
+      case "bank":
+        return "#fce4ec"; // Light pink
+      case "cash":
+        return "#e8f5e9"; // Light green
+      case "investor":
+        return "#fff3e0"; // Light orange
+      case "product":
+        return "#ede7f6"; // Light purple
+      default:
+        return "white";
+    }
+  };
+
   return (
     <Container>
-      <TableContainer component={Paper} style={{ marginTop: "10px" }}>
+      {/* PDF Download Button */}
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={<AiFillFilePdf />}
+        sx={{ marginBottom: 2 }}
+        onClick={downloadPDF}
+      >
+        Download PDF
+      </Button>
+
+      {/* Table Display */}
+      <StyledTableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell align="center" style={{ fontWeight: "bold" }}>
+            <TableRow sx={{ backgroundColor: "#1976d2" }}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", color: "white" }}
+              >
                 Name
               </TableCell>
-              <TableCell align="center" style={{ fontWeight: "bold" }}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", color: "white" }}
+              >
                 Credit
               </TableCell>
-              <TableCell align="center" style={{ fontWeight: "bold" }}>
+              <TableCell
+                align="center"
+                sx={{ fontWeight: "bold", color: "white" }}
+              >
                 Debit
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell align="center">
-                    <Skeleton variant="text" width="80%" />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Skeleton variant="text" width="60%" />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Skeleton variant="text" width="60%" />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : combinedData.length === 0 ? (
-              <TableRow>
-                <TableCell align="center" colSpan={3}>
-                  No data available
-                </TableCell>
-              </TableRow>
-            ) : (
-              combinedData.map((item, index) => {
-                const amounts = renderAmount(item);
-                const name = item.is_cash
-                  ? "Cash"
-                  : item.person_name ||
+            {loading
+              ? Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell align="center">
+                      <Skeleton variant="text" width="80%" />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Skeleton variant="text" width="60%" />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Skeleton variant="text" width="60%" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              : combinedData.map((item, index) => {
+                  const amounts = renderAmount(item);
+                  const name =
+                    item.is_cash ||
+                    item.person_name ||
                     item.expense_category ||
                     item.bank_name ||
                     item.product_name ||
                     "Unknown";
 
-                return (
-                  <TableRow key={index}>
-                    <TableCell align="center">{name}</TableCell>
-                    <TableCell align="center">{amounts.credit}</TableCell>
-                    <TableCell align="center">{amounts.debit}</TableCell>
-                  </TableRow>
-                );
-              })
-            )}
+                  return (
+                    <TableRow
+                      key={index}
+                      sx={{ backgroundColor: getRowColor(item.type) }}
+                    >
+                      <TableCell align="center">{name}</TableCell>
+                      <TableCell align="center">{amounts.credit}</TableCell>
+                      <TableCell align="center">{amounts.debit}</TableCell>
+                    </TableRow>
+                  );
+                })}
             {!loading && (
-              <TableRow>
-                <TableCell align="center" style={{ fontWeight: "bold" }}>
+              <TableRow sx={{ backgroundColor: "#1976d2" }}>
+                <TableCell
+                  align="center"
+                  sx={{ fontWeight: "bold", color: "white" }}
+                >
                   Total
                 </TableCell>
-                <TableCell align="center" style={{ fontWeight: "bold" }}>
+                <TableCell
+                  align="center"
+                  sx={{ fontWeight: "bold", color: "white" }}
+                >
                   {totalCredit.toFixed(2)}
                 </TableCell>
-                <TableCell align="center" style={{ fontWeight: "bold" }}>
+                <TableCell
+                  align="center"
+                  sx={{ fontWeight: "bold", color: "white" }}
+                >
                   {totalDebit.toFixed(2)}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </TableContainer>
+      </StyledTableContainer>
     </Container>
   );
 };

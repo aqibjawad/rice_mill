@@ -21,7 +21,13 @@ import {
   Skeleton,
   Grid,
   Typography,
+  Card,
+  CardContent,
+  Box,
+  Chip,
+  Button,
 } from "@mui/material";
+import { FaMoneyBillWave, FaUniversity } from "react-icons/fa";
 
 import Buttons from "../../components/buttons";
 import APICall from "../../networkApi/APICall";
@@ -94,7 +100,7 @@ const Page = () => {
       if (row.payment_type === "cash") {
         cashSum += parseFloat(row.cash_amount || 0);
       } else if (["cheque", "online"].includes(row.payment_type)) {
-        chequeOnlineSum += parseFloat(row.cr_amount || 0); // Fixed here - removed duplicate addition
+        chequeOnlineSum += parseFloat(row.cr_amount || 0);
       }
     });
 
@@ -120,48 +126,66 @@ const Page = () => {
   };
 
   return (
-    <div>
-      <Buttons
-        leftSectionText="Payments"
-        addButtonLink="/payments"
-        onDateChange={handleDateChange}
-      />
+    <Box sx={{ p: 3 }}>
+      {/* Header Section */}
+      <Box sx={{ mb: 4 }}>
+        <Buttons
+          leftSectionText="Payments"
+          addButtonLink="/payments"
+          onDateChange={handleDateChange}
+        />
+      </Box>
 
-      <TableContainer
-        component={Paper}
-        sx={{
-          maxHeight: "400px", // Adjust the max height as needed
-          overflow: "auto",
-        }}
-      >
-        <Table
-          sx={{
-            minWidth: 650,
-            position: "relative", // Important for proper alignment
-            borderCollapse: "separate",
-          }}
-          stickyHeader // Ensures the header stays fixed
-          aria-label="simple table"
-        >
+      {/* Summary Cards */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <FaUniversity color="#1976d2" size={24} />
+                <Typography variant="h6">Cash Total</Typography>
+              </Box>
+              <Typography variant="h4" color="success.main">
+                {cashTotal.toFixed(2)}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <FaMoneyBillWave color="#2e7d32" size={24} />
+                <Typography variant="h6">Online Total</Typography>
+              </Box>
+              <Typography variant="h4" color="primary.main">
+                {chequeOnlineTotal.toFixed(2)}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Table */}
+      <TableContainer component={Paper}>
+        <Table>
           <TableHead>
-            <TableRow>
-              <TableCell>Sr No</TableCell>
-              <TableCell>Payment Type</TableCell>
-              <TableCell>Person</TableCell>
-              <TableCell>Expense Category</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Bank Name</TableCell>
-              <TableCell>Cheque No</TableCell>
-              <TableCell>Cheque Date</TableCell>
-              <TableCell>Credit Amount</TableCell>
-              <TableCell>Balance</TableCell>
+            <TableRow sx={{ backgroundColor: "primary.main" }}>
+              <TableCell sx={{ color: "white" }}>Sr No</TableCell>
+              <TableCell sx={{ color: "white" }}>Payment Type</TableCell>
+              <TableCell sx={{ color: "white" }}>Person</TableCell>
+              <TableCell sx={{ color: "white" }}>Description</TableCell>
+              <TableCell sx={{ color: "white" }}>Bank</TableCell>
+              <TableCell sx={{ color: "white" }}>Cheque No</TableCell>
+              <TableCell sx={{ color: "white" }}>Amount</TableCell>
+              <TableCell sx={{ color: "white" }}>Balance</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading
               ? [...Array(5)].map((_, index) => (
                   <TableRow key={index}>
-                    {[...Array(10)].map((_, cellIndex) => (
+                    {[...Array(8)].map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
                         <Skeleton animation="wave" />
                       </TableCell>
@@ -171,36 +195,32 @@ const Page = () => {
               : tableData.map((row, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.payment_type}</TableCell>
-                    <TableCell>{row.customer?.person_name || "N/A"}</TableCell>
                     <TableCell>
-                      {row.expense_category?.expense_category || "N/A"}
+                      <Chip
+                        label={row.payment_type}
+                        size="small"
+                        sx={{
+                          backgroundColor:
+                            row.payment_type === "cash" ? "#e8f5e9" : "#e3f2fd",
+                          color:
+                            row.payment_type === "cash" ? "#2e7d32" : "#1976d2",
+                        }}
+                      />
                     </TableCell>
+                    <TableCell>{row.customer?.person_name || "N/A"}</TableCell>
                     <TableCell>{row.description || "N/A"}</TableCell>
                     <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
                     <TableCell>{row.cheque_no || "N/A"}</TableCell>
-                    <TableCell>{row.cheque_date || "N/A"}</TableCell>
                     <TableCell>{row.cr_amount || row.cash_amount}</TableCell>
-                    <TableCell>{row.balance || "Expense"}</TableCell>
+                    <TableCell sx={{ color: "success.main" }}>
+                      {row.balance || "Expense"}
+                    </TableCell>
                   </TableRow>
                 ))}
           </TableBody>
         </Table>
       </TableContainer>
-
-      {!loading && (
-        <Grid container className={styles.tableTotalRow}>
-          <Grid item xs={12} sm={6}>
-            <Typography> Cash Payments: {cashTotal.toFixed(2)}</Typography>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Typography>
-              Cheque/Online Payments: {chequeOnlineTotal.toFixed(2)}
-            </Typography>
-          </Grid>
-        </Grid>
-      )}
-    </div>
+    </Box>
   );
 };
 

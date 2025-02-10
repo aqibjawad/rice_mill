@@ -6,8 +6,7 @@ import Header from "../components/header";
 export default function RootLayoutClient({ children }) {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
-  const isInvoicePage = pathname === "/invoice/";
-  const isTrialPage = pathname === "/trialBalance/";
+  const isTrial = pathname === "/trialBalance/";
 
   const LayoutWithSidebar = ({ children }) => (
     <div className="layout-container">
@@ -23,12 +22,16 @@ export default function RootLayoutClient({ children }) {
     </div>
   );
 
-  // const LayoutWithoutSidebar = ({ children }) => (
-  //   <div className="layout-container home-layout">
-  //     <div className="main-content">
-  //       <main className="main-content-child full-width">{children}</main>
-  //     </div>
-  //   </div>
-  // );
-  return <LayoutWithSidebar>{children}</LayoutWithSidebar>;
+  const LayoutWithoutSidebar = ({ children }) => (
+    <div className="layout-container home-layout">
+      <div className="main-content">
+        <main className="main-content-child full-width">{children}</main>
+      </div>
+    </div>
+  );
+  if (isHomePage || isTrial) {
+    return <LayoutWithoutSidebar>{children}</LayoutWithoutSidebar>;
+  } else {
+    return <LayoutWithSidebar>{children}</LayoutWithSidebar>;
+  }
 }
