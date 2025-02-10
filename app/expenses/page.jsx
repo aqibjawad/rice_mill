@@ -7,14 +7,15 @@ import {
   TableBody,
   TableCell,
   TableContainer,
+  TableFooter,
   TableHead,
   TableRow,
   Paper,
-  Skeleton,
   Button,
   Grid,
-  TableFooter,
-  TablePagination,
+  Card,
+  CardContent,
+  Typography,
 } from "@mui/material";
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
@@ -88,79 +89,82 @@ const Page = () => {
 
   return (
     <>
-      <div className={styles.container}>
-        <Grid container spacing={2}>
-          <Grid item lg={6} sm={12} xs={12} md={3}>
-            <div className={styles.leftSection}>Expense</div>
+      <div style={{ padding: 20 }}>
+        <Grid container spacing={2} justifyContent="space-between">
+          <Grid item>
+            <Typography variant="h5" fontWeight="bold">
+              Expenses
+            </Typography>
           </Grid>
-          <Grid item lg={6} sm={12} xs={12} md={9}>
-            <div className={styles.rightSection}>
-              <Grid container spacing={2}>
-                <Grid lg={4} item xs={6} sm={6} md={6}>
-                  <div onClick={handleOpenExpense} className={styles.rightItem}>
-                    Expenses Categories
-                  </div>
-                </Grid>
-
-                {/* <Grid lg={4} item xs={6} sm={6} md={6}>
-                  <div className={styles.rightItem}>Add Expense</div>
-                </Grid> */}
-
-                <Grid item lg={4} xs={6} sm={6} md={5}>
-                  <DateFilter onDateChange={handleDateChange} />
-                </Grid>
-              </Grid>
-            </div>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ marginRight: 10 }}
+            >
+              Add Expense
+            </Button>
+            <Button variant="contained" color="secondary">
+              Expense Categories
+            </Button>
           </Grid>
         </Grid>
-      </div>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Sr No</TableCell>
-              <TableCell>Expense Category</TableCell>
-              <TableCell>Expense Amount</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading
-              ? [...Array(5)].map((_, index) => (
-                  <TableRow key={index}>
-                    {[...Array(4)].map((_, cellIndex) => (
-                      <TableCell key={cellIndex}>
-                        <Skeleton variant="text" />
+
+        <Card style={{ marginTop: 20, marginBottom: 20, padding: 15 }}>
+          <Typography variant="h6" fontWeight="bold">
+            Total Expenses: {totalExpenses.toFixed(2)}
+          </Typography>
+        </Card>
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Sr No</TableCell>
+                <TableCell>Expense Category</TableCell>
+                <TableCell>Expense Amount</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {loading
+                ? [...Array(5)].map((_, index) => (
+                    <TableRow key={index}>
+                      {[...Array(4)].map((_, cellIndex) => (
+                        <TableCell key={cellIndex}>Loading...</TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                : tableData.map((row, index) => (
+                    <TableRow key={row.id}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{row.expense_category}</TableCell>
+                      <TableCell>{row.expenses_sum_total_amount}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          onClick={() => handleViewDetails(row.id)}
+                        >
+                          View Details
+                        </Button>
                       </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              : tableData.map((row, index) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.expense_category}</TableCell>
-                    <TableCell>{row.expenses_sum_total_amount}</TableCell>
-                    <TableCell>
-                      <Button onClick={() => handleViewDetails(row.id)}>
-                        View Details
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TableCell colSpan={2} align="right">
-                <strong>Total Expenses:</strong>
-              </TableCell>
-              <TableCell>
-                <strong>{totalExpenses.toFixed(2)}</strong>
-              </TableCell>
-              <TableCell />
-            </TableRow>
-          </TableFooter>
-        </Table>
-      </TableContainer>
+                    </TableRow>
+                  ))}
+            </TableBody>
+            {/* <TableFooter>
+              <TableRow>
+                <TableCell colSpan={2} align="right">
+                  <strong>Total Expenses:</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>{totalExpenses.toFixed(2)}</strong>
+                </TableCell>
+                <TableCell />
+              </TableRow>
+            </TableFooter> */}
+          </Table>
+        </TableContainer>
+      </div>
 
       <AddExpense
         openExpense={openExpense}
