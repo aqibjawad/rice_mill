@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid";
 import Inflow from "./inflow";
 import ExpenseCard from "./expenseCard";
 import OutFlow from "./outFlow";
-import Stock from "./stock";
+// import Stock from "./stock";
 import Purchase from "./purchase";
 import Sale from "../sale/page";
 
@@ -37,9 +37,9 @@ const Page = () => {
         <Sale />
       </Grid>
 
-      <Grid item lg={12} xs={12} sm={6} md={4}>
+      {/* <Grid item lg={12} xs={12} sm={6} md={4}>
         <Stock />
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 };

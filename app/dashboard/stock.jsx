@@ -5,7 +5,14 @@ import AddItemToStock from "../../components/stock/AddItemToStock";
 import APICall from "../../networkApi/APICall";
 import { stocks } from "@/networkApi/Constants";
 import Swal from "sweetalert2";
-import { Grid, Typography, TextField } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  Box,
+  Paper,
+  IconButton,
+  Skeleton,
+} from "@mui/material";
 import {
   Table,
   TableBody,
@@ -13,21 +20,42 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Skeleton,
-  IconButton,
+  styled,
+  tableCellClasses,
 } from "@mui/material";
 import { MdDelete, MdEdit } from "react-icons/md";
 import DateFilters from "@/components/generic/DateFilter";
 import { format } from "date-fns";
 
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    fontWeight: "bold",
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.action.hover,
+  },
+  "&:hover": {
+    backgroundColor: theme.palette.action.selected,
+  },
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+}));
+
 const Page = () => {
   const api = new APICall();
   const [openAddToStockModal, setOpenAddToStockModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [editingData, setEditingData] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -40,11 +68,6 @@ const Page = () => {
   const closeStockModal = () => {
     setOpenAddToStockModal(false);
     setEditingData(null);
-  };
-
-  const handleEdit = (row) => {
-    setEditingData(row);
-    setOpenAddToStockModal(true);
   };
 
   useEffect(() => {
@@ -70,15 +93,15 @@ const Page = () => {
       const response = await api.getDataWithToken(
         `${stocks}?${queryParams.join("&")}`
       );
-
       const data = response.data;
+
       if (Array.isArray(data)) {
         setTableData(data);
       } else {
         throw new Error("Fetched data is not an array");
       }
     } catch (error) {
-      setError(error.message);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
@@ -90,12 +113,12 @@ const Page = () => {
   };
 
   const handleDelete = async (id) => {
-    try {
-      await api.deleteDataWithToken(`${stocks}/${id}`, {
-        method: "DELETE",
-      });
+    setDeletingId(id); // Show loader on delete button
 
-      setTableData(tableData.filter((item) => item.id !== id));
+    try {
+      await api.deleteDataWithToken(`${stocks}/${id}`);
+
+      setTableData((prevData) => prevData.filter((item) => item.id !== id));
 
       Swal.fire({
         title: "Deleted!",
@@ -104,117 +127,115 @@ const Page = () => {
         confirmButtonText: "OK",
       });
     } catch (error) {
-      console.error("Error deleting Stock:", error);
-
+      console.error("Error deleting stock:", error);
       Swal.fire({
         title: "Error!",
         text: "Failed to delete the stock item.",
         icon: "error",
         confirmButtonText: "OK",
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
   return (
-    <div>
+    <Box sx={{ p: 3 }}>
       <div className={styles.container}>
-        <Grid className="mt-5" container spacing={2}>
+        <Grid container spacing={2}>
           <Grid item lg={8} sm={12} xs={12} md={4}>
-            <div className={styles.leftSection}>Stock</div>
+            <Typography variant="h5" fontWeight="bold">
+              Stock
+            </Typography>
           </Grid>
           <Grid item lg={4} sm={12} xs={12} md={8}>
-            <div className="flex">
-              <div className="flex-grow"></div>
-
-              <div>
-                <Grid container spacing={2}>
-                  <Grid lg={6} item xs={6} sm={6} md={3}>
-                    <div
-                      onClick={openAddStockModal}
-                      className={styles.rightItem}
-                    >
-                      Add
-                    </div>
-                  </Grid>
-
-                  <Grid lg={6} item xs={6} sm={6} md={3}>
-                    <DateFilters onDateChange={handleDateChange} />
-                  </Grid>
-                </Grid>
-              </div>
-            </div>
+            <Grid container spacing={2} justifyContent="flex-end">
+              <Grid item>
+                <div onClick={openAddStockModal} className={styles.rightItem}>
+                  Add
+                </div>
+              </Grid>
+              <Grid item>
+                <DateFilters onDateChange={handleDateChange} />
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
       </div>
 
-      <TableContainer
-        sx={{
-          maxHeight: "400px",
-          overflow: "auto",
-        }}
-        component={Paper}
-      >
-        <Table
-          sx={{
-            minWidth: 650,
-            position: "relative",
-            borderCollapse: "separate",
-          }}
-          aria-label="stock table"
-        >
+      {/* Main Table */}
+      <TableContainer component={Paper} elevation={3} sx={{ mt: 3 }}>
+        <Table sx={{ minWidth: 700 }}>
           <TableHead>
             <TableRow>
-              <TableCell>Sr No</TableCell>
-              <TableCell>Packing Size</TableCell>
-              <TableCell>Packing Unit</TableCell>
-              <TableCell>Product Description</TableCell>
-              <TableCell>Product Name</TableCell>
-              <TableCell>Quantity</TableCell>
-              <TableCell>Actions</TableCell>
+              <StyledTableCell>Sr No</StyledTableCell>
+              <StyledTableCell>Weight</StyledTableCell>
+              <StyledTableCell>Name</StyledTableCell>
+              <StyledTableCell>Quantity</StyledTableCell>
+              <StyledTableCell>Action</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading ? (
-              [...Array(5)].map((_, index) => (
-                <TableRow key={index}>
-                  {[...Array(7)].map((_, cellIndex) => (
-                    <TableCell key={cellIndex}>
-                      <Skeleton animation="wave" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : tableData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <Typography variant="h6" align="center" color="textSecondary">
-                    No data for the selected date
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            ) : (
-              tableData.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.packing_size}</TableCell>
-                  <TableCell>{row.packing_unit}</TableCell>
-                  <TableCell>{row.product_description}</TableCell>
-                  <TableCell>{row.product_name}</TableCell>
-                  <TableCell>{row.quantity}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      onClick={() => handleDelete(row.id)}
-                      color="error"
-                    >
-                      <MdDelete />
-                    </IconButton>
-                    <IconButton onClick={() => handleEdit(row)} color="primary">
-                      <MdEdit />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+            {loading
+              ? // Show skeleton loaders while data is being fetched
+                [...Array(5)].map((_, index) => (
+                  <StyledTableRow key={index}>
+                    <StyledTableCell>
+                      <Skeleton width={30} />
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Skeleton width={60} />
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Skeleton width={120} />
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Skeleton width={50} />
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Skeleton variant="circular" width={30} height={30} />
+                      <Skeleton
+                        variant="circular"
+                        width={30}
+                        height={30}
+                        sx={{ ml: 1 }}
+                      />
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))
+              : tableData.map((row, index) => (
+                  <StyledTableRow key={row.id}>
+                    <StyledTableCell>{index + 1}</StyledTableCell>
+                    <StyledTableCell>{row.packing_size}</StyledTableCell>
+                    <StyledTableCell>{row.product_name}</StyledTableCell>
+                    <StyledTableCell>{row.quantity}</StyledTableCell>
+                    <StyledTableCell align="right">
+                      <div className="flex">
+                        <IconButton
+                          onClick={() => handleDelete(row.id)}
+                          disabled={deletingId === row.id}
+                        >
+                          {deletingId === row.id ? (
+                            <Skeleton
+                              variant="circular"
+                              width={24}
+                              height={24}
+                            />
+                          ) : (
+                            <MdDelete className={styles.deleteButton} />
+                          )}
+                        </IconButton>
+                        {/* <IconButton
+                          onClick={() =>
+                            setEditingData(row) || setOpenAddToStockModal(true)
+                          }
+                        >
+                          <MdEdit className={styles.editButton} />
+                        </IconButton> */}
+                      </div>
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -225,7 +246,7 @@ const Page = () => {
         editingData={editingData}
         onItemUpdated={fetchData}
       />
-    </div>
+    </Box>
   );
 };
 
