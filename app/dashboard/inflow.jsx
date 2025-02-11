@@ -17,6 +17,7 @@ import {
   Chip,
   tableCellClasses,
   styled,
+  Skeleton, // Import MUI Skeleton
 } from "@mui/material";
 import { FaMoneyBillWave, FaUniversity } from "react-icons/fa";
 import APICall from "../../networkApi/APICall";
@@ -42,7 +43,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:hover": {
     backgroundColor: theme.palette.action.selected,
   },
-  // hide last border
   "&:last-child td, &:last-child th": {
     border: 0,
   },
@@ -70,6 +70,8 @@ const Page = () => {
   }, [startDate, endDate]);
 
   const fetchData = async () => {
+    setLoading(true); // Loader start karein
+
     try {
       const queryParams =
         startDate && endDate
@@ -90,13 +92,14 @@ const Page = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
-      setLoading(false);
+      setLoading(false); // Loader stop karein
     }
   };
 
   const handleDateChange = (start, end) => {
     setStartDate(start);
     setEndDate(end);
+    fetchData();
   };
 
   const calculateCashTotal = () => {
@@ -124,19 +127,6 @@ const Page = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="400px"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ mb: 4 }}>
@@ -147,87 +137,109 @@ const Page = () => {
         />
       </Box>
 
-      {/* Summary Cards */}
+      {/* Summary Cards with Skeletons */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
-          <TotalCard>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1}>
-                <FaMoneyBillWave color="#2e7d32" size={24} />
-                <Typography variant="h6" component="div">
-                  Cash Total
-                </Typography>
-              </Box>
-              <Typography variant="h4" sx={{ mt: 2, color: "success.main" }}>
-                {calculateCashTotal()}
-              </Typography>
-            </CardContent>
-          </TotalCard>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TotalCard>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1}>
-                <FaUniversity color="#1976d2" size={24} />
-                <Typography variant="h6" component="div">
-                  Online Total
-                </Typography>
-              </Box>
-              <Typography variant="h4" sx={{ mt: 2, color: "primary.main" }}>
-                {calculateOnlineTotal()}
-              </Typography>
-            </CardContent>
-          </TotalCard>
-        </Grid>
+        {[
+          { title: "Cash Total", icon: FaMoneyBillWave, color: "success.main" },
+          { title: "Online Total", icon: FaUniversity, color: "primary.main" },
+        ].map((card, index) => (
+          <Grid item xs={12} md={6} key={index}>
+            <TotalCard>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <card.icon color={card.color} size={24} />
+                  <Typography variant="h6" component="div">
+                    {card.title}
+                  </Typography>
+                </Box>
+                {loading ? (
+                  <Skeleton
+                    variant="rectangular"
+                    width={100}
+                    height={40}
+                    sx={{ mt: 2 }}
+                  />
+                ) : (
+                  <Typography variant="h4" sx={{ mt: 2, color: card.color }}>
+                    {card.title === "Cash Total"
+                      ? calculateCashTotal()
+                      : calculateOnlineTotal()}
+                  </Typography>
+                )}
+              </CardContent>
+            </TotalCard>
+          </Grid>
+        ))}
       </Grid>
 
-      {/* Main Table */}
+      {/* Main Table with Skeleton Rows */}
       <TableContainer component={Paper} elevation={3}>
         <Table sx={{ minWidth: 700 }}>
           <TableHead>
             <TableRow>
-              <StyledTableCell>Sr No</StyledTableCell>
-              <StyledTableCell>Payment Type</StyledTableCell>
-              <StyledTableCell>Person</StyledTableCell>
-              <StyledTableCell>Description</StyledTableCell>
-              <StyledTableCell>Bank</StyledTableCell>
-              <StyledTableCell>Cheque No</StyledTableCell>
-              <StyledTableCell align="right">Amount</StyledTableCell>
-              <StyledTableCell align="right">Balance</StyledTableCell>
+              {[
+                "Sr No",
+                "Payment Type",
+                "Person",
+                "Description",
+                "Bank",
+                "Cheque No",
+                "Amount",
+                "Balance",
+              ].map((head, index) => (
+                <StyledTableCell
+                  key={index}
+                  align={index >= 6 ? "right" : "left"}
+                >
+                  {head}
+                </StyledTableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {receivesData.map((row, index) => (
-              <StyledTableRow key={row.id}>
-                <StyledTableCell>{index + 1}</StyledTableCell>
-                <StyledTableCell>
-                  {getPaymentTypeChip(row.payment_type)}
-                </StyledTableCell>
-                <StyledTableCell>
-                  {row.customer?.person_name || "N/A"}
-                </StyledTableCell>
-                <StyledTableCell>{row.description || "N/A"}</StyledTableCell>
-                <StyledTableCell>
-                  {row.bank?.bank_name || "N/A"}
-                </StyledTableCell>
-                <StyledTableCell>{row.cheque_no || "N/A"}</StyledTableCell>
-                <StyledTableCell align="right">
-                  {parseFloat(row.cash_amount).toFixed(2)}
-                </StyledTableCell>
-                <StyledTableCell
-                  align="right"
-                  sx={{
-                    color:
-                      parseFloat(row.balance) < 0
-                        ? "error.main"
-                        : "success.main",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {parseFloat(row.balance).toFixed(2)}
-                </StyledTableCell>
-              </StyledTableRow>
-            ))}
+            {loading
+              ? Array.from({ length: 5 }).map((_, index) => (
+                  <StyledTableRow key={index}>
+                    {Array.from({ length: 8 }).map((_, colIndex) => (
+                      <StyledTableCell key={colIndex}>
+                        <Skeleton variant="text" width="80%" />
+                      </StyledTableCell>
+                    ))}
+                  </StyledTableRow>
+                ))
+              : receivesData.map((row, index) => (
+                  <StyledTableRow key={row.id}>
+                    <StyledTableCell>{index + 1}</StyledTableCell>
+                    <StyledTableCell>
+                      {getPaymentTypeChip(row.payment_type)}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {row.customer?.person_name || "N/A"}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {row.description || "N/A"}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {row.bank?.bank_name || "N/A"}
+                    </StyledTableCell>
+                    <StyledTableCell>{row.cheque_no || "N/A"}</StyledTableCell>
+                    <StyledTableCell align="right">
+                      {parseFloat(row.cash_amount).toFixed(2)}
+                    </StyledTableCell>
+                    <StyledTableCell
+                      align="right"
+                      sx={{
+                        color:
+                          parseFloat(row.balance) < 0
+                            ? "error.main"
+                            : "success.main",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {parseFloat(row.balance).toFixed(2)}
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))}
           </TableBody>
         </Table>
       </TableContainer>
