@@ -12,6 +12,7 @@ import {
   Paper,
   Skeleton,
   Button,
+  tableCellClasses,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { AiFillFilePdf } from "react-icons/ai";
@@ -21,12 +22,31 @@ import { debitTrial, investors, products } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 
 // Custom Styled Table Components
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  marginTop: "20px",
-  boxShadow: theme.shadows,
-  borderRadius: "8px",
-  overflow: "hidden",
-}));
+const StyledTableContainer = styled(Paper)({
+  minHeight: "300px",
+  overflow: "auto",
+  "& .MuiTable-root": {
+    borderCollapse: "separate",
+    borderSpacing: 0,
+  },
+  "& .MuiTableHead-root": {
+    position: "sticky",
+    top: 0,
+    zIndex: 1,
+  },
+});
+
+// Modified StyledTableCell without theme dependency
+const StyledTableCell = styled(TableCell)({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: "#1976d2", // Using direct color value instead of theme
+    color: "#ffffff",
+    fontWeight: "bold",
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+});
 
 const CombinedTable = () => {
   const api = new APICall();
@@ -105,6 +125,14 @@ const CombinedTable = () => {
       return {
         credit: amount > 0 ? amount.toFixed(2) : "-",
         debit: amount < 0 ? Math.abs(amount).toFixed(2) : "-",
+      };
+    }
+
+    if (item.type === "investor") {
+      const amount = parseFloat(item.current_balance || 0);
+      return {
+        credit: amount < 0 ? Math.abs(amount).toFixed(2) : "-", // Now negative goes to credit
+        debit: amount > 0 ? amount.toFixed(2) : "-", // Now positive goes to debit
       };
     }
 
@@ -199,28 +227,13 @@ const CombinedTable = () => {
       </Button>
 
       {/* Table Display */}
-      <StyledTableContainer component={Paper}>
-        <Table>
+      <StyledTableContainer>
+        <Table stickyHeader>
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#1976d2" }}>
-              <TableCell
-                align="center"
-                sx={{ fontWeight: "bold", color: "white" }}
-              >
-                Name
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ fontWeight: "bold", color: "white" }}
-              >
-                Credit
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ fontWeight: "bold", color: "white" }}
-              >
-                Debit
-              </TableCell>
+            <TableRow>
+              <StyledTableCell align="center">Name</StyledTableCell>
+              <StyledTableCell align="center">Credit</StyledTableCell>
+              <StyledTableCell align="center">Debit</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>

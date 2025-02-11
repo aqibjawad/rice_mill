@@ -185,7 +185,6 @@ const Page = () => {
                 <StyledTableCell>Sr No</StyledTableCell>
                 <StyledTableCell>Person Name</StyledTableCell>
                 <StyledTableCell>Contact</StyledTableCell>
-                <StyledTableCell>Address</StyledTableCell>
                 <StyledTableCell>Firm Name</StyledTableCell>
                 <StyledTableCell>Balance</StyledTableCell>
                 <StyledTableCell>Action</StyledTableCell>
@@ -199,15 +198,13 @@ const Page = () => {
                   <StyledTableCell>
                     {row.customer?.contact || "N/A"}
                   </StyledTableCell>
-                  <StyledTableCell>{row.description || "N/A"}</StyledTableCell>
                   <StyledTableCell>
                     {row.bank?.address || "N/A"}
                   </StyledTableCell>
-                  <StyledTableCell align="right">
+                  <StyledTableCell>
                     {row.firm_name}
                   </StyledTableCell>
                   <StyledTableCell
-                    align="right"
                     sx={{
                       color:
                         parseFloat(row.balance) < 0
