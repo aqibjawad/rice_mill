@@ -106,7 +106,7 @@ const Page = () => {
         >
           {/* Left Section */}
           <Grid item xs={12} md={4} lg={6}>
-            <Box sx={{ fontSize: "24px", fontWeight: 600 }}>Party</Box>
+            <Box sx={{ fontSize: "24px", fontWeight: 600 }}>Banks</Box>
           </Grid>
 
           {/* Right Section */}
@@ -193,7 +193,6 @@ const Page = () => {
                       <StyledTableCell>{row.balance || "N/A"}</StyledTableCell>
 
                       <StyledTableCell
-                        align="right"
                         sx={{
                           color:
                             parseFloat(row.balance) < 0

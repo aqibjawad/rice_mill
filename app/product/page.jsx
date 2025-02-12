@@ -129,7 +129,7 @@ const Page = () => {
         >
           {/* Left Section */}
           <Grid item xs={12} md={4} lg={6}>
-            <Box sx={{ fontSize: "24px", fontWeight: 600 }}>Party</Box>
+            <Box sx={{ fontSize: "24px", fontWeight: 600 }}>Products</Box>
           </Grid>
 
           {/* Right Section */}

@@ -41,17 +41,17 @@ const Header = () => {
     { href: "/dashboard/", icon: <FaHome />, label: "Dashboard" },
     { href: "/sale/", icon: <FaUserTie />, label: "Sales" },
     { href: "/purchase/", icon: <FaShoppingBag />, label: "Purchase" },
-    { href: "/inflow/", icon: <FaArrowRight />, label: "Inflow" },
-    { href: "/outflow/", icon: <FaArrowLeft />, label: "Outflow" },
+    { href: "/inflow/", icon: <FaArrowRight />, label: "Recieves" },
+    { href: "/outflow/", icon: <FaArrowLeft />, label: "Payments" },
     { href: "/trialBalance/", icon: <FaTruck />, label: "Trial Balance" },
     { href: "/investor/", icon: <FaTruck />, label: "Investor" },
     { href: "/party/", icon: <FaUserTie />, label: "Party" },
     { href: "/expenses/", icon: <FaMoneyBill />, label: "Expenses" },
     { href: "/companyLedger/", icon: <FaMoneyBill />, label: "Ledger" },
-    { href: "/bankCheque/", icon: <FaArrowRight />, label: "Bank Cheque" },
+    { href: "/bankCheque/", icon: <FaArrowRight />, label: "Banks" },
     { href: "/product/", icon: <FaShoppingCart />, label: "Products" },
-    { href: "/packing/", icon: <FaBox />, label: "Packing" },
-    { href: "/stock/", icon: <FaBoxes />, label: "Stock" },
+    // { href: "/packing/", icon: <FaBox />, label: "Packing" },
+    // { href: "/stock/", icon: <FaBoxes />, label: "Stock" },
   ];
 
   return (

@@ -237,12 +237,17 @@ const Page = () => {
               // router.push("/dashboard");
               break;
             case "investor":
-              router.push("/dashboard");
+              router.back("/");
               break;
           }
         } else {
           // Handle API error response
-          Swal.fire("Error", response?.message || "The cash amount cannot be greater than the available company balance", "error");
+          Swal.fire(
+            "Error",
+            response?.message ||
+              "The cash amount cannot be greater than the available company balance",
+            "error"
+          );
         }
       } else {
         throw new Error("Selected party not found");
@@ -250,7 +255,9 @@ const Page = () => {
     } catch (error) {
       console.error("Error submitting data:", error);
       const errorMessage =
-        error.response?.message || error.message || "The cash amount cannot be greater than the available company balance";
+        error.response?.message ||
+        error.message ||
+        "The cash amount cannot be greater than the available company balance";
       Swal.fire("Error", errorMessage, "error");
     } finally {
       setLoadingSubmit(false);

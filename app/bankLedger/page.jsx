@@ -15,6 +15,15 @@ import {
 } from "@mui/material";
 import { banks, getLocalStorage } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
+import DateFilters from "@/components/generic/DateFilter";
+
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
 
 const Page = () => {
   const api = new APICall();
@@ -26,14 +35,36 @@ const Page = () => {
 
   const bankId = getLocalStorage("selectedRowId");
 
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [startDate, endDate]);
 
   const fetchData = async () => {
+    setLoading(true); // Set loading to true when fetching data
+    const queryParams = [];
+
+    if (startDate && endDate) {
+      queryParams.push(`start_date=${startDate}`);
+      queryParams.push(`end_date=${endDate}`);
+    } else {
+      const now = new Date();
+      const monthStartDate = startOfDay(now);
+      const monthEndDate = endOfDay(now);
+
+      const formattedStartDate = format(monthStartDate, "yyyy-MM-dd");
+      const formattedEndDate = format(monthEndDate, "yyyy-MM-dd");
+
+      queryParams.push(`start_date=${formattedStartDate}`);
+      queryParams.push(`end_date=${formattedEndDate}`);
+    }
+
+    const queryString = queryParams.join("&");
     try {
       const response = await api.getDataWithToken(
-        `${banks}/transection/detail/${bankId}`
+        `${banks}/transection/detail/${bankId}?${queryString}`
       );
       const fetchedData = response.data;
       setData(fetchedData);
@@ -64,9 +95,23 @@ const Page = () => {
     }
   };
 
-  if (loading)
-    return <Skeleton variant="rectangular" width="100%" height={200} />;
-  if (error) return <div>Error: {error}</div>;
+  const handleDateChange = (start, end) => {
+    setLoading(true); // Start loading when date changes
+    if (start === "this-month") {
+      const now = new Date();
+      const monthStartDate = startOfMonth(now);
+      const monthEndDate = endOfMonth(now);
+
+      const formattedStartDate = format(monthStartDate, "yyyy-MM-dd");
+      const formattedEndDate = format(monthEndDate, "yyyy-MM-dd");
+
+      setStartDate(formattedStartDate);
+      setEndDate(formattedEndDate);
+    } else {
+      setStartDate(start);
+      setEndDate(end);
+    }
+  };
 
   return (
     <div>
@@ -75,6 +120,9 @@ const Page = () => {
           <Grid item lg={8} sm={12} xs={12} md={4}>
             <div className={styles.leftSection}>{data.bank_name}</div>
             <div className="mb-5">Bank Balance: {data.balance}</div>
+          </Grid>
+          <Grid>
+            <DateFilters onDateChange={handleDateChange} />
           </Grid>
         </Grid>
       </div>
@@ -94,18 +142,28 @@ const Page = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {tableData.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>{row.srNo}</TableCell>
-                <TableCell>{row.description || "N/A"}</TableCell>
-                <TableCell>{row.customerName}</TableCell>
-                <TableCell>{row.customerType}</TableCell>
-                <TableCell>{row.payment_type}</TableCell>
-                <TableCell>{row.amountType}</TableCell>
-                <TableCell>{row.displayAmount}</TableCell>
-                <TableCell>{row.transection_id}</TableCell>
-              </TableRow>
-            ))}
+            {loading
+              ? Array.from(new Array(5)).map((_, index) => (
+                  <TableRow key={index}>
+                    {Array.from(new Array(8)).map((_, cellIndex) => (
+                      <TableCell key={cellIndex}>
+                        <Skeleton variant="text" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              : tableData.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>{row.srNo}</TableCell>
+                    <TableCell>{row.description || "N/A"}</TableCell>
+                    <TableCell>{row.customerName}</TableCell>
+                    <TableCell>{row.customerType}</TableCell>
+                    <TableCell>{row.payment_type}</TableCell>
+                    <TableCell>{row.amountType}</TableCell>
+                    <TableCell>{row.displayAmount}</TableCell>
+                    <TableCell>{row.transection_id}</TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </TableContainer>
