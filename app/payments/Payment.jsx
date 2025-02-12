@@ -5,10 +5,20 @@ import { useRouter } from "next/navigation";
 import styles from "../../styles/paymentRecieves.module.css";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import MultilineInput from "../../components/generic/MultilineInput";
-import Autocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
-import Skeleton from "@mui/material/Skeleton";
-import Grid from "@mui/material/Grid";
+import {
+  Box,
+  Tab,
+  Tabs,
+  Grid,
+  Autocomplete,
+  TextField,
+  Button,
+  FormControlLabel,
+  Checkbox,
+  Card,
+  CardContent,
+  Skeleton,
+} from "@mui/material";
 import Swal from "sweetalert2"; // Import SweetAlert2
 
 import {
@@ -49,6 +59,7 @@ const Page = () => {
   const [tablePartyData, setPartyData] = useState([]);
   const [dataFetched, setDataFetched] = useState(false); // Flag to track if both data have been fetched
   const [responseData, setResponseData] = useState();
+  const [isSelf, setIsSelf] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -265,86 +276,97 @@ const Page = () => {
   };
 
   return (
-    <div>
-      <div className="mt-5">
-        <div className={styles.tabPaymentContainer}>
-          <button
-            className={`${styles.tabPaymentButton} ${
-              activeTab === "cash" ? styles.active : ""
-            }`}
-            onClick={() => handleTabClick("cash")}
-          >
-            Cash
-          </button>
-          <button
-            className={`${styles.tabPaymentButton} ${
-              activeTab === "cheque" ? styles.active : ""
-            }`}
-            onClick={() => handleTabClick("cheque")}
-          >
-            Cheque
-          </button>
-          <button
-            className={`${styles.tabPaymentButton} ${
-              activeTab === "both" ? styles.active : ""
-            }`}
-            onClick={() => handleTabClick("both")}
-          >
-            Both
-          </button>
-          <button
-            className={`${styles.tabPaymentButton} ${
-              activeTab === "online" ? styles.active : ""
-            }`}
-            onClick={() => handleTabClick("online")}
-          >
-            Online
-          </button>
-        </div>
-      </div>
-
-      <Grid container spacing={2} className="mt-5">
-        <Grid item xs={12} md={6}>
-          {loading ? (
-            <Skeleton variant="rectangular" width="100%" height={56} />
-          ) : (
-            <div className="mt-5">
-              <DropDown
-                title="Select Party"
-                options={tablePartyData}
-                onChange={handleDropdownChange}
-                value={selectedParty} // Use the selectedParty state here
-                name={
-                  selectedParty?.customer_type === "party"
-                    ? "sup_id"
-                    : "party_id"
-                }
-              />
+    <Card sx={{ p: 3, maxWidth: 1200, mx: "auto", mt: 3 }}>
+      <CardContent>
+        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+          <div className="mt-5">
+            <div className={styles.tabPaymentContainer}>
+              <button
+                className={`${styles.tabPaymentButton} ${
+                  activeTab === "cash" ? styles.active : ""
+                }`}
+                onClick={() => handleTabClick("cash")}
+              >
+                Cash
+              </button>
+              <button
+                className={`${styles.tabPaymentButton} ${
+                  activeTab === "cheque" ? styles.active : ""
+                }`}
+                onClick={() => handleTabClick("cheque")}
+              >
+                Cheque
+              </button>
+              <button
+                className={`${styles.tabPaymentButton} ${
+                  activeTab === "both" ? styles.active : ""
+                }`}
+                onClick={() => handleTabClick("both")}
+              >
+                Both
+              </button>
+              <button
+                className={`${styles.tabPaymentButton} ${
+                  activeTab === "online" ? styles.active : ""
+                }`}
+                onClick={() => handleTabClick("online")}
+              >
+                Online
+              </button>
             </div>
-          )}
-        </Grid>
-        <Grid item xs={12} md={6}>
-          {activeTab === "cash" || activeTab === "both" ? (
-            <InputWithTitle
-              title="Amount"
-              type="text"
-              placeholder="Amount"
-              value={formData.cash_amount}
-              name="cash_amount"
-              onChange={handleInputChange}
-            />
-          ) : null}
-        </Grid>
-      </Grid>
+          </div>
+        </Box>
 
-      <div className="mt-5">
-        <div className={styles.tabPaymentContent}>
-          {activeTab === "cheque" || activeTab === "both" ? (
-            <Grid container spacing={2} className="mt-5">
-              <Grid item xs={12} md={4} className="mt-5">
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isSelf}
+              onChange={(e) => setIsSelf(e.target.checked)}
+            />
+          }
+          label="Self Payment"
+          sx={{ mb: 2 }}
+        />
+
+        <Grid container spacing={3}>
+          {!isSelf && (
+            <Grid item xs={12} md={6}>
+              {loading ? (
+                <Skeleton variant="rectangular" height={56} />
+              ) : (
+                <DropDown
+                  title="Select Party"
+                  options={tablePartyData}
+                  onChange={handleDropdownChange}
+                  value={selectedParty}
+                  name={
+                    selectedParty?.customer_type === "party"
+                      ? "sup_id"
+                      : "party_id"
+                  }
+                />
+              )}
+            </Grid>
+          )}
+
+          {(activeTab === "cash" || activeTab === "both") && (
+            <Grid item xs={12} md={6}>
+              <InputWithTitle
+                title="Amount"
+                type="text"
+                placeholder="Amount"
+                name="cash_amount"
+                value={formData.cash_amount}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          )}
+
+          {(activeTab === "cheque" || activeTab === "both") && (
+            <>
+              <Grid item xs={12} md={4}>
                 <Autocomplete
                   disablePortal
-                  id="combo-box-demo"
                   options={tableBankData}
                   renderInput={(params) => (
                     <TextField {...params} label="Select Bank" />
@@ -352,7 +374,6 @@ const Page = () => {
                   onChange={handleBankSelect}
                 />
               </Grid>
-
               <Grid item xs={12} md={4}>
                 <InputWithTitle
                   title="Cheque Number"
@@ -363,7 +384,6 @@ const Page = () => {
                   onChange={handleInputChange}
                 />
               </Grid>
-
               <Grid item xs={12} md={4}>
                 <InputWithTitle
                   title="Cheque Date"
@@ -374,7 +394,6 @@ const Page = () => {
                   onChange={handleInputChange}
                 />
               </Grid>
-
               <Grid item xs={12} md={4}>
                 <InputWithTitle
                   title="Cheque Amount"
@@ -385,25 +404,23 @@ const Page = () => {
                   onChange={handleInputChange}
                 />
               </Grid>
-
-              <Grid className="" item xs={12} sm={4}>
+              <Grid item xs={12} md={4}>
                 <InputWithTitle
-                  title={"Bank Tax"}
-                  placeholder={"Bank Tax"}
+                  title="Bank Tax"
+                  placeholder="Bank Tax"
                   name="bank_tax"
                   value={formData.bank_tax}
                   onChange={handleInputChange}
                 />
               </Grid>
-            </Grid>
-          ) : null}
+            </>
+          )}
 
-          {activeTab === "online" ? (
-            <Grid container spacing={2} className="mt-5">
-              <Grid item xs={12} md={4} className="mt-5">
+          {activeTab === "online" && (
+            <>
+              <Grid item xs={12} md={4}>
                 <Autocomplete
                   disablePortal
-                  id="combo-box-demo"
                   options={tableBankData}
                   renderInput={(params) => (
                     <TextField {...params} label="Select Bank" />
@@ -416,12 +433,11 @@ const Page = () => {
                   title="Transaction Number"
                   type="text"
                   placeholder="Transaction Number"
-                  name="transection_id" // Changed from "cheque_no" to "transection_id"
+                  name="transection_id"
                   value={formData.transection_id}
                   onChange={handleInputChange}
                 />
               </Grid>
-
               <Grid item xs={12} md={4}>
                 <InputWithTitle
                   title="Transaction Amount"
@@ -432,20 +448,19 @@ const Page = () => {
                   onChange={handleInputChange}
                 />
               </Grid>
-
-              <Grid className="" item xs={12} sm={4}>
+              <Grid item xs={12} md={4}>
                 <InputWithTitle
-                  title={"Bank Tax"}
-                  placeholder={"Bank Tax"}
+                  title="Bank Tax"
+                  placeholder="Bank Tax"
                   name="bank_tax"
                   value={formData.bank_tax}
                   onChange={handleInputChange}
                 />
               </Grid>
-            </Grid>
-          ) : null}
+            </>
+          )}
 
-          <Grid className="mt-5" item xs={12} md={4} lg={8}>
+          <Grid item xs={12}>
             <MultilineInput
               title="Description"
               placeholder="Description"
@@ -454,19 +469,20 @@ const Page = () => {
               onChange={handleInputChange}
             />
           </Grid>
-        </div>
-      </div>
+        </Grid>
 
-      <div className={styles.btnCont}>
-        <button
-          className={styles.saveBtn}
-          onClick={handleSubmit}
-          disabled={loadingSubmit}
-        >
-          {loadingSubmit ? "Submitting..." : "Submit Payments"}
-        </button>
-      </div>
-    </div>
+        <Box sx={{ mt: 3, textAlign: "right" }}>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={loadingSubmit}
+            sx={{ minWidth: 200 }}
+          >
+            {loadingSubmit ? "Submitting..." : "Submit Payment"}
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
   );
 };
 
