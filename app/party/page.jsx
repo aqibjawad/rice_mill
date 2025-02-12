@@ -236,7 +236,6 @@ const Page = () => {
                 <StyledTableCell>Person Name</StyledTableCell>
                 <StyledTableCell>Contact</StyledTableCell>
                 <StyledTableCell>Address</StyledTableCell>
-                <StyledTableCell>Firm Name</StyledTableCell>
                 <StyledTableCell>Balance</StyledTableCell>
                 <StyledTableCell>Action</StyledTableCell>
               </TableRow>
@@ -276,20 +275,9 @@ const Page = () => {
                     <StyledTableRow key={row.id}>
                       <StyledTableCell>{index + 1}</StyledTableCell>
                       <StyledTableCell>{row.person_name}</StyledTableCell>
-                      <StyledTableCell>
-                        {row.customer?.contact || "N/A"}
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        {row.description || "N/A"}
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        {row.bank?.address || "N/A"}
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        {row.firm_name}
-                      </StyledTableCell>
+                      <StyledTableCell>{row.contact || "N/A"}</StyledTableCell>
+                      <StyledTableCell>{row.address || "N/A"}</StyledTableCell>
                       <StyledTableCell
-                        align="right"
                         sx={{
                           color:
                             parseFloat(row.balance) < 0
@@ -300,6 +288,7 @@ const Page = () => {
                       >
                         {row.current_balance}
                       </StyledTableCell>
+                      <StyledTableCell>View Details</StyledTableCell>
                     </StyledTableRow>
                   ))}
             </TableBody>

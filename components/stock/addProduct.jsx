@@ -83,12 +83,12 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
           text: "Data has been added successfully!",
         });
         handleClose();
-        // router.push("/purchase/");
+        router.back();
       } else {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: "The product name has already been taken",
+          text: `${response?.error?.message}`,
         });
         handleClose();
       }
@@ -96,11 +96,6 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
       setIsSubmitting(false);
     }
   };
-
-  const typeList = [
-    { label: "Sale", value: "other" },
-    { label: "Purchase", value: "paddy" },
-  ];
 
   return (
     <Modal
