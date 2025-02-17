@@ -117,7 +117,7 @@ const Page = () => {
     localStorage.setItem("supplerId", id);
     router.push("/supplier_ledger");
   };
-
+ 
   // New handler for search input
   const handleSearch = (value) => {
     setSearchQuery(value);

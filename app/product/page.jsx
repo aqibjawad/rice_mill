@@ -16,7 +16,7 @@ import {
   Box,
   Button,
   tableCellClasses,
-  styled
+  styled,
 } from "@mui/material";
 import { products } from "../../networkApi/Constants";
 import { MdDelete, MdEdit } from "react-icons/md";
@@ -25,7 +25,6 @@ import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
 
 import Link from "next/link";
-
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -217,38 +216,34 @@ const Page = () => {
                       </StyledTableCell>
                     </StyledTableRow>
                   ))
-                : tableData.map((row, index) => (
-                    <StyledTableRow key={row.id}>
-                      <StyledTableCell>{index + 1}</StyledTableCell>
-                      <StyledTableCell>{row.product_name}</StyledTableCell>
-                      <StyledTableCell>
-                        {row.remaining_weight || "N/A"}
-                      </StyledTableCell>
-                      <StyledTableCell>{row.balance || "N/A"}</StyledTableCell>
-                      <StyledTableCell
-                        sx={{
-                          color:
-                            parseFloat(row.balance) < 0
-                              ? "error.main"
-                              : "success.main",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        <IconButton
-                          onClick={() => handleDelete(row.id)}
-                          color="error"
-                        >
-                          <MdDelete />
-                        </IconButton>
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        {" "}
-                        <Link href={`/productDetails/?id=${row.id}`}>
-                          View Details
-                        </Link>
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  ))}
+                : tableData.map((row, index) => {
+                    const stock = row.company_product_stocks?.[0] || {}; // Stock ka pehla element ya empty object
+                    return (
+                      <StyledTableRow key={row.id}>
+                        <StyledTableCell>{index + 1}</StyledTableCell>
+                        <StyledTableCell>{row.product_name}</StyledTableCell>
+                        <StyledTableCell>
+                          {stock.remaining_weight || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {stock.balance || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <IconButton
+                            onClick={() => handleDelete(row.id)}
+                            color="error"
+                          >
+                            <MdDelete />
+                          </IconButton>
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Link href={`/productDetails/?id=${row.id}`}>
+                            View Details
+                          </Link>
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    );
+                  })}
             </TableBody>
           </Table>
         </TableContainer>

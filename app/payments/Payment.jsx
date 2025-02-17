@@ -29,6 +29,7 @@ import {
   suppliers,
   supplierLedger,
   investorLedger,
+  selfPayment,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
@@ -208,42 +209,62 @@ const Page = () => {
       let response;
       let requestData = { ...formData };
 
-      const selectedParty = tablePartyData.find(
-        (party) =>
-          party.id === formData.party_id || party.id === formData.investor_id
-      );
+      if (isSelf) {
+        requestData = {
+          bank_id: formData.bank_id,
+          amount: formData.cash_amount,
+          description: formData.description,
+        };
+        response = await api.postDataWithToken(
+          `${selfPayment}/bank_to_cash`,
+          requestData
+        );
+      } else {
+        const selectedParty = tablePartyData.find(
+          (party) =>
+            party.id === formData.party_id || party.id === formData.investor_id
+        );
 
-      if (selectedParty) {
-        switch (selectedParty.customer_type) {
-          case "party":
-            requestData = {
-              ...formData,
-              party_id: formData.party_id,
-            };
-            response = await api.postDataWithToken(partyLedger, requestData);
-            break;
-
-          case "investor":
-            requestData = {
-              ...formData,
-              investor_id: formData.investor_id,
-              cash_amount: formData.cash_amount
-                ? -Math.abs(formData.cash_amount)
-                : "",
-            };
-            response = await api.postDataWithToken(investorLedger, requestData);
-            break;
-
-          default:
-            throw new Error("Invalid customer type");
-        }
-
-        // Check response status
-        if (response?.status === "success") {
-          setResponseData(response);
-          Swal.fire("Success", "Your data has been added!", "success");
-
+        if (selectedParty) {
           switch (selectedParty.customer_type) {
+            case "party":
+              requestData = {
+                ...formData,
+                party_id: formData.party_id,
+              };
+              response = await api.postDataWithToken(partyLedger, requestData);
+              break;
+
+            case "investor":
+              requestData = {
+                ...formData,
+                investor_id: formData.investor_id,
+                cash_amount: formData.cash_amount
+                  ? -Math.abs(formData.cash_amount)
+                  : "",
+              };
+              response = await api.postDataWithToken(
+                investorLedger,
+                requestData
+              );
+              break;
+
+            default:
+              throw new Error("Invalid customer type");
+          }
+        } else {
+          throw new Error("Selected party not found");
+        }
+      }
+
+      // Check response status
+      if (response?.status === "success") {
+        setResponseData(response);
+        Swal.fire("Success", "Your data has been added!", "success");
+
+        if (!isSelf) {
+          // Only check customer type routing if not self payment
+          switch (selectedParty?.customer_type) {
             case "buyer":
               // router.push("/dashboard");
               break;
@@ -252,16 +273,17 @@ const Page = () => {
               break;
           }
         } else {
-          // Handle API error response
-          Swal.fire(
-            "Error",
-            response?.message ||
-              "The cash amount cannot be greater than the available company balance",
-            "error"
-          );
+          // Add any specific routing for self payment if needed
+          // router.push("/dashboard"); // Adjust route as needed
         }
       } else {
-        throw new Error("Selected party not found");
+        // Handle API error response
+        Swal.fire(
+          "Error",
+          response?.message ||
+            "The cash amount cannot be greater than the available company balance",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Error submitting data:", error);
@@ -316,17 +338,6 @@ const Page = () => {
             </div>
           </div>
         </Box>
-
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={isSelf}
-              onChange={(e) => setIsSelf(e.target.checked)}
-            />
-          }
-          label="Self Payment"
-          sx={{ mb: 2 }}
-        />
 
         <Grid container spacing={3}>
           {!isSelf && (
@@ -418,7 +429,20 @@ const Page = () => {
 
           {activeTab === "online" && (
             <>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isSelf}
+                      onChange={(e) => setIsSelf(e.target.checked)}
+                    />
+                  }
+                  label="Self Payment"
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+
+              <Grid className="mt-5" item xs={12} md={4}>
                 <Autocomplete
                   disablePortal
                   options={tableBankData}
@@ -428,16 +452,20 @@ const Page = () => {
                   onChange={handleBankSelect}
                 />
               </Grid>
-              <Grid item xs={12} md={4}>
-                <InputWithTitle
-                  title="Transaction Number"
-                  type="text"
-                  placeholder="Transaction Number"
-                  name="transection_id"
-                  value={formData.transection_id}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+
+              {!isSelf && (
+                <Grid item xs={12} md={4}>
+                  <InputWithTitle
+                    title="Transaction Number"
+                    type="text"
+                    placeholder="Transaction Number"
+                    name="transection_id"
+                    value={formData.transection_id}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+              )}
+
               <Grid item xs={12} md={4}>
                 <InputWithTitle
                   title="Transaction Amount"
@@ -448,15 +476,18 @@ const Page = () => {
                   onChange={handleInputChange}
                 />
               </Grid>
-              <Grid item xs={12} md={4}>
-                <InputWithTitle
-                  title="Bank Tax"
-                  placeholder="Bank Tax"
-                  name="bank_tax"
-                  value={formData.bank_tax}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+
+              {!isSelf && (
+                <Grid item xs={12} md={4}>
+                  <InputWithTitle
+                    title="Bank Tax"
+                    placeholder="Bank Tax"
+                    name="bank_tax"
+                    value={formData.bank_tax}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
+              )}
             </>
           )}
 

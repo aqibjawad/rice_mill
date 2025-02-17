@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import styles from "../../styles/ledger.module.css";
 import {
   Skeleton,
   Table,
@@ -11,22 +10,17 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography,
   Grid,
   Card,
-  CardContent,
   Box,
-  TextField,
   Button,
   tableCellClasses,
   styled,
 } from "@mui/material";
-import { MdDelete } from "react-icons/md";
 import AddBuyer from "../../components/stock/addBuyer";
 import { party } from "../../networkApi/Constants";
 import APICall from "@/networkApi/APICall";
 import Swal from "sweetalert2";
-import { AiOutlineSearch } from "react-icons/ai";
 
 import SearchInput from "@/components/generic/searchInput";
 
@@ -152,8 +146,8 @@ const Page = () => {
   };
 
   const handleViewDetails = (id) => {
-    localStorage.setItem("buyerId", id);
-    router.push("/buyer_ledger");
+    localStorage.setItem("partyId", id);
+    router.push("/partyLedger");
   };
 
   return (
@@ -288,7 +282,19 @@ const Page = () => {
                       >
                         {row.current_balance}
                       </StyledTableCell>
-                      <StyledTableCell>View Details</StyledTableCell>
+                      <StyledTableCell>
+                        <div
+                          style={{
+                            color: "#316AFF",
+                            fontSize: "15px",
+                            marginTop: "1rem",
+                          }}
+                        >
+                          <Button onClick={() => handleViewDetails(row.id)}>
+                            View Details
+                          </Button>
+                        </div>
+                      </StyledTableCell>
                     </StyledTableRow>
                   ))}
             </TableBody>

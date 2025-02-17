@@ -83,7 +83,7 @@ const AddProduct = ({ open, handleClose, editData = null }) => {
           text: "Data has been added successfully!",
         });
         handleClose();
-        router.back();
+        // router.back();
       } else {
         Swal.fire({
           icon: "error",

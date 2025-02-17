@@ -77,7 +77,9 @@ const Page = () => {
             customerName: entry.customer?.person_name || "N/A",
             customerType: entry.customer?.customer_type || "N/A",
             displayAmount:
-              entry.entry_type === "cr"
+              entry.customer?.customer_type === "self"
+                ? entry.cash_amount
+                : entry.entry_type === "cr"
                 ? `-${entry.cr_amount}`
                 : entry.dr_amount,
             amountType: entry.entry_type === "cr" ? "Credit" : "Debit",
