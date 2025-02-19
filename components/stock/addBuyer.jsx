@@ -135,6 +135,7 @@ const AddBuyer = ({ open, handleClose, editData = null }) => {
             : "Form submitted successfully"
         );
         handleClose();
+        window.location.reload();
       } catch (error) {
         console.error("An error occurred", error);
         showErrorAlert(error);

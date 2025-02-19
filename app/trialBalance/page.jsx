@@ -171,13 +171,13 @@ const CombinedTable = () => {
 
     combinedData.forEach((item) => {
       const amounts = renderAmount(item);
-      const name = item.is_cash
-        ? "Cash"
-        : item.person_name ||
-          item.expense_category ||
-          item.bank_name ||
-          item.product_name ||
-          "Unknown";
+      const name = item.type === "cash" 
+      ? `Cash: ${item.cash_amount || 0}`
+      : (item.person_name ||
+         item.expense_category ||
+         item.bank_name ||
+         item.product_name ||
+         "Unknown");
 
       tableRows.push([name, amounts.credit, amounts.debit]);
     });
