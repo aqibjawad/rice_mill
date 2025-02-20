@@ -260,24 +260,16 @@ const Page = () => {
       // Check response status
       if (response?.status === "success") {
         setResponseData(response);
-        // Swal.fire("Success", "Your data has been added!", "success");
-        alert("Your data has been added");
-        window.location.reload();
-
-        if (!isSelf) {
-          // Only check customer type routing if not self payment
-          switch (selectedParty?.customer_type) {
-            case "buyer":
-              // router.push("/dashboard");
-              break;
-            case "investor":
-              router.back("/");
-              break;
+        Swal.fire({
+          title: "Success",
+          text: "Your data has been added",
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
           }
-        } else {
-          // Add any specific routing for self payment if needed
-          window.location.reload();
-        }
+        });
       } else {
         // Handle API error response
         Swal.fire(

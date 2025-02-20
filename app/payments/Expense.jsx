@@ -183,9 +183,16 @@ const ExpensePayments = () => {
 
       // Check if response status is "success"
       if (response?.status === "success") {
-        console.log("Success:", response);
-        Swal.fire("Success", "Expenses Added!", "success");
-        router.push("/outflow");
+        Swal.fire({
+          title: "Success",
+          text: "Your data has been added",
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
+          }
+        });
       } else {
         throw new Error(response?.message || "Failed to add expenses.");
       }

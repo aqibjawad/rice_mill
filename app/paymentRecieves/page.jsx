@@ -298,11 +298,14 @@ const Page = () => {
         setResponseData(response);
         Swal.fire({
           title: "Success",
-          text: "Payment recorded successfully!",
+          text: "Your data has been added",
           icon: "success",
-          cancelButtonText: "Close",
+          confirmButtonText: "OK",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
+          }
         });
-        router.push("/dashboard");
       } else {
         throw new Error(response?.message || "Failed to submit payment");
       }
