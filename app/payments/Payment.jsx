@@ -260,7 +260,9 @@ const Page = () => {
       // Check response status
       if (response?.status === "success") {
         setResponseData(response);
-        Swal.fire("Success", "Your data has been added!", "success");
+        // Swal.fire("Success", "Your data has been added!", "success");
+        alert("Your data has been added");
+        window.location.reload();
 
         if (!isSelf) {
           // Only check customer type routing if not self payment
@@ -274,7 +276,7 @@ const Page = () => {
           }
         } else {
           // Add any specific routing for self payment if needed
-          // router.push("/dashboard"); // Adjust route as needed
+          window.location.reload();
         }
       } else {
         // Handle API error response

@@ -253,13 +253,13 @@ const CombinedTable = () => {
                 ))
               : combinedData.map((item, index) => {
                   const amounts = renderAmount(item);
-                  const name =
-                    item.is_cash ||
-                    item.person_name ||
-                    item.expense_category ||
-                    item.bank_name ||
-                    item.product_name ||
-                    "Unknown";
+                  const name = item.is_cash
+                    ? "Cash in hand"
+                    : item.person_name ||
+                      item.expense_category ||
+                      item.bank_name ||
+                      item.product_name ||
+                      "Unknown";
 
                   return (
                     <TableRow
