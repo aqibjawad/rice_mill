@@ -13,6 +13,9 @@ import {
   Paper,
   CircularProgress,
   Typography,
+  Grid,
+  Card,
+  CardContent,
 } from "@mui/material";
 
 const getParamFromUrl = (url, param) => {
@@ -54,6 +57,54 @@ const Page = () => {
     }
   };
 
+  // Calculate summary values
+  const getTotalStockIn = () => {
+    return stockDetails.reduce(
+      (total, stock) => total + (Number(stock.stock_in) || 0),
+      0
+    );
+  };
+
+  const getTotalStockOut = () => {
+    return stockDetails.reduce(
+      (total, stock) => total + (Number(stock.stock_out) || 0),
+      0
+    );
+  };
+
+  const getLatestRemainingWeight = () => {
+    if (stockDetails.length === 0) return "N/A";
+    return stockDetails[stockDetails.length - 1].remaining_weight;
+  };
+
+  const getTotalPurchasePrice = () => {
+    return stockDetails
+      .filter((stock) => stock.entry_type?.toLowerCase() === "purchase")
+      .reduce((total, stock) => total + (Number(stock.total_amount) || 0), 0);
+  };
+
+  const getTotalSalePrice = () => {
+    return stockDetails
+      .filter((stock) => stock.entry_type?.toLowerCase() === "sale")
+      .reduce((total, stock) => total + (Number(stock.total_amount) || 0), 0);
+  };
+
+  const getAveragePurchasePrice = () => {
+    const totalPurchaseAmount = getTotalPurchasePrice();
+    const totalStockIn = getTotalStockIn();
+
+    if (totalStockIn === 0) return 0;
+    return (totalPurchaseAmount / totalStockIn).toFixed(2);
+  };
+
+  const getAverageSalePrice = () => {
+    const totalSaleAmount = getTotalSalePrice();
+    const totalStockOut = getTotalStockOut();
+
+    if (totalStockOut === 0) return 0;
+    return (totalSaleAmount / totalStockOut).toFixed(2);
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       {loading ? (
@@ -66,7 +117,7 @@ const Page = () => {
             Product: {productName}
           </Typography>
 
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ marginBottom: 4 }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -120,6 +171,96 @@ const Page = () => {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Summary Cards */}
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ height: "100%", bgcolor: "#e3f2fd" }}>
+                <CardContent>
+                  <Typography variant="h6" component="div" gutterBottom>
+                    Stock In (Purchase)
+                  </Typography>
+                  <Typography variant="h4">{getTotalStockIn()}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ height: "100%", bgcolor: "#fff8e1" }}>
+                <CardContent>
+                  <Typography variant="h6" component="div" gutterBottom>
+                    Stock Out (Sale)
+                  </Typography>
+                  <Typography variant="h4">{getTotalStockOut()}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ height: "100%", bgcolor: "#e8f5e9" }}>
+                <CardContent>
+                  <Typography variant="h6" component="div" gutterBottom>
+                    Remaining Weight
+                  </Typography>
+                  <Typography variant="h4">
+                    {getLatestRemainingWeight()}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ height: "100%", bgcolor: "#f3e5f5" }}>
+                <CardContent>
+                  <Typography variant="h6" component="div" gutterBottom>
+                    Total Prices
+                  </Typography>
+                  <Grid container spacing={1}>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="textSecondary">
+                        Purchase:
+                      </Typography>
+                      <Typography variant="body1" fontWeight="bold">
+                        {getTotalPurchasePrice()}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="textSecondary">
+                        Sale:
+                      </Typography>
+                      <Typography variant="body1" fontWeight="bold">
+                        {getTotalSalePrice()}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ height: "100%", bgcolor: "#ffebee" }}>
+                <CardContent>
+                  <Typography variant="h6" component="div" gutterBottom>
+                    Avg. Purchase Price (KG)
+                  </Typography>
+                  <Typography variant="h4">
+                    {getAveragePurchasePrice()}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ height: "100%", bgcolor: "#e0f7fa" }}>
+                <CardContent>
+                  <Typography variant="h6" component="div" gutterBottom>
+                    Avg. Sale Price (KG)
+                  </Typography>
+                  <Typography variant="h4">{getAverageSalePrice()}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
         </>
       )}
     </div>

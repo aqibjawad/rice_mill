@@ -16,6 +16,8 @@ import {
   partyLedger,
   investors,
   investorLedger,
+  products,
+  companyProduct, // Added companyProduct endpoint
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
@@ -28,6 +30,7 @@ const Page = () => {
   const [formData, setFormData] = useState({
     party_id: "",
     investor_id: "",
+    product_id: "", // Added product_id
     payment_type: "cash",
     description: "",
     cash_amount: "",
@@ -40,6 +43,7 @@ const Page = () => {
 
   const [selectedParty, setSelectedParty] = useState(null);
   const [tableBankData, setTableBankData] = useState([]);
+  const [tableProductData, setTableProductData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [activeTab, setActiveTab] = useState("cash");
@@ -51,6 +55,7 @@ const Page = () => {
     fetchData();
     fetchBankData();
     fetchInvestorsData();
+    fetchProductData();
   }, []);
 
   const displayPositiveAmount = (amount) => {
@@ -72,7 +77,7 @@ const Page = () => {
       if (Array.isArray(data)) {
         const formattedData = data.map((party) => ({
           label: `${party.person_name} (party)`,
-          customer_type: party.customer_type,
+          customer_type: "party",
           id: party.id,
         }));
 
@@ -102,7 +107,7 @@ const Page = () => {
       if (Array.isArray(data)) {
         const formattedData = data.map((investor) => ({
           label: `${investor.person_name} (Investor)`,
-          customer_type: investor.customer_type,
+          customer_type: "investor",
           id: investor.id,
         }));
 
@@ -122,6 +127,39 @@ const Page = () => {
     } finally {
       setLoading(false);
       setDataFetched(true);
+    }
+  };
+
+  const fetchProductData = async () => {
+    try {
+      const response = await api.getDataWithToken(products);
+      const data = response.data;
+      if (Array.isArray(data)) {
+        const formattedData = data.map((product) => ({
+          label: `${product.product_name} (Product)`,
+          customer_type: "product", // Add customer_type for products
+          id: product.id,
+        }));
+
+        // Add product data to the same dropdown
+        setPartyData((prevData) => {
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
+
+        // Also keep the product data separately if needed
+        setTableProductData(formattedData);
+      } else {
+        throw new Error("Fetched product data is not an array");
+      }
+    } catch (error) {
+      console.error("Error fetching product data:", error.message);
+      Swal.fire("Error", "Failed to fetch product data", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -162,8 +200,11 @@ const Page = () => {
     if (name === "cash_amount" || name === "cheque_amount") {
       const cleanValue = value.replace(/[^\d.]/g, "");
 
-      if (selectedParty.customer_type === "investor") {
-        // For investors, keep positive value
+      if (
+        selectedParty?.customer_type === "investor" ||
+        selectedParty?.customer_type === "product"
+      ) {
+        // For investors and products, keep positive value
         setFormData((prevState) => ({
           ...prevState,
           [name]: cleanValue,
@@ -190,6 +231,7 @@ const Page = () => {
         ...prevState,
         party_id: "",
         investor_id: "",
+        product_id: "", // Reset product_id
         cash_amount: "",
         cheque_amount: "",
         description: "",
@@ -209,6 +251,11 @@ const Page = () => {
           ...prevState,
           investor_id: selectedOption.id,
         }));
+      } else if (selectedOption.customer_type === "product") {
+        setFormData((prevState) => ({
+          ...prevState,
+          product_id: selectedOption.id,
+        }));
       }
     }
   };
@@ -222,7 +269,11 @@ const Page = () => {
 
   const validateForm = () => {
     if (!selectedParty) {
-      Swal.fire("Error", "Please select a party", "error");
+      Swal.fire(
+        "Error",
+        "Please select a party, investor, or product",
+        "error"
+      );
       return false;
     }
 
@@ -292,6 +343,12 @@ const Page = () => {
           investor_id: formData.investor_id,
         };
         response = await api.postDataWithToken(investorLedger, requestData);
+      } else if (selectedParty.customer_type === "product") {
+        requestData = {
+          ...requestData,
+          product_id: formData.product_id,
+        };
+        response = await api.postDataWithToken(companyProduct, requestData);
       }
 
       if (response?.status === "success") {
@@ -354,14 +411,16 @@ const Page = () => {
             ) : (
               <div className="mt-5">
                 <DropDown
-                  title="Select Party"
+                  title="Select Party/Investor/Product"
                   options={tablePartyData}
                   onChange={handleDropdownChange}
                   value={selectedParty}
                   name={
                     selectedParty?.customer_type === "party"
                       ? "party_id"
-                      : "investor_id"
+                      : selectedParty?.customer_type === "investor"
+                      ? "investor_id"
+                      : "product_id"
                   }
                 />
               </div>

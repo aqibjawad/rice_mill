@@ -1,5 +1,5 @@
-// const baseURL = "https://backend-ghulambari.worldcitizenconsultants.com";
-const baseURL = "https://pre-backend-ghulambari.worldcitizenconsultants.com/public";
+const baseURL = "https://backend-ghulambari.worldcitizenconsultants.com";
+// const baseURL = "https://pre-backend-ghulambari.worldcitizenconsultants.com/public";
 const apiPrefix = baseURL + "/api";
 
 export const banks = apiPrefix + "/bank";
@@ -51,6 +51,8 @@ export const debitTrial = apiPrefix + "/dr/api";
 export const creditTrial = apiPrefix + "/cr/api";
 
 export const selfPayment = apiPrefix + "/self_payment";
+
+export const companyProduct = apiPrefix + "/company_product_stock";
 
 export const getLocalStorage = (key) => {
   if (typeof window !== "undefined") {
