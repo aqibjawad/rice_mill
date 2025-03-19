@@ -19,8 +19,9 @@ import {
   Chip,
   tableCellClasses,
   styled,
+  Button
 } from "@mui/material";
-import { MdDelete } from "react-icons/md";
+import { FaPlus } from "react-icons/fa";
 import AddInvestor from "../../components/stock/addInvestor";
 import { investors } from "../../networkApi/Constants";
 import Swal from "sweetalert2";
@@ -108,55 +109,37 @@ const Page = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      const response = await api.deleteDataWithToken(`${investors}/${id}`, {
-        method: "DELETE",
-      });
-
-      if ((response.status = "success")) {
-        setTableData((prevData) => prevData.filter((item) => item.id !== id));
-
-        Swal.fire({
-          title: "Deleted!",
-          text: "The investor has been deleted successfully.",
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-      } else {
-        Swal.fire({
-          title: "Error!",
-          text: "Failed to delete the investor.",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      }
-    } catch (error) {
-      console.error("Error deleting Investor:", error);
-    }
-  };
-
-  const handleViewDetails = (id) => {
-    localStorage.setItem("investorId", id);
-    router.push("/investor_ledger");
-  };
-
   // Calculate total balance
   const totalBalance = tableData.reduce(
     (total, row) => total + parseFloat(row.current_balance || 0),
     0
   );
 
+  const AddButton = styled(Button)(({ theme }) => ({
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    "&:hover": {
+      backgroundColor: theme.palette.primary.dark,
+    },
+    textTransform: "none",
+    minWidth: "120px",
+    height: "40px",
+    marginRight: theme.spacing(2),
+  }));
+
   return (
     <div>
       <Box sx={{ p: 3 }}>
         <div className={styles.container}>
           <div className={styles.leftSection}>Investors</div>
-          <div className={styles.rightSection}>
+          {/* <div className={styles.rightSection}>
             <div className={styles.rightItemExp} onClick={handleOpen}>
               + Add
             </div>
-          </div>
+          </div> */}
+          <AddButton onClick={handleOpen} variant="contained" startIcon={<FaPlus />}>
+            Add New
+          </AddButton>
         </div>
         {/* Summary Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -201,9 +184,7 @@ const Page = () => {
                   <StyledTableCell>
                     {row.bank?.address || "N/A"}
                   </StyledTableCell>
-                  <StyledTableCell>
-                    {row.firm_name}
-                  </StyledTableCell>
+                  <StyledTableCell>{row.firm_name}</StyledTableCell>
                   <StyledTableCell
                     sx={{
                       color:

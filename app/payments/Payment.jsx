@@ -26,10 +26,10 @@ import {
   banks,
   partyLedger,
   investors,
-  suppliers,
-  supplierLedger,
+  companyProduct,
   investorLedger,
   selfPayment,
+  products,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
@@ -41,6 +41,7 @@ const Page = () => {
   const [formData, setFormData] = useState({
     party_id: "",
     sup_id: "",
+    product_id: "",
     payment_type: "cash",
     description: "",
     cash_amount: "",
@@ -62,11 +63,48 @@ const Page = () => {
   const [responseData, setResponseData] = useState();
   const [isSelf, setIsSelf] = useState(false);
 
+  const [tableProductData, setTableProductData] = useState([]);
+  const [producttData, setProductData] = useState([]);
+
   useEffect(() => {
     fetchData();
     fetchBankData();
     fetchInvestorsData();
+    fetchProductData();
   }, []);
+
+  const fetchProductData = async () => {
+    try {
+      const response = await api.getDataWithToken(products);
+      const data = response.data;
+      if (Array.isArray(data)) {
+        const formattedData = data.map((product) => ({
+          label: `${product.product_name} (Product)`,
+          customer_type: "product", // Add customer_type for products
+          id: product.id,
+        }));
+
+        // Add product data to the same tablePartyData that's used for the dropdown
+        setPartyData((prevData) => {
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
+
+        // Also keep the product data separately if needed
+        setTableProductData(formattedData);
+      } else {
+        throw new Error("Fetched product data is not an array");
+      }
+    } catch (error) {
+      console.error("Error fetching product data:", error.message);
+      Swal.fire("Error", "Failed to fetch product data", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -177,6 +215,7 @@ const Page = () => {
         ...prevState,
         party_id: "",
         investor_id: "",
+        product_id: "",
       }));
 
       // Set the appropriate ID based on customer type
@@ -190,7 +229,15 @@ const Page = () => {
           ...prevState,
           investor_id: selectedOption.id,
         }));
+      } else if (selectedOption.customer_type === "product") {
+        setFormData((prevState) => ({
+          ...prevState,
+          product_id: selectedOption.id,
+        }));
       }
+
+      // Add a console log to see what's happening
+      console.log("Selected option:", selectedOption);
     }
   };
 
@@ -210,6 +257,7 @@ const Page = () => {
       let requestData = { ...formData };
 
       if (isSelf) {
+        // Self payment logic remains the same
         requestData = {
           bank_id: formData.bank_id,
           amount: formData.cash_amount,
@@ -220,13 +268,18 @@ const Page = () => {
           requestData
         );
       } else {
-        const selectedParty = tablePartyData.find(
-          (party) =>
-            party.id === formData.party_id || party.id === formData.investor_id
+        // Find the selected item (party, investor, or product)
+        const selectedItem = tablePartyData.find(
+          (item) =>
+            (item.customer_type === "party" && item.id === formData.party_id) ||
+            (item.customer_type === "investor" &&
+              item.id === formData.investor_id) ||
+            (item.customer_type === "product" &&
+              item.id === formData.product_id)
         );
 
-        if (selectedParty) {
-          switch (selectedParty.customer_type) {
+        if (selectedItem) {
+          switch (selectedItem.customer_type) {
             case "party":
               requestData = {
                 ...formData,
@@ -249,6 +302,18 @@ const Page = () => {
               );
               break;
 
+            case "product":
+              requestData = {
+                ...formData,
+                product_id: formData.product_id,
+                cash_amount: formData.cash_amount,
+              };
+              response = await api.postDataWithToken(
+                companyProduct,
+                requestData
+              );
+              break;
+
             default:
               throw new Error("Invalid customer type");
           }
@@ -267,7 +332,7 @@ const Page = () => {
           confirmButtonText: "OK",
         }).then((result) => {
           if (result.isConfirmed) {
-            window.location.reload();
+            router.push("/dashboard");
           }
         });
       } else {
@@ -344,10 +409,17 @@ const Page = () => {
                   options={tablePartyData}
                   onChange={handleDropdownChange}
                   value={selectedParty}
+                  // name={
+                  //   selectedParty?.customer_type === "party"
+                  //     ? "sup_id"
+                  //     : "party_id"
+                  // }
                   name={
                     selectedParty?.customer_type === "party"
                       ? "sup_id"
-                      : "party_id"
+                      : selectedParty?.customer_type === "investor"
+                      ? "party_id"
+                      : "product_id"
                   }
                 />
               )}

@@ -21,6 +21,7 @@ import AddBuyer from "../../components/stock/addBuyer";
 import { party } from "../../networkApi/Constants";
 import APICall from "@/networkApi/APICall";
 import Swal from "sweetalert2";
+import { FaPlus } from "react-icons/fa";
 
 import SearchInput from "@/components/generic/searchInput";
 
@@ -58,6 +59,18 @@ const TotalCard = styled(Card)(({ theme }) => ({
     transform: "translateY(-2px)",
     transition: "all 0.3s",
   },
+}));
+
+const AddButton = styled(Button)(({ theme }) => ({
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.common.white,
+  "&:hover": {
+    backgroundColor: theme.palette.primary.dark,
+  },
+  textTransform: "none",
+  minWidth: "120px",
+  height: "40px",
+  marginRight: theme.spacing(2),
 }));
 
 const Page = () => {
@@ -183,7 +196,7 @@ const Page = () => {
 
               {/* Add Button */}
               <Grid item xs={6} sm={6} md={4} lg={4}>
-                <Button
+                {/* <Button
                   fullWidth
                   variant="contained"
                   color="primary"
@@ -196,7 +209,14 @@ const Page = () => {
                   onClick={handleOpen}
                 >
                   + Add
-                </Button>
+                </Button> */}
+                <AddButton
+                  onClick={handleOpen}
+                  variant="contained"
+                  startIcon={<FaPlus />}
+                >
+                  Add New
+                </AddButton>
               </Grid>
             </Grid>
           </Grid>
