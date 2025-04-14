@@ -332,7 +332,8 @@ const Page = () => {
           confirmButtonText: "OK",
         }).then((result) => {
           if (result.isConfirmed) {
-            router.push("/dashboard");
+            // router.push("/dashboard");
+            window.location.reload();
           }
         });
       } else {

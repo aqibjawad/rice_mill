@@ -302,7 +302,8 @@ const Page = () => {
           icon: "success",
           cancelButtonText: "Close",
         });
-        router.push("/dashboard");
+        // router.push("/dashboard");
+        window.location.reload();
       } else {
         throw new Error(response?.message || "Failed to submit payment");
       }

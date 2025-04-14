@@ -64,10 +64,15 @@ const CombinedTable = () => {
           ]);
 
         const mergedData = [
-          ...debitResponse.data.expense_categories.map((category) => ({
-            ...category,
-            type: "expense_category",
-          })),
+          // Filter out "Product Expense" from expense_categories here
+          ...debitResponse.data.expense_categories
+            .filter(
+              (category) => category.expense_category !== "Product Expense"
+            )
+            .map((category) => ({
+              ...category,
+              type: "expense_category",
+            })),
           ...debitResponse.data.parties.map((party) => ({
             ...party,
             type: "party",
@@ -85,11 +90,13 @@ const CombinedTable = () => {
             ...investor,
             type: "investor",
           })),
-          ...productsResponse.data.map((product) => ({
-            ...product,
-            balance: product.company_product_stocks[0]?.balance || "0",
-            type: "product",
-          })),
+          ...productsResponse.data
+            .filter((product) => product.product_name !== "Product Expense")
+            .map((product) => ({
+              ...product,
+              balance: product.company_product_stocks[0]?.balance || "0",
+              type: "product",
+            })),
         ];
 
         setCombinedData(mergedData);
@@ -152,6 +159,10 @@ const CombinedTable = () => {
 
   const calculateTotals = (dataType) => {
     return combinedData.reduce((sum, item) => {
+      // Skip "Product Expense" in calculation
+      if (item.type === "product" && item.product_name === "Product Expense") {
+        return sum;
+      }
       const amount = renderAmount(item);
       return sum + parseFloat(amount[dataType] !== "-" ? amount[dataType] : 0);
     }, 0);
@@ -169,18 +180,25 @@ const CombinedTable = () => {
     const tableColumn = ["Name", "Credit", "Debit"];
     const tableRows = [];
 
-    combinedData.forEach((item) => {
-      const amounts = renderAmount(item);
-      const name = item.type === "cash" 
-      ? `Cash: ${item.cash_amount || 0}`
-      : (item.person_name ||
-         item.expense_category ||
-         item.bank_name ||
-         item.product_name ||
-         "Unknown");
+    // Filter out "Product Expense" when generating PDF
+    combinedData
+      .filter(
+        (item) =>
+          !(item.type === "product" && item.product_name === "Product Expense")
+      )
+      .forEach((item) => {
+        const amounts = renderAmount(item);
+        const name =
+          item.type === "cash"
+            ? `Cash: ${item.cash_amount || 0}`
+            : item.person_name ||
+              item.expense_category ||
+              item.bank_name ||
+              item.product_name ||
+              "Unknown";
 
-      tableRows.push([name, amounts.credit, amounts.debit]);
-    });
+        tableRows.push([name, amounts.credit, amounts.debit]);
+      });
 
     // Add totals
     tableRows.push(["Total", totalCredit.toFixed(2), totalDebit.toFixed(2)]);
@@ -251,27 +269,36 @@ const CombinedTable = () => {
                     </TableCell>
                   </TableRow>
                 ))
-              : combinedData.map((item, index) => {
-                  const amounts = renderAmount(item);
-                  const name = item.is_cash
-                    ? "Cash in hand"
-                    : item.person_name ||
-                      item.expense_category ||
-                      item.bank_name ||
-                      item.product_name ||
-                      "Unknown";
+              : combinedData
+                  // Filter out "Product Expense" from table display
+                  .filter(
+                    (item) =>
+                      !(
+                        item.type === "product" &&
+                        item.product_name === "Product Expense"
+                      )
+                  )
+                  .map((item, index) => {
+                    const amounts = renderAmount(item);
+                    const name = item.is_cash
+                      ? "Cash in hand"
+                      : item.person_name ||
+                        item.expense_category ||
+                        item.bank_name ||
+                        item.product_name ||
+                        "Unknown";
 
-                  return (
-                    <TableRow
-                      key={index}
-                      sx={{ backgroundColor: getRowColor(item.type) }}
-                    >
-                      <TableCell align="center">{name}</TableCell>
-                      <TableCell align="center">{amounts.credit}</TableCell>
-                      <TableCell align="center">{amounts.debit}</TableCell>
-                    </TableRow>
-                  );
-                })}
+                    return (
+                      <TableRow
+                        key={index}
+                        sx={{ backgroundColor: getRowColor(item.type) }}
+                      >
+                        <TableCell align="center">{name}</TableCell>
+                        <TableCell align="center">{amounts.credit}</TableCell>
+                        <TableCell align="center">{amounts.debit}</TableCell>
+                      </TableRow>
+                    );
+                  })}
             {!loading && (
               <TableRow sx={{ backgroundColor: "#1976d2" }}>
                 <TableCell

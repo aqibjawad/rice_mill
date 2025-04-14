@@ -79,7 +79,11 @@ const Page = () => {
 
   const getTotalPurchasePrice = () => {
     return stockDetails
-      .filter((stock) => stock.entry_type?.toLowerCase() === "purchase")
+      .filter(
+        (stock) =>
+          stock.entry_type?.toLowerCase() === "purchase" ||
+          stock.entry_type?.toLowerCase() === "expense"
+      )
       .reduce((total, stock) => total + (Number(stock.total_amount) || 0), 0);
   };
 
@@ -139,6 +143,9 @@ const Page = () => {
                   <TableCell>
                     <b>Entry Type</b>
                   </TableCell>
+                  {/* <TableCell>
+                    <b>Description</b>
+                  </TableCell> */}
                   <TableCell>
                     <b> Party </b>
                   </TableCell>
@@ -161,7 +168,13 @@ const Page = () => {
                     <TableCell>{stock.stock_in}</TableCell>
                     <TableCell>{stock.stock_out}</TableCell>
                     <TableCell>{stock.remaining_weight}</TableCell>
-                    <TableCell>{stock.entry_type}</TableCell>
+                    <TableCell>
+                      {stock.entry_type === "expense"
+                        ? stock.description || "No description"
+                        : stock.entry_type}
+                    </TableCell>
+
+                    {/* <TableCell>{stock.description || "No Description"}</TableCell> */}
                     <TableCell>{stock?.party?.person_name}</TableCell>
                     <TableCell>{stock.price}</TableCell>
                     <TableCell>{stock.total_amount}</TableCell>
