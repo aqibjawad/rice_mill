@@ -56,7 +56,11 @@ const Page = () => {
       const data = response.data;
 
       if (Array.isArray(data)) {
-        setTableData(data);
+        // Filter out any expense with category "Product Expense"
+        const filteredData = data.filter(
+          (item) => item.expense_category !== "Product Expense"
+        );
+        setTableData(filteredData);
       } else {
         throw new Error("Fetched data is not an array");
       }
@@ -81,7 +85,7 @@ const Page = () => {
     router.push("/expenseDetails");
   };
 
-  // Calculate total expenses
+  // Calculate total expenses - excluding Product Expense category which is already filtered
   const totalExpenses = tableData.reduce(
     (total, item) => total + parseFloat(item.expenses_sum_total_amount || 0),
     0
@@ -101,6 +105,7 @@ const Page = () => {
               variant="contained"
               color="primary"
               style={{ marginRight: 10 }}
+              onClick={handleOpenExpense}
             >
               Add Expense
             </Button>
@@ -151,17 +156,6 @@ const Page = () => {
                     </TableRow>
                   ))}
             </TableBody>
-            {/* <TableFooter>
-              <TableRow>
-                <TableCell colSpan={2} align="right">
-                  <strong>Total Expenses:</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>{totalExpenses.toFixed(2)}</strong>
-                </TableCell>
-                <TableCell />
-              </TableRow>
-            </TableFooter> */}
           </Table>
         </TableContainer>
       </div>

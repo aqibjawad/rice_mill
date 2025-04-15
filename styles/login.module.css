@@ -33,9 +33,9 @@
 
 .text2 {
   position: absolute;
-  top: 60%;
+  bottom: 2rem;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   color: white;
   text-align: center;
   font-family: "regular";
@@ -43,7 +43,9 @@
   font-weight: 400;
   width: 80%;
   z-index: 1;
+  /* Remove any top property here */
 }
+
 
 .logoCont {
   position: absolute;
@@ -94,8 +96,8 @@
   }
 
   .text2 {
-    font-size: 10px;
-    top: 55%;
+    font-size: 18px;
+    bottom: 2rem;
   }
 
   .logoCont {
@@ -114,8 +116,8 @@
   }
 
   .text2 {
-    font-size: 10px;
-    top: 55%;
+    font-size: 16px;
+    bottom: 1.5rem;
   }
 
   .logoCont {
@@ -149,9 +151,9 @@
   }
 
   .text2 {
-    font-size: 15px;
-    top: 55%;
-    margin-top: 6rem;
+    font-size: 14px;
+    bottom: 1rem;
+    width: 90%; /* Increase width for small screens */
   }
 
   .logoCont {
@@ -185,7 +187,7 @@
   .loginImageContainer {
     position: relative;
     width: 100%;
-    height: 50vh;
+    height: 60vh;
     margin-top: -4.7rem;
   }
 }
