@@ -15,21 +15,18 @@ import {
   Card,
   CardContent,
   Box,
-  CircularProgress,
-  Chip,
   tableCellClasses,
   styled,
-  Button
+  Button,
 } from "@mui/material";
 import { FaPlus } from "react-icons/fa";
 import AddInvestor from "../../components/stock/addInvestor";
 import { investors } from "../../networkApi/Constants";
-import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { FaMoneyBillWave, FaUniversity } from "react-icons/fa";
-import ButtonsWithOutDate from "../../components/buttonsWithOutDate";
 
 import APICall from "@/networkApi/APICall";
+import Link from "next/link";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -137,7 +134,11 @@ const Page = () => {
               + Add
             </div>
           </div> */}
-          <AddButton onClick={handleOpen} variant="contained" startIcon={<FaPlus />}>
+          <AddButton
+            onClick={handleOpen}
+            variant="contained"
+            startIcon={<FaPlus />}
+          >
             Add New
           </AddButton>
         </div>
@@ -170,7 +171,7 @@ const Page = () => {
                 <StyledTableCell>Contact</StyledTableCell>
                 <StyledTableCell>Firm Name</StyledTableCell>
                 <StyledTableCell>Balance</StyledTableCell>
-                <StyledTableCell>Action</StyledTableCell>
+                <StyledTableCell>View Details</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -180,9 +181,6 @@ const Page = () => {
                   <StyledTableCell>{row.person_name}</StyledTableCell>
                   <StyledTableCell>
                     {row.customer?.contact || "N/A"}
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    {row.bank?.address || "N/A"}
                   </StyledTableCell>
                   <StyledTableCell>{row.firm_name}</StyledTableCell>
                   <StyledTableCell
@@ -195,6 +193,11 @@ const Page = () => {
                     }}
                   >
                     {row.current_balance}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    <Link href={`${`/investor_ledger/?id=${row.id}`}`}>
+                      View Details
+                    </Link>
                   </StyledTableCell>
                 </StyledTableRow>
               ))}

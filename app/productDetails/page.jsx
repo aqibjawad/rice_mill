@@ -13,9 +13,6 @@ import {
   Paper,
   CircularProgress,
   Typography,
-  Grid,
-  Card,
-  CardContent,
 } from "@mui/material";
 
 const getParamFromUrl = (url, param) => {
@@ -77,6 +74,25 @@ const Page = () => {
     return stockDetails[stockDetails.length - 1].remaining_weight;
   };
 
+  const getLastBalanceEntry = () => {
+    if (stockDetails.length === 0) return "N/A";
+    return stockDetails[stockDetails.length - 1].balance;
+  };
+
+  const getFinalAveragePrice = () => {
+    if (stockDetails.length === 0) return "N/A";
+    const remainingWeight = Number(getLatestRemainingWeight());
+    let balance = Number(getLastBalanceEntry());
+
+    // Take absolute value of balance to ignore negative sign
+    balance = Math.abs(balance);
+
+    if (balance === 0 || isNaN(balance) || isNaN(remainingWeight)) return "N/A";
+
+    // Calculate remaining weight divided by the absolute value of balance
+    return (balance / remainingWeight).toFixed(2);
+  };
+
   const getTotalPurchasePrice = () => {
     return stockDetails
       .filter(
@@ -129,31 +145,16 @@ const Page = () => {
                     <b>Sr No</b>
                   </TableCell>
                   <TableCell>
-                    <b>Total Weight</b>
+                    <b>Party</b>
                   </TableCell>
                   <TableCell>
-                    <b>Stock In</b>
+                    <b>Weight</b>
                   </TableCell>
                   <TableCell>
-                    <b>Stock Out</b>
+                    <b>Credit</b>
                   </TableCell>
                   <TableCell>
-                    <b>Remaining Weight</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Entry Type</b>
-                  </TableCell>
-                  {/* <TableCell>
-                    <b>Description</b>
-                  </TableCell> */}
-                  <TableCell>
-                    <b> Party </b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Price</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Total Amount</b>
+                    <b>Debit</b>
                   </TableCell>
                   <TableCell>
                     <b>Balance</b>
@@ -164,20 +165,23 @@ const Page = () => {
                 {stockDetails.map((stock, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{stock.total_weight}</TableCell>
-                    <TableCell>{stock.stock_in}</TableCell>
-                    <TableCell>{stock.stock_out}</TableCell>
-                    <TableCell>{stock.remaining_weight}</TableCell>
+                    <TableCell>{stock?.party?.person_name}</TableCell>
                     <TableCell>
-                      {stock.entry_type === "expense"
-                        ? stock.description || "No description"
-                        : stock.entry_type}
+                      {stock.entry_type === "sale"
+                        ? stock.stock_out
+                        : stock.stock_in}
                     </TableCell>
 
-                    {/* <TableCell>{stock.description || "No Description"}</TableCell> */}
-                    <TableCell>{stock?.party?.person_name}</TableCell>
-                    <TableCell>{stock.price}</TableCell>
-                    <TableCell>{stock.total_amount}</TableCell>
+                    <TableCell>
+                      {/* Credit if entry_type is 'purchase' */}
+                      {stock.entry_type === "purchase"
+                        ? stock.total_amount
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {/* Debit if entry_type is 'sale' */}
+                      {stock.entry_type === "sale" ? stock.total_amount : "-"}
+                    </TableCell>
                     <TableCell>{stock.balance}</TableCell>
                   </TableRow>
                 ))}
@@ -185,95 +189,50 @@ const Page = () => {
             </Table>
           </TableContainer>
 
-          {/* Summary Cards */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: "100%", bgcolor: "#e3f2fd" }}>
-                <CardContent>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    Stock In (Purchase)
-                  </Typography>
-                  <Typography variant="h4">{getTotalStockIn()}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: "100%", bgcolor: "#fff8e1" }}>
-                <CardContent>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    Stock Out (Sale)
-                  </Typography>
-                  <Typography variant="h4">{getTotalStockOut()}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: "100%", bgcolor: "#e8f5e9" }}>
-                <CardContent>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    Remaining Weight
-                  </Typography>
-                  <Typography variant="h4">
-                    {getLatestRemainingWeight()}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: "100%", bgcolor: "#f3e5f5" }}>
-                <CardContent>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    Total Prices
-                  </Typography>
-                  <Grid container spacing={1}>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="textSecondary">
-                        Purchase:
-                      </Typography>
-                      <Typography variant="body1" fontWeight="bold">
-                        {getTotalPurchasePrice()}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="textSecondary">
-                        Sale:
-                      </Typography>
-                      <Typography variant="body1" fontWeight="bold">
-                        {getTotalSalePrice()}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: "100%", bgcolor: "#ffebee" }}>
-                <CardContent>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    Avg. Purchase Price (KG)
-                  </Typography>
-                  <Typography variant="h4">
-                    {getAveragePurchasePrice()}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: "100%", bgcolor: "#e0f7fa" }}>
-                <CardContent>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    Avg. Sale Price (KG)
-                  </Typography>
-                  <Typography variant="h4">{getAverageSalePrice()}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          {/* Summary Table */}
+          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            Summary
+          </Typography>
+          <TableContainer component={Paper} sx={{ marginBottom: 4 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <b>DESCRIPTION</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>TOTAL WEIGHT</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>AVERAGE PRICE</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>TOTAL AMOUNT</b>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>PURCHASE</TableCell>
+                  <TableCell>{getTotalStockIn()}</TableCell>
+                  <TableCell>{getAveragePurchasePrice()}</TableCell>
+                  <TableCell>{getTotalPurchasePrice()}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>SALE</TableCell>
+                  <TableCell>{getTotalStockOut()}</TableCell>
+                  <TableCell>{getAverageSalePrice()}</TableCell>
+                  <TableCell>{getTotalSalePrice()}</TableCell>
+                </TableRow>
+                <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                  <TableCell>FINAL</TableCell>
+                  <TableCell>{getLatestRemainingWeight()}</TableCell>
+                  <TableCell>{getFinalAveragePrice()}</TableCell>
+                  <TableCell>{getLastBalanceEntry()}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
         </>
       )}
     </div>

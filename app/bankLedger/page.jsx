@@ -29,7 +29,10 @@ const Page = () => {
   const api = new APICall();
 
   const [tableData, setTableData] = useState([]);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState({
+    bank_name: "",
+    balance: "0.00",
+  });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +46,7 @@ const Page = () => {
   }, [startDate, endDate]);
 
   const fetchData = async () => {
-    setLoading(true); // Set loading to true when fetching data
+    setLoading(true);
     const queryParams = [];
 
     if (startDate && endDate) {
@@ -64,23 +67,26 @@ const Page = () => {
     const queryString = queryParams.join("&");
     try {
       const response = await api.getDataWithToken(
-        `${banks}/transection/detail/${bankId}?${queryString}`
+        `${banks}/transection/detail/${bankId}`
       );
       const fetchedData = response.data;
-      setData(fetchedData);
+      setData({
+        bank_name: fetchedData.bank_name,
+        balance: fetchedData.balance,
+      });
 
-      if (Array.isArray(fetchedData.customer_ledger)) {
-        const processedData = fetchedData.customer_ledger
+      if (Array.isArray(fetchedData.bank_ledger)) {
+        const processedData = fetchedData.bank_ledger
           .map((entry, index) => ({
             ...entry,
             srNo: index + 1,
-            customerName: entry.customer?.person_name || "N/A",
-            customerType: entry.customer?.customer_type || "N/A",
+            customerName: entry.linkable?.person_name || "N/A",
+            customerType: entry.linkable?.customer_type || "N/A",
             displayAmount:
-              entry.customer?.customer_type === "self"
-                ? entry.cash_amount
+              entry.linkable?.customer_type === "self"
+                ? entry.online_amount || entry.cheque_amount || "0.00"
                 : entry.entry_type === "cr"
-                ? `-${entry.cr_amount}`
+                ? entry.cr_amount
                 : entry.dr_amount,
             amountType: entry.entry_type === "cr" ? "Credit" : "Debit",
           }))
@@ -98,7 +104,7 @@ const Page = () => {
   };
 
   const handleDateChange = (start, end) => {
-    setLoading(true); // Start loading when date changes
+    setLoading(true);
     if (start === "this-month") {
       const now = new Date();
       const monthStartDate = startOfMonth(now);
@@ -123,7 +129,7 @@ const Page = () => {
             <div className={styles.leftSection}>{data.bank_name}</div>
             <div className="mb-5">Bank Balance: {data.balance}</div>
           </Grid>
-          <Grid>
+          <Grid item>
             <DateFilters onDateChange={handleDateChange} />
           </Grid>
         </Grid>
@@ -141,13 +147,14 @@ const Page = () => {
               <TableCell>Amount Type</TableCell>
               <TableCell>Amount</TableCell>
               <TableCell>Transaction ID</TableCell>
+              <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading
               ? Array.from(new Array(5)).map((_, index) => (
                   <TableRow key={index}>
-                    {Array.from(new Array(8)).map((_, cellIndex) => (
+                    {Array.from(new Array(9)).map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
                         <Skeleton variant="text" />
                       </TableCell>
@@ -163,7 +170,8 @@ const Page = () => {
                     <TableCell>{row.payment_type}</TableCell>
                     <TableCell>{row.amountType}</TableCell>
                     <TableCell>{row.displayAmount}</TableCell>
-                    <TableCell>{row.transection_id}</TableCell>
+                    <TableCell>{row.transection_id || "N/A"}</TableCell>
+                    <TableCell>{row.balance}</TableCell>
                   </TableRow>
                 ))}
           </TableBody>

@@ -17,19 +17,21 @@ import {
   Button,
 } from "@mui/material";
 import APICall from "@/networkApi/APICall";
-import { investorLedger, getLocalStorage } from "../../networkApi/Constants";
+import { investorLedger } from "../../networkApi/Constants";
 import "jspdf-autotable";
 
 import logo from "../../public/logo.png";
 
 import withAuth from "@/utils/withAuth";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const Page = () => {
   const router = useRouter();
-
-  const investorId = getLocalStorage("investorId");
+  const searchParams = useSearchParams();
+  
+  // Get investor ID from URL parameter instead of localStorage
+  const investorId = searchParams.get("id");
 
   const api = new APICall();
   const [tableData, setTableData] = useState([]);
@@ -38,12 +40,18 @@ const Page = () => {
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState(null);
+  const [totalBalance, setTotalBalance] = useState(0);
 
   const tableRef = useRef(null);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (investorId) {
+      fetchData();
+    } else {
+      setError("Investor ID not found in URL parameters");
+      setLoading(false);
+    }
+  }, [investorId]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -58,6 +66,11 @@ const Page = () => {
 
       if (Array.isArray(data.ledgers)) {
         setTableData(data.ledgers);
+        
+        // Calculate the final balance (assuming the last entry has the current balance)
+        if (data.ledgers.length > 0) {
+          setTotalBalance(data.ledgers[data.ledgers.length - 1].balance);
+        }
       } else {
         throw new Error("Fetched data is not an array");
       }
@@ -127,14 +140,14 @@ const Page = () => {
           <TableBody>
             {error ? (
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={7}>
                   <div>Error: {error}</div>
                 </TableCell>
               </TableRow>
             ) : loading ? (
               [...Array(5)].map((_, index) => (
                 <TableRow key={index}>
-                  {[...Array(5)].map((_, cellIndex) => (
+                  {[...Array(7)].map((_, cellIndex) => (
                     <TableCell key={cellIndex}>
                       <Skeleton animation="wave" />
                     </TableCell>
@@ -142,17 +155,35 @@ const Page = () => {
                 </TableRow>
               ))
             ) : (
-              tableData.map((row, index) => (
-                <TableRow onClick={() => handleViewDetails(row)} key={index}>
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>{formatDate(row.created_at)}</TableCell>
-                  <TableCell>{row.description || "Purchase"}</TableCell>
-                  <TableCell>{row.cr_amount}</TableCell>
-                  <TableCell>{row.dr_amount}</TableCell>
-                  <TableCell>{row.balance < 0 ? "Naam" : "Jama"}</TableCell>
-                  <TableCell>{row.balance}</TableCell>
+              <>
+                {tableData.map((row, index) => (
+                  <TableRow onClick={() => handleViewDetails(row)} key={index}>
+                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{formatDate(row.created_at)}</TableCell>
+                    <TableCell>{row.description || "Purchase"}</TableCell>
+                    <TableCell>{row.cr_amount}</TableCell>
+                    <TableCell>{row.dr_amount}</TableCell>
+                    <TableCell>{row.balance < 0 ? "Naam" : "Jama"}</TableCell>
+                    <TableCell>{row.balance}</TableCell>
+                  </TableRow>
+                ))}
+                {/* Total Balance Row */}
+                <TableRow 
+                  sx={{ 
+                    backgroundColor: "#f5f5f5", 
+                    fontWeight: "bold",
+                    '& .MuiTableCell-root': { 
+                      fontWeight: 'bold'
+                    }
+                  }}
+                >
+                  <TableCell colSpan={5} align="right">
+                    Balance:
+                  </TableCell>
+                  <TableCell>{totalBalance < 0 ? "Naam" : "Jama"}</TableCell>
+                  <TableCell>{totalBalance}</TableCell>
                 </TableRow>
-              ))
+              </>
             )}
           </TableBody>
         </Table>
