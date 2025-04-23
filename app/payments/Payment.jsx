@@ -104,7 +104,7 @@ const Page = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }; 
 
   const fetchData = async () => {
     try {

@@ -35,6 +35,10 @@ const Page = () => {
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [totals, setTotals] = useState({
+    credit: 0,
+    debit: 0,
+  });
 
   const bankId = getLocalStorage("selectedRowId");
 
@@ -82,15 +86,22 @@ const Page = () => {
             srNo: index + 1,
             customerName: entry.linkable?.person_name || "N/A",
             customerType: entry.linkable?.customer_type || "N/A",
-            displayAmount:
-              entry.linkable?.customer_type === "self"
-                ? entry.online_amount || entry.cheque_amount || "0.00"
-                : entry.entry_type === "cr"
-                ? entry.cr_amount
-                : entry.dr_amount,
-            amountType: entry.entry_type === "cr" ? "Credit" : "Debit",
           }))
           .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+        // Calculate totals
+        let creditTotal = 0;
+        let debitTotal = 0;
+
+        processedData.forEach((entry) => {
+          creditTotal += parseFloat(entry.cr_amount || 0);
+          debitTotal += parseFloat(entry.dr_amount || 0);
+        });
+
+        setTotals({
+          credit: creditTotal.toFixed(2),
+          debit: debitTotal.toFixed(2),
+        });
 
         setTableData(processedData);
       } else {
@@ -141,12 +152,10 @@ const Page = () => {
             <TableRow>
               <TableCell>Sr No</TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Customer Type</TableCell>
-              <TableCell>Payment Type</TableCell>
-              <TableCell>Amount Type</TableCell>
-              <TableCell>Amount</TableCell>
               <TableCell>Transaction ID</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Debit</TableCell>
+              <TableCell>Credit</TableCell>
               <TableCell>Balance</TableCell>
             </TableRow>
           </TableHead>
@@ -154,7 +163,7 @@ const Page = () => {
             {loading
               ? Array.from(new Array(5)).map((_, index) => (
                   <TableRow key={index}>
-                    {Array.from(new Array(9)).map((_, cellIndex) => (
+                    {Array.from(new Array(7)).map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
                         <Skeleton variant="text" />
                       </TableCell>
@@ -165,15 +174,31 @@ const Page = () => {
                   <TableRow key={row.id}>
                     <TableCell>{row.srNo}</TableCell>
                     <TableCell>{row.description || "N/A"}</TableCell>
-                    <TableCell>{row.customerName}</TableCell>
-                    <TableCell>{row.customerType}</TableCell>
-                    <TableCell>{row.payment_type}</TableCell>
-                    <TableCell>{row.amountType}</TableCell>
-                    <TableCell>{row.displayAmount}</TableCell>
                     <TableCell>{row.transection_id || "N/A"}</TableCell>
+                    <TableCell>{row.customerName}</TableCell>
+                    <TableCell>
+                      {parseFloat(row.dr_amount) > 0 ? row.dr_amount : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {parseFloat(row.cr_amount) > 0 ? row.cr_amount : "-"}
+                    </TableCell>
                     <TableCell>{row.balance}</TableCell>
                   </TableRow>
                 ))}
+            {!loading && (
+              <TableRow className={styles.totalRow}>
+                <TableCell colSpan={4} align="right">
+                  <strong>Total</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>{totals.debit}</strong> 
+                </TableCell>
+                <TableCell>
+                  <strong>{totals.credit}</strong>
+                </TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

@@ -16,6 +16,7 @@ import {
   partyLedger,
   investors,
   investorLedger,
+  products,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
@@ -46,11 +47,13 @@ const Page = () => {
   const [tablePartyData, setPartyData] = useState([]);
   const [dataFetched, setDataFetched] = useState(false);
   const [responseData, setResponseData] = useState();
+  const [tableProductData, setTableProductData] = useState([]);
 
   useEffect(() => {
     fetchData();
     fetchBankData();
     fetchInvestorsData();
+    fetchProductData();
   }, []);
 
   const displayPositiveAmount = (amount) => {
@@ -141,6 +144,39 @@ const Page = () => {
     } catch (error) {
       console.error("Error fetching bank data:", error.message);
       Swal.fire("Error", "Failed to fetch bank data", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProductData = async () => {
+    try {
+      const response = await api.getDataWithToken(products);
+      const data = response.data;
+      if (Array.isArray(data)) {
+        const formattedData = data.map((product) => ({
+          label: `${product.product_name} (Product)`,
+          customer_type: "product", // Add customer_type for products
+          id: product.id,
+        }));
+
+        // Add product data to the same tablePartyData that's used for the dropdown
+        setPartyData((prevData) => {
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
+
+        // Also keep the product data separately if needed
+        setTableProductData(formattedData);
+      } else {
+        throw new Error("Fetched product data is not an array");
+      }
+    } catch (error) {
+      console.error("Error fetching product data:", error.message);
+      Swal.fire("Error", "Failed to fetch product data", "error");
     } finally {
       setLoading(false);
     }
