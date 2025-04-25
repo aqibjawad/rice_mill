@@ -17,11 +17,11 @@ import {
   Chip,
   tableCellClasses,
   styled,
-  Skeleton, // Import MUI Skeleton
+  Skeleton,
 } from "@mui/material";
 import { FaMoneyBillWave, FaUniversity } from "react-icons/fa";
 import APICall from "../../networkApi/APICall";
-import { getAmountReceives } from "../../networkApi/Constants";
+import { getAmountReceives, companyProduct } from "../../networkApi/Constants";
 import Buttons from "../../components/buttons";
 
 // Styled components
@@ -61,16 +61,18 @@ const TotalCard = styled(Card)(({ theme }) => ({
 const Page = () => {
   const api = new APICall();
   const [receivesData, setReceivesData] = useState([]);
+  const [receivesProData, setReceivesProData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
     fetchData();
+    fetchProdcutsData();
   }, [startDate, endDate]);
 
   const fetchData = async () => {
-    setLoading(true); // Loader start karein
+    setLoading(true);
 
     try {
       const queryParams =
@@ -92,28 +94,94 @@ const Page = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
-      setLoading(false); // Loader stop karein
+      setLoading(false);
+    }
+  };
+
+  const fetchProdcutsData = async () => {
+    setLoading(true);
+
+    try {
+      const queryParams =
+        startDate && endDate
+          ? [
+              `start_date=${format(startOfDay(startDate), "yyyy-MM-dd")}`,
+              `end_date=${format(endOfDay(endDate), "yyyy-MM-dd")}`,
+            ]
+          : [
+              `start_date=${format(startOfDay(new Date()), "yyyy-MM-dd")}`,
+              `end_date=${format(endOfDay(new Date()), "yyyy-MM-dd")}`,
+            ];
+
+      const response = await api.getDataWithToken(
+        `${companyProduct}?${queryParams.join("&")}`
+      );
+
+      setReceivesProData(response.data || []);
+    } catch (error) {
+      console.error("Error fetching product data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDateChange = (start, end) => {
     setStartDate(start);
     setEndDate(end);
-    fetchData();
   };
 
   const calculateCashTotal = () => {
-    const total = receivesData
+    // Calculate total from regular cash payment transactions
+    const cashTotal = receivesData
       .filter((row) => row.payment_type === "cash")
       .reduce((sum, row) => sum + parseFloat(row.cash_amount || 0), 0);
-    return total.toFixed(2);
+
+    // Calculate total from product transactions
+    const productCashTotal = receivesProData
+      .filter((row) => {
+        // Credit transactions from Product entries directly
+        if (
+          row.expense_entry_type === "cr" &&
+          row.linkable_type === "App\\Models\\Product"
+        ) {
+          return true;
+        }
+
+        // Check if linkable is a BankLedger with cash payment_type
+        if (
+          row.linkable_type === "App\\Models\\BankLedger" &&
+          row.linkable?.payment_type === "cash"
+        ) {
+          return true;
+        }
+
+        return false;
+      })
+      .reduce((sum, row) => sum + parseFloat(row.total_amount || 0), 0);
+
+    // Return the combined total
+    return (cashTotal + productCashTotal).toFixed(2);
   };
 
   const calculateOnlineTotal = () => {
-    const total = receivesData
+    // Calculate total from regular online payment transactions
+    const onlineTotal = receivesData
       .filter((row) => row.payment_type === "online")
       .reduce((sum, row) => sum + parseFloat(row.cash_amount || 0), 0);
-    return total.toFixed(2);
+
+    // Calculate total from product transactions where linkable contains online payments
+    const productOnlineTotal = receivesProData
+      .filter((row) => {
+        // Check if linkable is a BankLedger with online payment_type
+        return (
+          row.linkable_type === "App\\Models\\BankLedger" &&
+          row.linkable?.payment_type === "online"
+        );
+      })
+      .reduce((sum, row) => sum + parseFloat(row.total_amount || 0), 0);
+
+    // Return the combined total
+    return (onlineTotal + productOnlineTotal).toFixed(2);
   };
 
   const getPaymentTypeChip = (type) => {
@@ -125,6 +193,25 @@ const Page = () => {
         variant="outlined"
       />
     );
+  };
+
+  const getEntryTypeChip = (type) => {
+    return (
+      <Chip
+        label={type}
+        color={type === "cr" ? "success" : "error"}
+        size="small"
+        variant="outlined"
+      />
+    );
+  };
+
+  // Helper function to determine payment type display for product entries
+  const getProductPaymentTypeDisplay = (row) => {
+    if (row.linkable_type === "App\\Models\\BankLedger") {
+      return getPaymentTypeChip(row.linkable?.payment_type || "cash");
+    }
+    return getEntryTypeChip(row.expense_entry_type);
   };
 
   return (
@@ -172,7 +259,7 @@ const Page = () => {
         ))}
       </Grid>
 
-      {/* Main Table with Skeleton Rows */}
+      {/* Main Table with both payment and product data */}
       <TableContainer component={Paper} elevation={3}>
         <Table sx={{ minWidth: 700 }}>
           <TableHead>
@@ -197,18 +284,21 @@ const Page = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading
-              ? Array.from({ length: 5 }).map((_, index) => (
-                  <StyledTableRow key={index}>
-                    {Array.from({ length: 8 }).map((_, colIndex) => (
-                      <StyledTableCell key={colIndex}>
-                        <Skeleton variant="text" width="80%" />
-                      </StyledTableCell>
-                    ))}
-                  </StyledTableRow>
-                ))
-              : receivesData.map((row, index) => (
-                  <StyledTableRow key={row.id}>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, index) => (
+                <StyledTableRow key={index}>
+                  {Array.from({ length: 8 }).map((_, colIndex) => (
+                    <StyledTableCell key={colIndex}>
+                      <Skeleton variant="text" width="80%" />
+                    </StyledTableCell>
+                  ))}
+                </StyledTableRow>
+              ))
+            ) : (
+              <>
+                {/* Regular payment data */}
+                {receivesData.map((row, index) => (
+                  <StyledTableRow key={`payment-${row.id}`}>
                     <StyledTableCell>{index + 1}</StyledTableCell>
                     <StyledTableCell>
                       {getPaymentTypeChip(row.payment_type)}
@@ -240,6 +330,51 @@ const Page = () => {
                     </StyledTableCell>
                   </StyledTableRow>
                 ))}
+
+                {/* Product data */}
+                {receivesProData.map((row, index) => (
+                  <StyledTableRow key={`product-${row.id}`}>
+                    <StyledTableCell>
+                      {receivesData.length + index + 1}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {getProductPaymentTypeDisplay(row)}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {row.linkable?.product_name ||
+                        row.linkable?.transection_id ||
+                        "N/A"}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {row.description || "N/A"}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {row.linkable_type === "App\\Models\\BankLedger"
+                        ? "Bank Entry"
+                        : "N/A"}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {row.linkable?.cheque_no || "N/A"}
+                    </StyledTableCell>
+                    <StyledTableCell align="right">
+                      {parseFloat(row.total_amount).toFixed(2)}
+                    </StyledTableCell>
+                    <StyledTableCell
+                      align="right"
+                      sx={{
+                        color:
+                          parseFloat(row.balance) < 0
+                            ? "error.main"
+                            : "success.main",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {parseFloat(row.balance).toFixed(2)}
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))}
+              </>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
