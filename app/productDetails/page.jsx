@@ -165,7 +165,7 @@ const Page = () => {
                 {stockDetails.map((stock, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{stock?.party?.person_name}</TableCell>
+                    <TableCell>{stock?.party?.person_name || stock?.linkable?.product_name}</TableCell>
                     <TableCell>
                       {stock.entry_type === "sale"
                         ? stock.stock_out
@@ -173,14 +173,20 @@ const Page = () => {
                     </TableCell>
 
                     <TableCell>
-                      {/* Credit if entry_type is 'purchase' */}
-                      {stock.entry_type === "purchase"
+                      {/* Credit if entry_type is 'purchase' or if it's 'expense' with expense_entry_type 'cr' */}
+                      {stock.entry_type === "purchase" ||
+                      (stock.entry_type === "expense" &&
+                        stock.expense_entry_type === "cr")
                         ? stock.total_amount
                         : "-"}
                     </TableCell>
                     <TableCell>
-                      {/* Debit if entry_type is 'sale' */}
-                      {stock.entry_type === "sale" ? stock.total_amount : "-"}
+                      {/* Debit if entry_type is 'sale' or if it's 'expense' with expense_entry_type 'dr' */}
+                      {stock.entry_type === "sale" ||
+                      (stock.entry_type === "expense" &&
+                        stock.expense_entry_type === "dr")
+                        ? stock.total_amount
+                        : "-"}
                     </TableCell>
                     <TableCell>{stock.balance}</TableCell>
                   </TableRow>

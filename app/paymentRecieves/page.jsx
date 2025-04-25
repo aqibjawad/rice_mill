@@ -17,6 +17,7 @@ import {
   investors,
   investorLedger,
   products,
+  companyProduct,
 } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import DropDown from "@/components/generic/dropdown";
@@ -29,6 +30,7 @@ const Page = () => {
   const [formData, setFormData] = useState({
     party_id: "",
     investor_id: "",
+    product_id: "",
     payment_type: "cash",
     description: "",
     cash_amount: "",
@@ -198,13 +200,14 @@ const Page = () => {
     if (name === "cash_amount" || name === "cheque_amount") {
       const cleanValue = value.replace(/[^\d.]/g, "");
 
-      if (selectedParty.customer_type === "investor") {
+      if (selectedParty?.customer_type === "investor") {
         // For investors, keep positive value
         setFormData((prevState) => ({
           ...prevState,
           [name]: cleanValue,
         }));
       } else {
+        // For party and product, use negative values
         setFormData((prevState) => ({
           ...prevState,
           [name]: convertToNegative(cleanValue),
@@ -226,6 +229,7 @@ const Page = () => {
         ...prevState,
         party_id: "",
         investor_id: "",
+        product_id: "",
         cash_amount: "",
         cheque_amount: "",
         description: "",
@@ -244,6 +248,11 @@ const Page = () => {
         setFormData((prevState) => ({
           ...prevState,
           investor_id: selectedOption.id,
+        }));
+      } else if (selectedOption.customer_type === "product") {
+        setFormData((prevState) => ({
+          ...prevState,
+          product_id: selectedOption.id,
         }));
       }
     }
@@ -328,6 +337,13 @@ const Page = () => {
           investor_id: formData.investor_id,
         };
         response = await api.postDataWithToken(investorLedger, requestData);
+      } else if (selectedParty.customer_type === "product") {
+        requestData = {
+          ...requestData,
+          product_id: formData.product_id,
+          cash_amount: formData.cash_amount, // This should already be negative from handleInputChange
+        };
+        response = await api.postDataWithToken(companyProduct, requestData);
       }
 
       if (response?.status === "success") {
@@ -395,7 +411,9 @@ const Page = () => {
                   name={
                     selectedParty?.customer_type === "party"
                       ? "party_id"
-                      : "investor_id"
+                      : selectedParty?.customer_type === "investor"
+                      ? "investor_id"
+                      : "product_id"
                   }
                 />
               </div>

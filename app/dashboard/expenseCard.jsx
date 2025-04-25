@@ -8,7 +8,7 @@ import { dashboard } from "../../networkApi/Constants";
 
 import { format } from "date-fns";
 
-const Dashboard = () => {
+const   Dashboard = () => {
   const api = new APICall();
 
   const [tableData, setTableData] = useState({});
