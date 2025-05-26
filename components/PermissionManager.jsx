@@ -46,13 +46,53 @@ const modules = {
   },
 };
 
-const PermissionsManager = () => {
+const PermissionsManager = ({ onPermissionsChange }) => {
   const [modulePerms, setModulePerms] = useState({});
   const [fieldPerms, setFieldPerms] = useState({});
   const [isModuleOpen, setIsModuleOpen] = useState({});
   const [selectedRoledId, setSelectedRoleId] = useState();
   const [selectedRoleName, setSelectedRoleName] = useState("");
   const [sendingData, setSendingData] = useState(false);
+
+  // Send permissions data to parent whenever it changes
+  useEffect(() => {
+    const myModules = Object.entries(modulePerms).map(
+      ([parent, permissions]) => ({
+        parent,
+        permissions: permissions,
+      })
+    );
+
+    // Transform fieldPerms for all modules
+    const moduleFields = {};
+    Object.keys(modules).forEach((moduleName) => {
+      if (modules[moduleName].fields) {
+        const fieldsList = {};
+        modules[moduleName].fields.forEach((field) => {
+          fieldsList[field] = {
+            permissions: fieldPerms[`${moduleName}.${field}`] || [],
+          };
+        });
+
+        moduleFields[moduleName] = {
+          module: moduleName,
+          fields: fieldsList,
+        };
+      }
+    });
+
+    const transformedData = {
+      permissions: {
+        modules: myModules,
+        fields: Object.values(moduleFields),
+      },
+    };
+
+    // Send data to parent component
+    if (onPermissionsChange) {
+      onPermissionsChange(transformedData);
+    }
+  }, [modulePerms, fieldPerms, onPermissionsChange]);
 
   const toggleModuleOpen = (moduleName) => {
     setIsModuleOpen((prev) => ({
@@ -170,21 +210,6 @@ const PermissionsManager = () => {
     );
   };
 
-  const roleChnaged = (value, index) => {
-    setSelectedRoleName(value?.name || "");
-    if (value?.id !== null) {
-      setSelectedRoleId(value?.id);
-    } else {
-      setSelectedRoleId(null);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedRoledId) {
-      console.log("Selected role ID:", selectedRoledId);
-    }
-  }, [selectedRoledId]);
-
   const saveData = async () => {
     const myModules = Object.entries(modulePerms).map(
       ([parent, permissions]) => ({
@@ -234,7 +259,7 @@ const PermissionsManager = () => {
       setFieldPerms({});
       setSelectedRoleId(null);
 
-      alert("Permissions saved successfully!");
+      alert("Data saved successfully!");
     } catch (err) {
       console.error("Error saving data:", err);
       setSendingData(false);
@@ -257,7 +282,7 @@ const PermissionsManager = () => {
       </h2>
       
       {/* Grid Layout for Modules */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {Object.entries(modules).map(([moduleName, moduleData]) => (
           <div
             key={moduleName}
@@ -382,12 +407,6 @@ const PermissionsManager = () => {
         <button
           onClick={() => {
             if (
-              selectedRoleName === "" &&
-              Object.keys(modulePerms).length === 0 &&
-              Object.keys(fieldPerms).length === 0
-            ) {
-              alert("Please fill all required values");
-            } else if (
               Object.keys(modulePerms).length === 0 &&
               Object.keys(fieldPerms).length === 0
             ) {
