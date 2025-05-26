@@ -50,6 +50,7 @@ const Header = () => {
     { href: "/companyLedger/", icon: <FaMoneyBill />, label: "Ledger" },
     { href: "/bankCheque/", icon: <FaArrowRight />, label: "Banks" },
     { href: "/product/", icon: <FaShoppingCart />, label: "Products" },
+    { href: "/user/", icon: <FaShoppingCart />, label: "User" },
     // { href: "/packing/", icon: <FaBox />, label: "Packing" },
     // { href: "/stock/", icon: <FaBoxes />, label: "Stock" },
   ];

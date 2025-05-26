@@ -81,18 +81,27 @@ const Page = () => {
 
   const getFinalAveragePrice = () => {
     if (stockDetails.length === 0) return "N/A";
+
     const remainingWeight = Number(getLatestRemainingWeight());
     let balance = Number(getLastBalanceEntry());
 
     // Take absolute value of balance to ignore negative sign
     balance = Math.abs(balance);
 
-    if (balance === 0 || isNaN(balance) || isNaN(remainingWeight)) return "N/A";
+    // Check if remainingWeight is zero or very close to zero
+    if (
+      remainingWeight === 0 ||
+      remainingWeight < 0.001 ||
+      isNaN(remainingWeight) ||
+      isNaN(balance)
+    ) {
+      return "N/A"; // Return "N/A" instead of performing division
+    }
 
     // Calculate remaining weight divided by the absolute value of balance
     return (balance / remainingWeight).toFixed(2);
   };
-
+  
   const getTotalPurchasePrice = () => {
     return stockDetails
       .filter(
@@ -165,7 +174,10 @@ const Page = () => {
                 {stockDetails.map((stock, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
-                    <TableCell>{stock?.party?.person_name || stock?.linkable?.product_name}</TableCell>
+                    <TableCell>
+                      {stock?.party?.person_name ||
+                        stock?.linkable?.product_name}
+                    </TableCell>
                     <TableCell>
                       {stock.entry_type === "sale"
                         ? stock.stock_out
