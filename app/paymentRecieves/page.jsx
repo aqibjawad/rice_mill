@@ -51,12 +51,100 @@ const Page = () => {
   const [responseData, setResponseData] = useState();
   const [tableProductData, setTableProductData] = useState([]);
 
+  // Permission states
+  const [permissions, setPermissions] = useState({
+    canAddParty: false,
+    canAddInvestor: false,
+    canAddProduct: false,
+    hasAccess: false,
+  });
+
+  // Individual loading states for better UX
+  const [loadingStates, setLoadingStates] = useState({
+    parties: false,
+    investors: false,
+    products: false,
+    banks: false
+  });
+
   useEffect(() => {
-    fetchData();
-    fetchBankData();
-    fetchInvestorsData();
-    fetchProductData();
+    checkPermissions();
   }, []);
+
+  // Modified useEffect to load APIs based on permissions
+  useEffect(() => {
+    // Only fetch data after permissions are checked
+    if (permissions.hasAccess) {
+      if (permissions.canAddParty) {
+        fetchData(); // Load party data
+      }
+      if (permissions.canAddInvestor) {
+        fetchInvestorsData(); // Load investor data
+      }
+      if (permissions.canAddProduct) {
+        fetchProductData(); // Load product data
+      }
+      
+      // Bank data is needed for cheque and online payments regardless of permission type
+      fetchBankData();
+    }
+  }, [permissions]); // Add permissions as dependency
+
+  const checkPermissions = () => {
+    try {
+      const storedPermissions = localStorage.getItem("permissions");
+
+      if (storedPermissions) {
+        const parsedPermissions = JSON.parse(storedPermissions);
+
+        // Find Receives module permissions
+        let canAddParty = false;
+        let canAddInvestor = false;
+        let canAddProduct = false; // Initialize this variable
+
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
+          const ReceivesModule = parsedPermissions.modules.find(
+            (module) =>
+              module.parent === "Receives" || module.name === "Receives"
+          );
+
+          if (ReceivesModule && ReceivesModule.permissions) {
+            canAddParty = ReceivesModule.permissions.includes("Receives Party");
+            canAddInvestor = ReceivesModule.permissions.includes("Receives Investor");
+            // Fix the typo in the permission check
+            canAddProduct = ReceivesModule.permissions.includes("Receives Product");
+          }
+        }
+
+        setPermissions({
+          canAddParty,
+          canAddInvestor,
+          canAddProduct,
+          hasAccess: canAddParty || canAddInvestor || canAddProduct,
+        });
+      } else {
+        // No permissions found - default behavior
+        setPermissions({
+          canAddParty: true,
+          canAddInvestor: true,
+          canAddProduct: true,
+          hasAccess: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing permissions:", error);
+      // Default to showing all on error
+      setPermissions({
+        canAddParty: true,
+        canAddInvestor: true,
+        canAddProduct: true,
+        hasAccess: true,
+      });
+    }
+  };
 
   const displayPositiveAmount = (amount) => {
     if (!amount) return "";
@@ -71,6 +159,7 @@ const Page = () => {
   };
 
   const fetchData = async () => {
+    setLoadingStates(prev => ({ ...prev, parties: true }));
     try {
       const response = await api.getDataWithToken(party);
       const data = response.data;
@@ -95,12 +184,12 @@ const Page = () => {
       console.error("Error fetching party data:", error.message);
       Swal.fire("Error", "Failed to fetch party data", "error");
     } finally {
-      setLoading(false);
-      setDataFetched(true);
+      setLoadingStates(prev => ({ ...prev, parties: false }));
     }
   };
 
   const fetchInvestorsData = async () => {
+    setLoadingStates(prev => ({ ...prev, investors: true }));
     try {
       const response = await api.getDataWithToken(investors);
       const data = response.data;
@@ -125,12 +214,12 @@ const Page = () => {
       console.error("Error fetching investor data:", error.message);
       Swal.fire("Error", "Failed to fetch investor data", "error");
     } finally {
-      setLoading(false);
-      setDataFetched(true);
+      setLoadingStates(prev => ({ ...prev, investors: false }));
     }
   };
 
   const fetchBankData = async () => {
+    setLoadingStates(prev => ({ ...prev, banks: true }));
     try {
       const response = await api.getDataWithToken(banks);
       const data = response.data;
@@ -147,11 +236,13 @@ const Page = () => {
       console.error("Error fetching bank data:", error.message);
       Swal.fire("Error", "Failed to fetch bank data", "error");
     } finally {
+      setLoadingStates(prev => ({ ...prev, banks: false }));
       setLoading(false);
     }
   };
 
   const fetchProductData = async () => {
+    setLoadingStates(prev => ({ ...prev, products: true }));
     try {
       const response = await api.getDataWithToken(products);
       const data = response.data;
@@ -180,7 +271,7 @@ const Page = () => {
       console.error("Error fetching product data:", error.message);
       Swal.fire("Error", "Failed to fetch product data", "error");
     } finally {
-      setLoading(false);
+      setLoadingStates(prev => ({ ...prev, products: false }));
     }
   };
 
@@ -371,6 +462,22 @@ const Page = () => {
     }
   };
 
+  // Show message if user has no access
+  if (!permissions.hasAccess) {
+    return (
+      <div className="min-h-screen w-full overflow-x-hidden px-4 md:px-6">
+        <div className={styles.recievesHead}>Add Amount Receives</div>
+        <div className="mt-10 text-center">
+          <p className="text-red-500">You don't have permission to access this module.</p>
+          <p className="text-gray-600">Please contact your administrator for access.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if any data is still loading
+  const isAnyDataLoading = Object.values(loadingStates).some(state => state);
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden px-4 md:px-6">
       <div className={styles.recievesHead}>Add Amount Receives</div>
@@ -387,6 +494,14 @@ const Page = () => {
           </button>
           <button
             className={`${styles.tabPaymentButton} ${
+              activeTab === "cheque" ? styles.active : ""
+            }`}
+            onClick={() => handleTabClick("cheque")}
+          >
+            Cheque
+          </button>
+          <button
+            className={`${styles.tabPaymentButton} ${
               activeTab === "online" ? styles.active : ""
             }`}
             onClick={() => handleTabClick("online")}
@@ -399,7 +514,7 @@ const Page = () => {
       <div>
         <Grid container spacing={2} className="mt-10">
           <Grid item xs={12} md={6}>
-            {loading ? (
+            {isAnyDataLoading ? (
               <Skeleton variant="rectangular" width="100%" height={56} />
             ) : (
               <div className="mt-5">
@@ -438,15 +553,19 @@ const Page = () => {
             {activeTab === "cheque" && (
               <Grid container spacing={2} className="mt-10">
                 <Grid item xs={12} md={4} className="mt-5">
-                  <Autocomplete
-                    disablePortal
-                    id="combo-box-demo"
-                    options={tableBankData}
-                    renderInput={(params) => (
-                      <TextField {...params} label="Select Bank" />
-                    )}
-                    onChange={handleBankSelect}
-                  />
+                  {loadingStates.banks ? (
+                    <Skeleton variant="rectangular" width="100%" height={56} />
+                  ) : (
+                    <Autocomplete
+                      disablePortal
+                      id="combo-box-demo"
+                      options={tableBankData}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Select Bank" />
+                      )}
+                      onChange={handleBankSelect}
+                    />
+                  )}
                 </Grid>
 
                 <Grid item xs={12} md={4}>
@@ -487,15 +606,19 @@ const Page = () => {
             {activeTab === "online" && (
               <Grid container spacing={2} className="mt-10">
                 <Grid item xs={12} md={4} className="mt-5">
-                  <Autocomplete
-                    disablePortal
-                    id="combo-box-demo"
-                    options={tableBankData}
-                    renderInput={(params) => (
-                      <TextField {...params} label="Select Bank" />
-                    )}
-                    onChange={handleBankSelect}
-                  />
+                  {loadingStates.banks ? (
+                    <Skeleton variant="rectangular" width="100%" height={56} />
+                  ) : (
+                    <Autocomplete
+                      disablePortal
+                      id="combo-box-demo"
+                      options={tableBankData}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Select Bank" />
+                      )}
+                      onChange={handleBankSelect}
+                    />
+                  )}
                 </Grid>
 
                 <Grid item xs={12} md={4}>
@@ -538,7 +661,7 @@ const Page = () => {
           <button
             className={styles.saveBtn}
             onClick={handleSubmit}
-            disabled={loadingSubmit}
+            disabled={loadingSubmit || isAnyDataLoading}
           >
             {loadingSubmit ? (
               <span>
