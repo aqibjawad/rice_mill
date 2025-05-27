@@ -66,6 +66,69 @@ const Page = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
+  // Permission states
+  const [permissions, setPermissions] = useState({
+    canAddReceives: false,
+    canViewReceives: false,
+    hasAccess: false,
+  });
+
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  const checkPermissions = () => {
+    try {
+      const storedPermissions = localStorage.getItem("permissions");
+
+      if (storedPermissions) {
+        const parsedPermissions = JSON.parse(storedPermissions);
+
+        // Find Receives module permissions
+        let canAddReceives = false;
+        let canViewReceives = false;
+
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
+          const ReceivesModule = parsedPermissions.modules.find(
+            (module) =>
+              module.parent === "Receives" || module.name === "Receives"
+          );
+
+          if (ReceivesModule && ReceivesModule.permissions) {
+            canAddReceives =
+              ReceivesModule.permissions.includes("Add Receives");
+            canViewReceives =
+              ReceivesModule.permissions.includes("View Receives");
+          }
+        }
+
+        setPermissions({
+          canAddReceives,
+          canViewReceives,
+          hasAccess: canAddReceives || canViewReceives,
+        });
+      } else {
+        // No permissions found - default behavior
+        setPermissions({
+          canAddReceives: true,
+          canViewReceives: true,
+          hasAccess: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing permissions:", error);
+      // Default to showing all on error
+      setPermissions({
+        canAddReceives: true,
+        canViewReceives: true,
+        hasAccess: true,
+      });
+    }
+  };
+
   useEffect(() => {
     fetchData();
     fetchProdcutsData();
@@ -141,7 +204,7 @@ const Page = () => {
       .filter((row) => {
         // Credit transactions from Product entries directly
         if (
-          row.expense_entry_type === "cr" &&
+          row.Receives_entry_type === "cr" &&
           row.linkable_type === "App\\Models\\Product"
         ) {
           return true;
@@ -211,173 +274,192 @@ const Page = () => {
     if (row.linkable_type === "App\\Models\\BankLedger") {
       return getPaymentTypeChip(row.linkable?.payment_type || "cash");
     }
-    return getEntryTypeChip(row.expense_entry_type);
+    return getEntryTypeChip(row.Receives_entry_type);
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ mb: 4 }}>
-        <Buttons
-          leftSectionText="Amount Receives"
-          addButtonLink="/paymentRecieves"
-          onDateChange={handleDateChange}
-        />
-      </Box>
+      {permissions.canAddReceives && (
+        <Box sx={{ mb: 4 }}>
+          <Buttons
+            leftSectionText="Amount Receives"
+            addButtonLink="/paymentRecieves"
+            onDateChange={handleDateChange}
+          />
+        </Box>
+      )}
 
-      {/* Summary Cards with Skeletons */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {[
-          { title: "Cash Total", icon: FaMoneyBillWave, color: "success.main" },
-          { title: "Online Total", icon: FaUniversity, color: "primary.main" },
-        ].map((card, index) => (
-          <Grid item xs={12} md={6} key={index}>
-            <TotalCard>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <card.icon color={card.color} size={24} />
-                  <Typography variant="h6" component="div">
-                    {card.title}
-                  </Typography>
-                </Box>
-                {loading ? (
-                  <Skeleton
-                    variant="rectangular"
-                    width={100}
-                    height={40}
-                    sx={{ mt: 2 }}
-                  />
-                ) : (
-                  <Typography variant="h4" sx={{ mt: 2, color: card.color }}>
-                    {card.title === "Cash Total"
-                      ? calculateCashTotal()
-                      : calculateOnlineTotal()}
-                  </Typography>
-                )}
-              </CardContent>
-            </TotalCard>
+      {permissions.canViewReceives && (
+        <>
+          {/* Summary Cards with Skeletons */}
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {[
+              {
+                title: "Cash Total",
+                icon: FaMoneyBillWave,
+                color: "success.main",
+              },
+              {
+                title: "Online Total",
+                icon: FaUniversity,
+                color: "primary.main",
+              },
+            ].map((card, index) => (
+              <Grid item xs={12} md={6} key={index}>
+                <TotalCard>
+                  <CardContent>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <card.icon color={card.color} size={24} />
+                      <Typography variant="h6" component="div">
+                        {card.title}
+                      </Typography>
+                    </Box>
+                    {loading ? (
+                      <Skeleton
+                        variant="rectangular"
+                        width={100}
+                        height={40}
+                        sx={{ mt: 2 }}
+                      />
+                    ) : (
+                      <Typography
+                        variant="h4"
+                        sx={{ mt: 2, color: card.color }}
+                      >
+                        {card.title === "Cash Total"
+                          ? calculateCashTotal()
+                          : calculateOnlineTotal()}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </TotalCard>
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
 
-      {/* Main Table with both payment and product data */}
-      <TableContainer component={Paper} elevation={3}>
-        <Table sx={{ minWidth: 700 }}>
-          <TableHead>
-            <TableRow>
-              {[
-                "Sr No",
-                "Payment Type",
-                "Person",
-                "Description",
-                "Bank",
-                "Cheque No",
-                "Amount",
-                "Balance",
-              ].map((head, index) => (
-                <StyledTableCell
-                  key={index}
-                  align={index >= 6 ? "right" : "left"}
-                >
-                  {head}
-                </StyledTableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <StyledTableRow key={index}>
-                  {Array.from({ length: 8 }).map((_, colIndex) => (
-                    <StyledTableCell key={colIndex}>
-                      <Skeleton variant="text" width="80%" />
+          {/* Main Table with both payment and product data */}
+          <TableContainer component={Paper} elevation={3}>
+            <Table sx={{ minWidth: 700 }}>
+              <TableHead>
+                <TableRow>
+                  {[
+                    "Sr No",
+                    "Payment Type",
+                    "Person",
+                    "Description",
+                    "Bank",
+                    "Cheque No",
+                    "Amount",
+                    "Balance",
+                  ].map((head, index) => (
+                    <StyledTableCell
+                      key={index}
+                      align={index >= 6 ? "right" : "left"}
+                    >
+                      {head}
                     </StyledTableCell>
                   ))}
-                </StyledTableRow>
-              ))
-            ) : (
-              <>
-                {/* Regular payment data */}
-                {receivesData.map((row, index) => (
-                  <StyledTableRow key={`payment-${row.id}`}>
-                    <StyledTableCell>{index + 1}</StyledTableCell>
-                    <StyledTableCell>
-                      {getPaymentTypeChip(row.payment_type)}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {row.customer?.person_name || "N/A"}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {row.description || "N/A"}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {row.bank?.bank_name || "N/A"}
-                    </StyledTableCell>
-                    <StyledTableCell>{row.cheque_no || "N/A"}</StyledTableCell>
-                    <StyledTableCell align="right">
-                      {parseFloat(row.cash_amount).toFixed(2)}
-                    </StyledTableCell>
-                    <StyledTableCell
-                      align="right"
-                      sx={{
-                        color:
-                          parseFloat(row.balance) < 0
-                            ? "error.main"
-                            : "success.main",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {parseFloat(row.balance).toFixed(2)}
-                    </StyledTableCell>
-                  </StyledTableRow>
-                ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <StyledTableRow key={index}>
+                      {Array.from({ length: 8 }).map((_, colIndex) => (
+                        <StyledTableCell key={colIndex}>
+                          <Skeleton variant="text" width="80%" />
+                        </StyledTableCell>
+                      ))}
+                    </StyledTableRow>
+                  ))
+                ) : (
+                  <>
+                    {/* Regular payment data */}
+                    {receivesData.map((row, index) => (
+                      <StyledTableRow key={`payment-${row.id}`}>
+                        <StyledTableCell>{index + 1}</StyledTableCell>
+                        <StyledTableCell>
+                          {getPaymentTypeChip(row.payment_type)}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row.customer?.person_name || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row.description || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row.bank?.bank_name || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row.cheque_no || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell align="right">
+                          {parseFloat(row.cash_amount).toFixed(2)}
+                        </StyledTableCell>
+                        <StyledTableCell
+                          align="right"
+                          sx={{
+                            color:
+                              parseFloat(row.balance) < 0
+                                ? "error.main"
+                                : "success.main",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {parseFloat(row.balance).toFixed(2)}
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    ))}
 
-                {/* Product data */}
-                {receivesProData.map((row, index) => (
-                  <StyledTableRow key={`product-${row.id}`}>
-                    <StyledTableCell>
-                      {receivesData.length + index + 1}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {getProductPaymentTypeDisplay(row)}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {row.linkable?.product_name ||
-                        row.linkable?.transection_id ||
-                        "N/A"}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {row.description || "N/A"}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {row.linkable_type === "App\\Models\\BankLedger"
-                        ? "Bank Entry"
-                        : "N/A"}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {row.linkable?.cheque_no || "N/A"}
-                    </StyledTableCell>
-                    <StyledTableCell align="right">
-                      {parseFloat(row.total_amount).toFixed(2)}
-                    </StyledTableCell>
-                    <StyledTableCell
-                      align="right"
-                      sx={{
-                        color:
-                          parseFloat(row.balance) < 0
-                            ? "error.main"
-                            : "success.main",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {parseFloat(row.balance).toFixed(2)}
-                    </StyledTableCell>
-                  </StyledTableRow>
-                ))}
-              </>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                    {/* Product data */}
+                    {receivesProData.map((row, index) => (
+                      <StyledTableRow key={`product-${row.id}`}>
+                        <StyledTableCell>
+                          {receivesData.length + index + 1}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {getProductPaymentTypeDisplay(row)}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row.linkable?.product_name ||
+                            row.linkable?.transection_id ||
+                            "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row.description || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row.linkable_type === "App\\Models\\BankLedger"
+                            ? "Bank Entry"
+                            : "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row.linkable?.cheque_no || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell align="right">
+                          {parseFloat(row.total_amount).toFixed(2)}
+                        </StyledTableCell>
+                        <StyledTableCell
+                          align="right"
+                          sx={{
+                            color:
+                              parseFloat(row.balance) < 0
+                                ? "error.main"
+                                : "success.main",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {parseFloat(row.balance).toFixed(2)}
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    ))}
+                  </>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      )}
     </Box>
   );
 };

@@ -18,14 +18,14 @@ const modules = {
     name: "Trial Balance",
     permissions: ["view"],
   },
-  Recieve: {
-    name: "Recieve",
-    permissions: ["Recieve Party", "Recieve Investor", "Recieve Product"],
+  Receives: {
+    name: "Receives",
+    permissions: [ "Add Receives", "View Receives", "Receives Party", "Receives Investor", "Receives Product"],
     fields: ["Select Party", "Amount", "Description"],
   },
   Payments: {
     name: "Payments",
-    permissions: ["Payment Party", "Payment Investor", "Payment Product"],
+    permissions: [ "Add Payments", "View Payments", "Payment Party", "Payment Investor", "Payment Product"],
     fields: ["Select Party", "Amount", "Description"],
   },
   Investor: {

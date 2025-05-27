@@ -45,6 +45,69 @@ const Page = () => {
   const [cashTotal, setCashTotal] = useState(0);
   const [chequeOnlineTotal, setChequeOnlineTotal] = useState(0);
 
+  // Permission states
+  const [permissions, setPermissions] = useState({
+    canAddPayments: false,
+    canViewPayments: false,
+    hasAccess: false,
+  });
+
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  const checkPermissions = () => {
+    try {
+      const storedPermissions = localStorage.getItem("permissions");
+
+      if (storedPermissions) {
+        const parsedPermissions = JSON.parse(storedPermissions);
+
+        // Find Payments module permissions
+        let canAddPayments = false;
+        let canViewPayments = false;
+
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
+          const PaymentsModule = parsedPermissions.modules.find(
+            (module) =>
+              module.parent === "Payments" || module.name === "Payments"
+          );
+
+          if (PaymentsModule && PaymentsModule.permissions) {
+            canAddPayments =
+              PaymentsModule.permissions.includes("Add Payments");
+            canViewPayments =
+              PaymentsModule.permissions.includes("View Payments");
+          }
+        }
+
+        setPermissions({
+          canAddPayments,
+          canViewPayments,
+          hasAccess: canAddPayments || canViewPayments,
+        });
+      } else {
+        // No permissions found - default behavior
+        setPermissions({
+          canAddPayments: true,
+          canViewPayments: true,
+          hasAccess: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing permissions:", error);
+      // Default to showing all on error
+      setPermissions({
+        canAddPayments: true,
+        canViewPayments: true,
+        hasAccess: true,
+      });
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [startDate, endDate]);
@@ -127,99 +190,112 @@ const Page = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        <Buttons
-          leftSectionText="Payments"
-          addButtonLink="/payments"
-          onDateChange={handleDateChange}
-        />
-      </Box>
+      {permissions.canAddPayments && (
+        <Box sx={{ mb: 4 }}>
+          <Buttons
+            leftSectionText="Payments"
+            addButtonLink="/payments"
+            onDateChange={handleDateChange}
+          />
+        </Box>
+      )}
 
-      {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <FaUniversity color="#1976d2" size={24} />
-                <Typography variant="h6">Cash Total</Typography>
-              </Box>
-              <Typography variant="h4" color="success.main">
-                {cashTotal.toFixed(2)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <FaMoneyBillWave color="#2e7d32" size={24} />
-                <Typography variant="h6">Online Total</Typography>
-              </Box>
-              <Typography variant="h4" color="primary.main">
-                {chequeOnlineTotal.toFixed(2)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      {permissions.canViewPayments && (
+        <>
+          {/* Summary Cards */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <FaUniversity color="#1976d2" size={24} />
+                    <Typography variant="h6">Cash Total</Typography>
+                  </Box>
+                  <Typography variant="h4" color="success.main">
+                    {cashTotal.toFixed(2)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <FaMoneyBillWave color="#2e7d32" size={24} />
+                    <Typography variant="h6">Online Total</Typography>
+                  </Box>
+                  <Typography variant="h4" color="primary.main">
+                    {chequeOnlineTotal.toFixed(2)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
 
-      {/* Table */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "primary.main" }}>
-              <TableCell sx={{ color: "white" }}>Sr No</TableCell>
-              <TableCell sx={{ color: "white" }}>Payment Type</TableCell>
-              <TableCell sx={{ color: "white" }}>Person</TableCell>
-              <TableCell sx={{ color: "white" }}>Description</TableCell>
-              <TableCell sx={{ color: "white" }}>Bank</TableCell>
-              <TableCell sx={{ color: "white" }}>Cheque No</TableCell>
-              <TableCell sx={{ color: "white" }}>Amount</TableCell>
-              <TableCell sx={{ color: "white" }}>Balance</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading
-              ? [...Array(5)].map((_, index) => (
-                  <TableRow key={index}>
-                    {[...Array(8)].map((_, cellIndex) => (
-                      <TableCell key={cellIndex}>
-                        <Skeleton animation="wave" />
-                      </TableCell>
+          {/* Table */}
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "primary.main" }}>
+                  <TableCell sx={{ color: "white" }}>Sr No</TableCell>
+                  <TableCell sx={{ color: "white" }}>Payment Type</TableCell>
+                  <TableCell sx={{ color: "white" }}>Person</TableCell>
+                  <TableCell sx={{ color: "white" }}>Description</TableCell>
+                  <TableCell sx={{ color: "white" }}>Bank</TableCell>
+                  <TableCell sx={{ color: "white" }}>Cheque No</TableCell>
+                  <TableCell sx={{ color: "white" }}>Amount</TableCell>
+                  <TableCell sx={{ color: "white" }}>Balance</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading
+                  ? [...Array(5)].map((_, index) => (
+                      <TableRow key={index}>
+                        {[...Array(8)].map((_, cellIndex) => (
+                          <TableCell key={cellIndex}>
+                            <Skeleton animation="wave" />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  : tableData.map((row, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={row.payment_type}
+                            size="small"
+                            sx={{
+                              backgroundColor:
+                                row.payment_type === "cash"
+                                  ? "#e8f5e9"
+                                  : "#e3f2fd",
+                              color:
+                                row.payment_type === "cash"
+                                  ? "#2e7d32"
+                                  : "#1976d2",
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {row.customer?.person_name || "N/A"}
+                        </TableCell>
+                        <TableCell>{row.description || "N/A"}</TableCell>
+                        <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
+                        <TableCell>{row.cheque_no || "N/A"}</TableCell>
+                        <TableCell>
+                          {row.cr_amount || row.cash_amount}
+                        </TableCell>
+                        <TableCell sx={{ color: "success.main" }}>
+                          {row.balance || "Expense"}
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </TableRow>
-                ))
-              : tableData.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={row.payment_type}
-                        size="small"
-                        sx={{
-                          backgroundColor:
-                            row.payment_type === "cash" ? "#e8f5e9" : "#e3f2fd",
-                          color:
-                            row.payment_type === "cash" ? "#2e7d32" : "#1976d2",
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>{row.customer?.person_name || "N/A"}</TableCell>
-                    <TableCell>{row.description || "N/A"}</TableCell>
-                    <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
-                    <TableCell>{row.cheque_no || "N/A"}</TableCell>
-                    <TableCell>{row.cr_amount || row.cash_amount}</TableCell>
-                    <TableCell sx={{ color: "success.main" }}>
-                      {row.balance || "Expense"}
-                    </TableCell>
-                  </TableRow>
-                ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      )}
     </Box>
   );
 };
