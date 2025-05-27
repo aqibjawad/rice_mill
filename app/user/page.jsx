@@ -17,7 +17,7 @@ import {
   tableCellClasses,
   styled,
 } from "@mui/material";
-import { party } from "../../networkApi/Constants";
+import { user } from "../../networkApi/Constants";
 import APICall from "@/networkApi/APICall";
 import { FaPlus } from "react-icons/fa";
 
@@ -101,7 +101,7 @@ const Page = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await api.getDataWithToken(party);
+      const response = await api.getDataWithToken(user);
       const data = response.data;
 
       if (Array.isArray(data)) {
@@ -181,9 +181,6 @@ const Page = () => {
                       <StyledTableCell>
                         <Skeleton variant="text" width={120} />
                       </StyledTableCell>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={100} />
-                      </StyledTableCell>
                       <StyledTableCell align="right">
                         <Skeleton
                           variant="rectangular"
@@ -196,8 +193,8 @@ const Page = () => {
                 : filteredData.map((row, index) => (
                     <StyledTableRow key={row.id}>
                       <StyledTableCell>{index + 1}</StyledTableCell>
-                      <StyledTableCell>{row.person_name}</StyledTableCell>
-                      <StyledTableCell>{row.contact || "N/A"}</StyledTableCell>
+                      <StyledTableCell>{row.name}</StyledTableCell>
+                      <StyledTableCell>{row.email || "N/A"}</StyledTableCell>
                     </StyledTableRow>
                   ))}
             </TableBody>
