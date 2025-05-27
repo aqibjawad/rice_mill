@@ -43,6 +43,7 @@ const Home = () => {
           const userData = {
             user: response.admin,
             access_token: response.token,
+            permissions: response.admin.permissions, // Include permissions
           };
           const user = new User(userData);
           router.replace("/dashboard");

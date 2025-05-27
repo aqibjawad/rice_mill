@@ -21,6 +21,26 @@ const Header = () => {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [allowedMenuItems, setAllowedMenuItems] = useState([]);
+
+  // All possible menu items
+  const allMenuItems = [
+    { href: "/dashboard/", icon: <FaHome />, label: "Dashboard", parent: "Dashboard" },
+    { href: "/sale/", icon: <FaUserTie />, label: "Sales", parent: "Sales" },
+    { href: "/purchase/", icon: <FaShoppingBag />, label: "Purchase", parent: "Purchase" },
+    { href: "/inflow/", icon: <FaArrowRight />, label: "Recieves", parent: "Recieves" },
+    { href: "/outflow/", icon: <FaArrowLeft />, label: "Payments", parent: "Payments" },
+    { href: "/trialBalance/", icon: <FaTruck />, label: "Trial Balance", parent: "Trial Balance" },
+    { href: "/investor/", icon: <FaTruck />, label: "Investor", parent: "Investor" },
+    { href: "/party/", icon: <FaUserTie />, label: "Party", parent: "Party" },
+    { href: "/expenses/", icon: <FaMoneyBill />, label: "Expenses", parent: "Expenses" },
+    { href: "/companyLedger/", icon: <FaMoneyBill />, label: "Ledger", parent: "Ledger" },
+    { href: "/bankCheque/", icon: <FaArrowRight />, label: "Banks", parent: "Banks" },
+    { href: "/product/", icon: <FaShoppingCart />, label: "Products", parent: "Products" },
+    { href: "/user/", icon: <FaShoppingCart />, label: "User", parent: "User" },
+    // { href: "/packing/", icon: <FaBox />, label: "Packing", parent: "Packing" },
+    // { href: "/stock/", icon: <FaBoxes />, label: "Stock", parent: "Stock" },
+  ];
 
   useEffect(() => {
     const handleResize = () => {
@@ -31,29 +51,47 @@ const Header = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    // Get permissions from localStorage
+    const permissions = localStorage.getItem("permissions");
+    
+    if (permissions) {
+      try {
+        const parsedPermissions = JSON.parse(permissions);
+        
+        // Extract parent names from permissions modules
+        const allowedParents = [];
+        if (parsedPermissions.modules && Array.isArray(parsedPermissions.modules)) {
+          parsedPermissions.modules.forEach(module => {
+            if (module.parent) {
+              allowedParents.push(module.parent);
+            }
+          });
+        }
+        
+        // Filter menu items based on allowed parents
+        const filteredMenuItems = allMenuItems.filter(item => 
+          allowedParents.includes(item.parent)
+        );
+        
+        setAllowedMenuItems(filteredMenuItems);
+      } catch (error) {
+        console.error("Error parsing permissions:", error);
+        // If there's an error, show all menu items
+        setAllowedMenuItems(allMenuItems);
+      }
+    } else {
+      // If no permissions found, show all menu items
+      setAllowedMenuItems(allMenuItems);
+    }
+  }, []);
+
   const logOut = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user");
+    localStorage.removeItem("permissions");
     window.location.href = "/";
   };
-
-  const menuItems = [
-    { href: "/dashboard/", icon: <FaHome />, label: "Dashboard" },
-    { href: "/sale/", icon: <FaUserTie />, label: "Sales" },
-    { href: "/purchase/", icon: <FaShoppingBag />, label: "Purchase" },
-    { href: "/inflow/", icon: <FaArrowRight />, label: "Recieves" },
-    { href: "/outflow/", icon: <FaArrowLeft />, label: "Payments" },
-    { href: "/trialBalance/", icon: <FaTruck />, label: "Trial Balance" },
-    { href: "/investor/", icon: <FaTruck />, label: "Investor" },
-    { href: "/party/", icon: <FaUserTie />, label: "Party" },
-    { href: "/expenses/", icon: <FaMoneyBill />, label: "Expenses" },
-    { href: "/companyLedger/", icon: <FaMoneyBill />, label: "Ledger" },
-    { href: "/bankCheque/", icon: <FaArrowRight />, label: "Banks" },
-    { href: "/product/", icon: <FaShoppingCart />, label: "Products" },
-    { href: "/user/", icon: <FaShoppingCart />, label: "User" },
-    // { href: "/packing/", icon: <FaBox />, label: "Packing" },
-    // { href: "/stock/", icon: <FaBoxes />, label: "Stock" },
-  ];
 
   return (
     <header className={styles.header}>
@@ -72,7 +110,7 @@ const Header = () => {
           </div>
           {isDropdownOpen && (
             <div className={styles.dropdownMenu}>
-              {menuItems.map((item, index) => (
+              {allowedMenuItems.map((item, index) => (
                 <Link
                   href={item.href}
                   key={index}
@@ -96,7 +134,7 @@ const Header = () => {
       {/* Desktop Navbar */}
       {!isMobile && (
         <nav className={styles.navbar}>
-          {menuItems.map((item, index) => (
+          {allowedMenuItems.map((item, index) => (
             <Link href={item.href} key={index}>
               <div
                 className={`${styles.navItem} ${
