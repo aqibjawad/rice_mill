@@ -5,8 +5,12 @@ class APICall {
   async handleRequest(request) {
     try {
       const response = await request();
-      
-      if (response.status === 200 || response.status === 204 || response.status === 201) {
+
+      if (
+        response.status === 200 ||
+        response.status === 204 ||
+        response.status === 201
+      ) {
         return response.data || { success: true };
       } else {
         throw new Error(response.statusText);
@@ -54,29 +58,58 @@ class APICall {
     );
   }
 
-async postFormDataWithToken(url, data) {
-  const formData = new FormData();
-  
-  // Ensure all values are strings
-  Object.keys(data).forEach((key) => {
-    formData.append(key, String(data[key] || '')); // Use empty string for null or undefined
-  });
+  async postFormDataWithToken(url, data) {
+    const formData = new FormData();
 
-  console.log("Posting data to:", url);
-  console.log("Request headers:", {
-    ...this.getTokenHeaders(),
-    "Content-Type": "multipart/form-data",
-  });
+    // Ensure all values are strings
+    Object.keys(data).forEach((key) => {
+      formData.append(key, String(data[key] || "")); // Use empty string for null or undefined
+    });
 
-  return this.handleRequest(() =>
-    axios.post(url, formData, {
-      headers: {
-        ...this.getTokenHeaders(),
-        "Content-Type": "multipart/form-data",
-      },
-    })
-  );
-}
+    console.log("Posting data to:", url);
+    console.log("Request headers:", {
+      ...this.getTokenHeaders(),
+      "Content-Type": "multipart/form-data",
+    });
+
+    return this.handleRequest(() =>
+      axios.post(url, formData, {
+        headers: {
+          ...this.getTokenHeaders(),
+          "Content-Type": "multipart/form-data",
+        },
+      })
+    );
+  }
+
+  async postJSONDataWithToken(url, data) {
+    // Clean up nested permissions structure if exists
+    if (data.permissions && data.permissions.permissions) {
+      data.permissions = data.permissions.permissions;
+    }
+
+    // Clean up nested modules structure if exists
+    if (data.modules && data.modules.modules) {
+      data.modules = data.modules.modules;
+    }
+
+    console.log("Posting JSON data to:", url);
+    console.log("Request data:", JSON.stringify(data, null, 2));
+
+    console.log("Request headers:", {
+      ...this.getTokenHeaders(),
+      "Content-Type": "application/json",
+    });
+
+    return this.handleRequest(() =>
+      axios.post(url, data, {
+        headers: {
+          ...this.getTokenHeaders(),
+          "Content-Type": "application/json",
+        },
+      })
+    );
+  }
 
   async getDataWithToken(url) {
     return this.handleRequest(() =>
@@ -108,6 +141,10 @@ async postFormDataWithToken(url, data) {
 
   async postDataWithToken(url, data) {
     return this.postFormDataWithToken(url, data);
+  }
+
+  async postDataToken(url, data) {
+    return this.postJSONDataWithToken(url, data);
   }
 
   async putDataWithToken(url, data) {

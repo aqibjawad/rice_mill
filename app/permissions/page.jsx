@@ -6,6 +6,7 @@ import withAuth from "@/utils/withAuth";
 import { user } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
+import Swal from 'sweetalert2';
 
 const Permission = () => {
   const router = useRouter();
@@ -19,11 +20,13 @@ const Permission = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   // Use ref to prevent infinite re-renders
   const permissionsRef = useRef(null);
 
   // Function to receive permissions data from child component
+  // This should NOT trigger API calls - just store the permissions
   const handlePermissionsChange = useCallback((data) => {
     // Prevent unnecessary updates if data is the same
     if (JSON.stringify(data) === JSON.stringify(permissionsRef.current)) {
@@ -41,7 +44,8 @@ const Permission = () => {
 
     permissionsRef.current = data;
     setPermissionsData(modulesOnlyData);
-    console.log("Permissions data received (modules only):", modulesOnlyData);
+    console.log("Permissions data stored (modules only):", modulesOnlyData);
+    // Note: No API call here - just storing the data
   }, []);
 
   // Function to handle input changes
@@ -146,34 +150,126 @@ const Permission = () => {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
+    // Permissions validation (optional - add if permissions are required)
+    if (!permissionsData || !permissionsData.permissions) {
+      newErrors.permissions = "Please select user permissions";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData, validatePassword]);
+  }, [formData, validatePassword, permissionsData]);
 
-  // Function to handle form submission
+  // SweetAlert Success function
+  const showSuccessAlert = (message = "User Created Successfully!") => {
+    Swal.fire({
+      title: 'Success!',
+      text: message,
+      icon: 'success',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#28a745',
+      timer: 3000,
+      timerProgressBar: true
+    }).then(() => {
+      // Reset form after success
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setPermissionsData(null);
+      permissionsRef.current = null;
+      setErrors({});
+    });
+  };
+
+  // SweetAlert Error function
+  const showErrorAlert = (message = "Something went wrong!") => {
+    Swal.fire({
+      title: 'Error!',
+      text: message,
+      icon: 'error',
+      confirmButtonText: 'Try Again',
+      confirmButtonColor: '#dc3545'
+    });
+  };
+
+  // Function to handle form submission - API call happens HERE
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
 
-      if (validateForm()) {
-        const completeFormData = {
-          ...formData,
-          permissions: permissionsData,
-        };
+      // Prevent multiple simultaneous submissions
+      if (loading) {
+        return;
+      }
 
-        try {
-          const response = await api.getDataWithToken(
-            `${user}`,
-            completeFormData
-          );
-        } catch (error) {
-          console.error("Error fetching ref no:", error);
-        }
-      } else {
+      // Validate form including permissions
+      if (!validateForm()) {
         console.log("Form validation failed");
+        showErrorAlert("Please fill all required fields correctly and select permissions!");
+        return;
+      }
+
+      setLoading(true);
+      
+      // Prepare complete form data with permissions
+      const completeFormData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        // Include permissions data
+        ...permissionsData
+      };
+
+      console.log("Submitting user data:", completeFormData);
+
+      try {
+        // THIS is where the API call should happen - only on form submission
+        const response = await api.postDataToken(
+          `${user}`,
+          completeFormData
+        );
+
+        console.log("User creation response:", response);
+
+        // Check if response indicates success
+        if (response && (response.status === "success" || response.success)) {
+          const successMessage = response.message || "User Created Successfully!";
+          showSuccessAlert(successMessage);
+        } else if (response && response.message) {
+          // If there's a message in response but not success
+          showErrorAlert(response.message);
+        } else {
+          showSuccessAlert();
+        }
+        
+      } catch (error) {
+        console.error("Error creating user:", error);
+        
+        // Handle different types of errors
+        let errorMessage = "Something went wrong!";
+        
+        if (error.response) {
+          // Server responded with error status
+          if (error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+          } else if (error.response.data && error.response.data.error) {
+            errorMessage = error.response.data.error;
+          } else {
+            errorMessage = `Server Error: ${error.response.status}`;
+          }
+        } else if (error.message) {
+          // Network or other error
+          errorMessage = error.message;
+        }
+        
+        showErrorAlert(errorMessage);
+      } finally {
+        setLoading(false);
       }
     },
-    [formData, permissionsData, validateForm, user]
+    [formData, permissionsData, validateForm, api, user, loading]
   );
 
   return (
@@ -261,32 +357,41 @@ const Permission = () => {
         </div>
 
         <div>
+          {/* Pass a prop to PermissionManager to prevent API calls */}
           <PermissionManager
             onPermissionsChange={handlePermissionsChange}
+            preventApiCalls={true}
             key="permission-manager"
           />
+          {errors.permissions && (
+            <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+              {errors.permissions}
+            </div>
+          )}
         </div>
 
         {/* Submit Button */}
         <div className="mt-10">
           <button
             type="submit"
+            disabled={loading}
             style={{
-              backgroundColor: "#007bff",
+              backgroundColor: loading ? "#6c757d" : "#007bff",
               color: "white",
               padding: "10px 20px",
               border: "none",
               borderRadius: "5px",
-              cursor: "pointer",
+              cursor: loading ? "not-allowed" : "pointer",
               fontSize: "16px",
+              opacity: loading ? 0.7 : 1,
             }}
           >
-            Submit
+            {loading ? "Creating User..." : "Create User"}
           </button>
         </div>
 
         {/* Debug: Show current permissions data */}
-        {permissionsData && (
+        {process.env.NODE_ENV === 'development' && permissionsData && (
           <div className="mt-4 p-4 bg-gray-100 rounded">
             <h4>Current Permissions JSON (Modules Only):</h4>
             <pre>{JSON.stringify(permissionsData, null, 2)}</pre>
@@ -297,4 +402,4 @@ const Permission = () => {
   );
 };
 
-export default Permission;
+export default withAuth(Permission);
