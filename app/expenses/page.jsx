@@ -37,6 +37,74 @@ const Page = () => {
   const handleOpenExpense = () => setOpenExpense(true);
   const handleCloseExpense = () => setOpenExpense(false);
 
+  // Permission states
+  const [permissions, setPermissions] = useState({
+    canAddExpense: false,
+    canViewExpense: false,
+    hasAccess: false,
+  });
+
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  useEffect(() => {
+    if (permissions.canViewExpense) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [permissions.canViewExpense]);
+
+  const checkPermissions = () => {
+    try {
+      const storedPermissions = localStorage.getItem("permissions");
+
+      if (storedPermissions) {
+        const parsedPermissions = JSON.parse(storedPermissions);
+
+        // Find Expense module permissions
+        let canAddExpense = false;
+        let canViewExpense = false;
+
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
+          const ExpenseModule = parsedPermissions.modules.find(
+            (module) => module.parent === "Expense" || module.name === "Expense"
+          );
+
+          if (ExpenseModule && ExpenseModule.permissions) {
+            canAddExpense = ExpenseModule.permissions.includes("Add Expense");
+            canViewExpense = ExpenseModule.permissions.includes("View Expense");
+          }
+        }
+
+        setPermissions({
+          canAddExpense,
+          canViewExpense,
+          hasAccess: canAddExpense || canViewExpense,
+        });
+      } else {
+        // No permissions found - default behavior
+        setPermissions({
+          canAddExpense: true,
+          canViewExpense: true,
+          hasAccess: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing permissions:", error);
+      // Default to showing all on error
+      setPermissions({
+        canAddExpense: true,
+        canViewExpense: true,
+        hasAccess: true,
+      });
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -75,11 +143,6 @@ const Page = () => {
     fetchData();
   }, [startDate, endDate]);
 
-  const handleDateChange = (start, end) => {
-    setStartDate(start);
-    setEndDate(end);
-  };
-
   const handleViewDetails = (id) => {
     localStorage.setItem("expenseId", id);
     router.push("/expenseDetails");
@@ -100,70 +163,78 @@ const Page = () => {
               Expenses
             </Typography>
           </Grid>
-          <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              style={{ marginRight: 10 }}
-              onClick={handleOpenExpense}
-            >
-              Add Expense
-            </Button>
-            <Button variant="contained" color="secondary">
-              Expense Categories
-            </Button>
-          </Grid>
+          {permissions.canViewExpense && (
+            <Grid item>
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ marginRight: 10 }}
+                onClick={handleOpenExpense}
+              >
+                Add Expense
+              </Button>
+              <Button variant="contained" color="secondary">
+                Expense Categories
+              </Button>
+            </Grid>
+          )}
         </Grid>
 
-        <Card style={{ marginTop: 20, marginBottom: 20, padding: 15 }}>
-          <Typography variant="h6" fontWeight="bold">
-            Total Expenses: {totalExpenses.toFixed(2)}
-          </Typography>
-        </Card>
+        {permissions.canViewExpense && (
+          <>
+            <Card style={{ marginTop: 20, marginBottom: 20, padding: 15 }}>
+              <Typography variant="h6" fontWeight="bold">
+                Total Expenses: {totalExpenses.toFixed(2)}
+              </Typography>
+            </Card>
 
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Sr No</TableCell>
-                <TableCell>Expense Category</TableCell>
-                <TableCell>Expense Amount</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading
-                ? [...Array(5)].map((_, index) => (
-                    <TableRow key={index}>
-                      {[...Array(4)].map((_, cellIndex) => (
-                        <TableCell key={cellIndex}>Loading...</TableCell>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Sr No</TableCell>
+                    <TableCell>Expense Category</TableCell>
+                    <TableCell>Expense Amount</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {loading
+                    ? [...Array(5)].map((_, index) => (
+                        <TableRow key={index}>
+                          {[...Array(4)].map((_, cellIndex) => (
+                            <TableCell key={cellIndex}>Loading...</TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    : tableData.map((row, index) => (
+                        <TableRow key={row.id}>
+                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{row.expense_category}</TableCell>
+                          <TableCell>{row.expenses_sum_total_amount}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="contained"
+                              onClick={() => handleViewDetails(row.id)}
+                            >
+                              View Details
+                            </Button>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </TableRow>
-                  ))
-                : tableData.map((row, index) => (
-                    <TableRow key={row.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{row.expense_category}</TableCell>
-                      <TableCell>{row.expenses_sum_total_amount}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="contained"
-                          onClick={() => handleViewDetails(row.id)}
-                        >
-                          View Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
+        )}
       </div>
 
-      <AddExpense
-        openExpense={openExpense}
-        handleCloseExpense={handleCloseExpense}
-      />
+      {permissions.canAddExpense && (
+        <AddExpense
+          openExpense={openExpense}
+          handleCloseExpense={handleCloseExpense}
+        />
+      )}
     </>
   );
 };

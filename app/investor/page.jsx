@@ -72,16 +72,83 @@ const Page = () => {
   const [editingData, setEditingData] = useState(null);
   const [open, setOpen] = useState(false);
 
+  // Permission states
+  const [permissions, setPermissions] = useState({
+    canAddInvestor: false,
+    canViewInvestor: false,
+    hasAccess: false,
+  });
+
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  useEffect(() => {
+    if (permissions.canViewInvestor) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [permissions.canViewInvestor]);
+
+  const checkPermissions = () => {
+    try {
+      const storedPermissions = localStorage.getItem("permissions");
+
+      if (storedPermissions) {
+        const parsedPermissions = JSON.parse(storedPermissions);
+
+        // Find Investor module permissions
+        let canAddInvestor = false;
+        let canViewInvestor = false;
+
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
+          const InvestorModule = parsedPermissions.modules.find(
+            (module) =>
+              module.parent === "Investor" || module.name === "Investor"
+          );
+
+          if (InvestorModule && InvestorModule.permissions) {
+            canAddInvestor =
+              InvestorModule.permissions.includes("Add Investor");
+            canViewInvestor =
+              InvestorModule.permissions.includes("View Investor");
+          }
+        }
+
+        setPermissions({
+          canAddInvestor,
+          canViewInvestor,
+          hasAccess: canAddInvestor || canViewInvestor,
+        });
+      } else {
+        // No permissions found - default behavior
+        setPermissions({
+          canAddInvestor: true,
+          canViewInvestor: true,
+          hasAccess: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing permissions:", error);
+      // Default to showing all on error
+      setPermissions({
+        canAddInvestor: true,
+        canViewInvestor: true,
+        hasAccess: true,
+      });
+    }
+  };
+
   const handleOpen = () => setOpen(true);
+
   const handleClose = () => {
     setOpen(false);
     setEditingData(null);
     fetchData();
-  };
-
-  const handleEdit = (row) => {
-    setEditingData(row);
-    setOpen(true);
   };
 
   useEffect(() => {
@@ -129,87 +196,95 @@ const Page = () => {
       <Box sx={{ p: 3 }}>
         <div className={styles.container}>
           <div className={styles.leftSection}>Investors</div>
-          {/* <div className={styles.rightSection}>
-            <div className={styles.rightItemExp} onClick={handleOpen}>
-              + Add
-            </div>
-          </div> */}
-          <AddButton
-            onClick={handleOpen}
-            variant="contained"
-            startIcon={<FaPlus />}
-          >
-            Add New
-          </AddButton>
-        </div>
-        {/* Summary Cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={6}>
-            <TotalCard>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <FaMoneyBillWave color="#2e7d32" size={24} />
-                  <Typography variant="h6" component="div">
-                    Total Balance
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ mt: 2, color: "success.main" }}>
-                  {totalBalance}
-                </Typography>
-              </CardContent>
-            </TotalCard>
-          </Grid>
-        </Grid>
 
-        {/* Main Table */}
-        <TableContainer component={Paper} elevation={3}>
-          <Table sx={{ minWidth: 700 }}>
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Sr No</StyledTableCell>
-                <StyledTableCell>Person Name</StyledTableCell>
-                <StyledTableCell>Contact</StyledTableCell>
-                <StyledTableCell>Firm Name</StyledTableCell>
-                <StyledTableCell>Balance</StyledTableCell>
-                <StyledTableCell>View Details</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {tableData.map((row, index) => (
-                <StyledTableRow key={row.id}>
-                  <StyledTableCell>{index + 1}</StyledTableCell>
-                  <StyledTableCell>{row.person_name}</StyledTableCell>
-                  <StyledTableCell>
-                    {row.customer?.contact || "N/A"}
-                  </StyledTableCell>
-                  <StyledTableCell>{row.firm_name}</StyledTableCell>
-                  <StyledTableCell
-                    sx={{
-                      color:
-                        parseFloat(row.balance) < 0
-                          ? "error.main"
-                          : "success.main",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {row.current_balance}
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    <Link href={`${`/investor_ledger/?id=${row.id}`}`}>
-                      View Details
-                    </Link>
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+          {permissions.canAddInvestor && (
+            <AddButton
+              onClick={handleOpen}
+              variant="contained"
+              startIcon={<FaPlus />}
+            >
+              Add New
+            </AddButton>
+          )}
+        </div>
+        {permissions.canViewInvestor && (
+          <>
+            {/* Summary Cards */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} md={6}>
+                <TotalCard>
+                  <CardContent>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <FaMoneyBillWave color="#2e7d32" size={24} />
+                      <Typography variant="h6" component="div">
+                        Total Balance
+                      </Typography>
+                    </Box>
+                    <Typography
+                      variant="h4"
+                      sx={{ mt: 2, color: "success.main" }}
+                    >
+                      {totalBalance}
+                    </Typography>
+                  </CardContent>
+                </TotalCard>
+              </Grid>
+            </Grid>
+
+            {/* Main Table */}
+            <TableContainer component={Paper} elevation={3}>
+              <Table sx={{ minWidth: 700 }}>
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>Sr No</StyledTableCell>
+                    <StyledTableCell>Person Name</StyledTableCell>
+                    <StyledTableCell>Contact</StyledTableCell>
+                    <StyledTableCell>Firm Name</StyledTableCell>
+                    <StyledTableCell>Balance</StyledTableCell>
+                    <StyledTableCell>View Details</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tableData.map((row, index) => (
+                    <StyledTableRow key={row.id}>
+                      <StyledTableCell>{index + 1}</StyledTableCell>
+                      <StyledTableCell>{row.person_name}</StyledTableCell>
+                      <StyledTableCell>
+                        {row.customer?.contact || "N/A"}
+                      </StyledTableCell>
+                      <StyledTableCell>{row.firm_name}</StyledTableCell>
+                      <StyledTableCell
+                        sx={{
+                          color:
+                            parseFloat(row.balance) < 0
+                              ? "error.main"
+                              : "success.main",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {row.current_balance}
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <Link href={`${`/investor_ledger/?id=${row.id}`}`}>
+                          View Details
+                        </Link>
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
+        )}
       </Box>
-      <AddInvestor
-        open={open}
-        handleClose={handleClose}
-        editData={editingData}
-      />
+      
+      {permissions.canAddInvestor && (
+        <AddInvestor
+          open={open}
+          handleClose={handleClose}
+          editData={editingData}
+        />
+      )}
     </div>
   );
 };

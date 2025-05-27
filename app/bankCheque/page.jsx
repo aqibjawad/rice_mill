@@ -22,7 +22,6 @@ import { useRouter } from "next/navigation";
 
 import { AddBank } from "@/components/stock/addBank";
 
-
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.primary.main,
@@ -47,7 +46,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-
 const Page = () => {
   const api = new APICall();
   const router = useRouter();
@@ -63,11 +61,78 @@ const Page = () => {
   const handleOpenBank = () => setOpenBank(true);
   const handleCloseBank = () => setOpenBank(false);
 
+  // Permission states
+  const [permissions, setPermissions] = useState({
+    canAddBanks: false,
+    canViewBanks: false,
+    hasAccess: false
+  });
+
   useEffect(() => {
-    fetchData();
+    checkPermissions();
   }, []);
 
+  useEffect(() => {
+    if (permissions.canViewBanks) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [permissions.canViewBanks]);
+
+  const checkPermissions = () => {
+    try {
+      const storedPermissions = localStorage.getItem("permissions");
+      
+      if (storedPermissions) {
+        const parsedPermissions = JSON.parse(storedPermissions);
+        
+        // Find Banks module permissions
+        let canAddBanks = false;
+        let canViewBanks = false;
+        
+        if (parsedPermissions.modules && Array.isArray(parsedPermissions.modules)) {
+          const banksModule = parsedPermissions.modules.find(
+            module => module.parent === "Banks" || module.name === "Banks"
+          );
+          
+          if (banksModule && banksModule.permissions) {
+            canAddBanks = banksModule.permissions.includes("Add Banks");
+            canViewBanks = banksModule.permissions.includes("View Banks");
+          }
+        }
+        
+        setPermissions({
+          canAddBanks,
+          canViewBanks,
+          hasAccess: canAddBanks || canViewBanks
+        });
+        
+      } else {
+        // No permissions found - default behavior
+        setPermissions({
+          canAddBanks: true,
+          canViewBanks: true,
+          hasAccess: true
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing permissions:", error);
+      // Default to showing all on error
+      setPermissions({
+        canAddBanks: true,
+        canViewBanks: true,
+        hasAccess: true
+      });
+    }
+  };
+
   const fetchData = async () => {
+    if (!permissions.canViewBanks) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await api.getDataWithToken(banks);
 
@@ -86,14 +151,45 @@ const Page = () => {
 
   // New function to handle saving ID to local storage
   const handleViewDetails = (id) => {
+    if (!permissions.canViewBanks) {
+      console.warn("No permission to view bank details");
+      return;
+    }
+    
     localStorage.setItem("selectedRowId", id);
     router.push("/bankDetails");
   };
 
   const handleViewLedger = (id) => {
+    if (!permissions.canViewBanks) {
+      console.warn("No permission to view bank ledger");
+      return;
+    }
+    
     localStorage.setItem("selectedRowId", id);
     router.push("/bankLedger");
   };
+
+  // Handle Add Bank with permission check
+  const handleOpenBankWithPermission = () => {
+    if (permissions.canAddBanks) {
+      handleOpenBank();
+    } else {
+      console.warn("No permission to add banks");
+    }
+  };
+
+  // If user has no access to banks at all
+  if (!permissions.hasAccess) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+          <h3>Access Denied</h3>
+          <p>You don't have permission to access Banks module.</p>
+        </div>
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -109,110 +205,117 @@ const Page = () => {
             <Box sx={{ fontSize: "24px", fontWeight: 600 }}>Banks</Box>
           </Grid>
 
-          {/* Right Section */}
-          <Grid item xs={12} md={8} lg={6}>
-            <Grid
-              container
-              spacing={2}
-              alignItems="center"
-              justifyContent="flex-end"
-            >
-              {/* Add Button */}
-              <Grid item xs={6} sm={6} md={4} lg={4}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  sx={{
-                    borderRadius: "20px",
-                    fontWeight: "bold",
-                    textTransform: "none",
-                    height: "40px",
-                  }}
-                  onClick={handleOpenBank}
-                >
-                  + Add
-                </Button>
+          {/* Right Section - Show Add button only if user has Add Banks permission */}
+          {permissions.canAddBanks && (
+            <Grid item xs={12} md={8} lg={6}>
+              <Grid
+                container
+                spacing={2}
+                alignItems="center"
+                justifyContent="flex-end"
+              >
+                {/* Add Button */}
+                <Grid item xs={6} sm={6} md={4} lg={4}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    sx={{
+                      borderRadius: "20px",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      height: "40px",
+                    }}
+                    onClick={handleOpenBankWithPermission}
+                  >
+                    + Add
+                  </Button>
+                </Grid>
               </Grid>
             </Grid>
-          </Grid>
+          )}
         </Grid>
 
-        {/* Summary Cards */}
-        {/* <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={6}>
-            <TotalCard>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <FaMoneyBillWave color="#2e7d32" size={24} />
-                  <Typography variant="h6" component="div">
-                    Total Balance
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ mt: 2, color: "success.main" }}>
-                  {totalBalance}
-                </Typography>
-              </CardContent>
-            </TotalCard>
-          </Grid>
-        </Grid> */}
+        {/* Show table only if user has View Banks permission */}
+        {permissions.canViewBanks && (
+          <TableContainer className="mt-5" component={Paper} elevation={3}>
+            <Table sx={{ minWidth: 700 }}>
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell>Sr No</StyledTableCell>
+                  <StyledTableCell>Bank Name</StyledTableCell>
+                  <StyledTableCell>Total Balance</StyledTableCell>
+                  <StyledTableCell>View Ledger</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading
+                  ? [...Array(5)].map((_, index) => (
+                      <StyledTableRow key={index}>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={30} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={120} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={100} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={150} />
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    ))
+                  : error
+                  ? (
+                      <StyledTableRow>
+                        <StyledTableCell colSpan={4} style={{ textAlign: 'center' }}>
+                          Error: {error}
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    )
+                  : tableData.length === 0
+                  ? (
+                      <StyledTableRow>
+                        <StyledTableCell colSpan={4} style={{ textAlign: 'center' }}>
+                          No banks data available
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    )
+                  : tableData.map((row, index) => (
+                      <StyledTableRow key={row.id}>
+                        <StyledTableCell>{index + 1}</StyledTableCell>
+                        <StyledTableCell>{row.bank_name}</StyledTableCell>
+                        <StyledTableCell>{row.balance || "N/A"}</StyledTableCell>
 
-        {/* Main Table */}
-        <TableContainer className="mt-5" component={Paper} elevation={3}>
-          <Table sx={{ minWidth: 700 }}>
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Sr No</StyledTableCell>
-                <StyledTableCell>Bank Name</StyledTableCell>
-                <StyledTableCell>Total Balance</StyledTableCell>
-                <StyledTableCell>View Ledger</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading
-                ? [...Array(5)].map((_, index) => (
-                    <StyledTableRow key={index}>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={30} />
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={120} />
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={100} />
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={150} />
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  ))
-                : tableData.map((row, index) => (
-                    <StyledTableRow key={row.id}>
-                      <StyledTableCell>{index + 1}</StyledTableCell>
-                      <StyledTableCell>{row.bank_name}</StyledTableCell>
-                      <StyledTableCell>{row.balance || "N/A"}</StyledTableCell>
-
-                      <StyledTableCell
-                        sx={{
-                          color:
-                            parseFloat(row.balance) < 0
-                              ? "error.main"
-                              : "success.main",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        <Button onClick={() => handleViewLedger(row.id)}>
-                          View Ledger
-                        </Button>
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                        <StyledTableCell
+                          sx={{
+                            color:
+                              parseFloat(row.balance) < 0
+                                ? "error.main"
+                                : "success.main",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          <Button 
+                            onClick={() => handleViewLedger(row.id)}
+                            disabled={!permissions.canViewBanks}
+                          >
+                            View Ledger
+                          </Button>
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </Box>
 
-      <AddBank openBank={openBank} handleCloseBank={handleCloseBank} />
+      {/* Only render AddBank modal if user has add permission */}
+      {permissions.canAddBanks && (
+        <AddBank openBank={openBank} handleCloseBank={handleCloseBank} />
+      )}
     </>
   );
 };

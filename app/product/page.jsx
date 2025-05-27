@@ -23,7 +23,6 @@ import { MdDelete, MdEdit } from "react-icons/md";
 import AddProduct from "../../components/stock/addProduct";
 import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
-
 import Link from "next/link";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -58,23 +57,108 @@ const Page = () => {
   const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
 
+  // Permission states
+  const [permissions, setPermissions] = useState({
+    canAddProducts: false,
+    canViewProducts: false,
+    hasAccess: false,
+  });
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     setEditingData(null);
-    fetchData(); // Refresh the data after closing the modal
+    if (permissions.canViewProducts) {
+      fetchData(); // Refresh the data after closing the modal
+    }
   };
 
   const handleEdit = (row) => {
+    if (!permissions.canAddProducts) {
+      console.warn("No permission to edit products");
+      return;
+    }
     setEditingData(row);
     setOpen(true);
   };
 
   useEffect(() => {
-    fetchData();
+    checkPermissions();
   }, []);
 
+  useEffect(() => {
+    if (permissions.canViewProducts) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [permissions.canViewProducts]);
+
+  const checkPermissions = () => {
+    try {
+      const storedPermissions = localStorage.getItem("permissions");
+
+      if (storedPermissions) {
+        const parsedPermissions = JSON.parse(storedPermissions);
+
+        // Find Products module permissions
+        let canAddProducts = false;
+        let canViewProducts = false;
+
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
+          const productsModule = parsedPermissions.modules.find(
+            (module) =>
+              module.parent === "Products" || module.name === "Products"
+          );
+
+          if (productsModule && productsModule.permissions) {
+            canAddProducts =
+              productsModule.permissions.includes("Add Products");
+            canViewProducts =
+              productsModule.permissions.includes("View Products");
+          }
+        }
+
+        setPermissions({
+          canAddProducts,
+          canViewProducts,
+          hasAccess: canAddProducts || canViewProducts,
+        });
+
+        // If user has no products permissions at all, redirect or show error
+        if (!canAddProducts && !canViewProducts) {
+          console.warn("No products permissions found");
+          // Optional: redirect to unauthorized page
+          // router.push("/unauthorized");
+        }
+      } else {
+        // No permissions found - default behavior
+        setPermissions({
+          canAddProducts: true,
+          canViewProducts: true,
+          hasAccess: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing permissions:", error);
+      // Default to showing all on error
+      setPermissions({
+        canAddProducts: true,
+        canViewProducts: true,
+        hasAccess: true,
+      });
+    }
+  };
+
   const fetchData = async () => {
+    if (!permissions.canViewProducts) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await api.getDataWithToken(products);
       const data = response.data;
@@ -92,6 +176,16 @@ const Page = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!permissions.canAddProducts) {
+      Swal.fire({
+        title: "Permission Denied!",
+        text: "You don't have permission to delete products.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
     try {
       await api.deleteDataWithToken(`${products}/${id}`, {
         method: "DELETE",
@@ -117,6 +211,29 @@ const Page = () => {
     }
   };
 
+  // Handle Add Product with permission check
+  const handleOpenWithPermission = () => {
+    if (permissions.canAddProducts) {
+      handleOpen();
+    } else {
+      console.warn("No permission to add products");
+    }
+  };
+
+  // If user has no access to products at all
+  if (!permissions.hasAccess) {
+    return (
+      <div>
+        <Box sx={{ p: 3 }}>
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <h3>Access Denied</h3>
+            <p>You don't have permission to access Products module.</p>
+          </div>
+        </Box>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Box sx={{ p: 3 }}>
@@ -131,70 +248,56 @@ const Page = () => {
             <Box sx={{ fontSize: "24px", fontWeight: 600 }}>Products</Box>
           </Grid>
 
-          {/* Right Section */}
-          <Grid item xs={12} md={8} lg={6}>
-            <Grid
-              container
-              spacing={2}
-              alignItems="center"
-              justifyContent="flex-end"
-            >
-              {/* Add Button */}
-              <Grid item xs={6} sm={6} md={4} lg={4}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  sx={{
-                    borderRadius: "20px",
-                    fontWeight: "bold",
-                    textTransform: "none",
-                    height: "40px",
-                  }}
-                  onClick={handleOpen}
-                >
-                  + Add
-                </Button>
+          {/* Right Section - Show Add button only if user has Add Products permission */}
+          {permissions.canAddProducts && (
+            <Grid item xs={12} md={8} lg={6}>
+              <Grid
+                container
+                spacing={2}
+                alignItems="center"
+                justifyContent="flex-end"
+              >
+                {/* Add Button */}
+                <Grid item xs={6} sm={6} md={4} lg={4}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    sx={{
+                      borderRadius: "20px",
+                      fontWeight: "bold",
+                      textTransform: "none",
+                      height: "40px",
+                    }}
+                    onClick={handleOpenWithPermission}
+                  >
+                    + Add
+                  </Button>
+                </Grid>
               </Grid>
             </Grid>
-          </Grid>
+          )}
         </Grid>
 
-        {/* Summary Cards */}
-        {/* <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={6}>
-            <TotalCard>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <FaMoneyBillWave color="#2e7d32" size={24} />
-                  <Typography variant="h6" component="div">
-                    Total Balance
-                  </Typography>
-                </Box>
-                <Typography variant="h4" sx={{ mt: 2, color: "success.main" }}>
-                  {totalBalance}
-                </Typography>
-              </CardContent>
-            </TotalCard>
-          </Grid>
-        </Grid> */}
-
-        {/* Main Table */}
-        <TableContainer className="mt-5" component={Paper} elevation={3}>
-          <Table sx={{ minWidth: 700 }}>
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Sr No</StyledTableCell>
-                <StyledTableCell>Product Name</StyledTableCell>
-                <StyledTableCell>Weight in Stock</StyledTableCell>
-                <StyledTableCell>Balance</StyledTableCell>
-                <StyledTableCell>Action</StyledTableCell>
-                <StyledTableCell>View</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading
-                ? [...Array(5)].map((_, index) => (
+        {/* Show table only if user has View Products permission */}
+        {permissions.canViewProducts && (
+          <TableContainer className="mt-5" component={Paper} elevation={3}>
+            <Table sx={{ minWidth: 700 }}>
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell>Sr No</StyledTableCell>
+                  <StyledTableCell>Product Name</StyledTableCell>
+                  <StyledTableCell>Weight in Stock</StyledTableCell>
+                  <StyledTableCell>Balance</StyledTableCell>
+                  {permissions.canAddProducts && (
+                    <StyledTableCell>Action</StyledTableCell>
+                  )}
+                  <StyledTableCell>View</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading ? (
+                  [...Array(5)].map((_, index) => (
                     <StyledTableRow key={index}>
                       <StyledTableCell>
                         <Skeleton variant="text" width={30} />
@@ -208,15 +311,36 @@ const Page = () => {
                       <StyledTableCell>
                         <Skeleton variant="text" width={150} />
                       </StyledTableCell>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={150} />
-                      </StyledTableCell>
+                      {permissions.canAddProducts && (
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={150} />
+                        </StyledTableCell>
+                      )}
                       <StyledTableCell>
                         <Skeleton variant="text" width={150} />
                       </StyledTableCell>
                     </StyledTableRow>
                   ))
-                : tableData.map((row, index) => {
+                ) : error ? (
+                  <StyledTableRow>
+                    <StyledTableCell
+                      colSpan={permissions.canAddProducts ? 6 : 5}
+                      style={{ textAlign: "center" }}
+                    >
+                      Error: {error}
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ) : tableData.length === 0 ? (
+                  <StyledTableRow>
+                    <StyledTableCell
+                      colSpan={permissions.canAddProducts ? 6 : 5}
+                      style={{ textAlign: "center" }}
+                    >
+                      No products data available
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ) : (
+                  tableData.map((row, index) => {
                     const stock = row.company_product_stocks?.[0] || {}; // Stock ka pehla element ya empty object
                     return (
                       <StyledTableRow key={row.id}>
@@ -228,31 +352,44 @@ const Page = () => {
                         <StyledTableCell>
                           {stock.balance || "N/A"}
                         </StyledTableCell>
+                        {permissions.canAddProducts && (
+                          <StyledTableCell>
+                            <IconButton
+                              onClick={() => handleDelete(row.id)}
+                              color="error"
+                              disabled={!permissions.canAddProducts}
+                            >
+                              <MdDelete />
+                            </IconButton>
+                          </StyledTableCell>
+                        )}
                         <StyledTableCell>
-                          <IconButton
-                            onClick={() => handleDelete(row.id)}
-                            color="error"
-                          >
-                            <MdDelete />
-                          </IconButton>
-                        </StyledTableCell>
-                        <StyledTableCell>
-                          <Link href={`/productDetails/?id=${row.id}`}>
-                            View Details
-                          </Link>
+                          {permissions.canViewProducts ? (
+                            <Link href={`/productDetails/?id=${row.id}`}>
+                              View Details
+                            </Link>
+                          ) : (
+                            <span style={{ color: "#ccc" }}>View Details</span>
+                          )}
                         </StyledTableCell>
                       </StyledTableRow>
                     );
-                  })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </Box>
-      <AddProduct
-        open={open}
-        handleClose={handleClose}
-        editData={editingData}
-      />
+
+      {/* Only render AddProduct modal if user has add permission */}
+      {permissions.canAddProducts && (
+        <AddProduct
+          open={open}
+          handleClose={handleClose}
+          editData={editingData}
+        />
+      )}
     </div>
   );
 };

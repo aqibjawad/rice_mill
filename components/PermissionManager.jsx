@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 
 const modules = {
+  Dashbaord: {
+    name: "Dashbaord",
+    permissions: ["View Dashbaord"],
+  },
   Sales: {
     name: "Sales",
     permissions: ["Add Sales", "View Sales"],
@@ -38,7 +42,7 @@ const modules = {
   },
   Banks: {
     name: "Banks",
-    permissions: ["View Banks"],
+    permissions: ["View Banks", "Add Banks"],
   },
   Products: {
     name: "Products",
@@ -223,7 +227,7 @@ const PermissionsManager = ({ onPermissionsChange }) => {
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
         Permissions Manager
       </h2>
-      
+
       {/* Grid Layout for Modules */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {Object.entries(modules).map(([moduleName, moduleData]) => (
@@ -321,11 +325,7 @@ const PermissionsManager = ({ onPermissionsChange }) => {
                                 : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                             }`}
                             onClick={() =>
-                              handleFieldPermission(
-                                moduleName,
-                                field,
-                                "view"
-                              )
+                              handleFieldPermission(moduleName, field, "view")
                             }
                           >
                             {isFieldPermissionSelected(
