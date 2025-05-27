@@ -28,24 +28,25 @@ const Permission = () => {
   // Function to receive permissions data from child component
   // This should NOT trigger API calls - just store the permissions
   const handlePermissionsChange = useCallback((data) => {
+    console.log("Received permissions data:", data);
+    
     // Prevent unnecessary updates if data is the same
     if (JSON.stringify(data) === JSON.stringify(permissionsRef.current)) {
       return;
     }
 
-    // Extract only the modules part from the permissions data
-    const modulesOnlyData = data?.permissions?.modules
-      ? {
-          permissions: {
-            modules: data.permissions.modules,
-          },
-        }
-      : data;
-
+    // Store the complete permissions data (not just modules)
     permissionsRef.current = data;
-    setPermissionsData(modulesOnlyData);
-    console.log("Permissions data stored (modules only):", modulesOnlyData);
-    // Note: No API call here - just storing the data
+    setPermissionsData(data);
+    console.log("Permissions data stored:", data);
+    
+    // Clear permissions error if data is provided
+    if (data && Object.keys(data).length > 0) {
+      setErrors((prev) => ({
+        ...prev,
+        permissions: "",
+      }));
+    }
   }, []);
 
   // Function to handle input changes
@@ -150,8 +151,8 @@ const Permission = () => {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
-    // Permissions validation (optional - add if permissions are required)
-    if (!permissionsData || !permissionsData.permissions) {
+    // Permissions validation - check if permissions data exists
+    if (!permissionsData || Object.keys(permissionsData).length === 0) {
       newErrors.permissions = "Please select user permissions";
     }
 
@@ -194,7 +195,7 @@ const Permission = () => {
     });
   };
 
-  // Function to handle form submission - API call happens HERE
+  // Function to handle form submission - ONLY API call happens HERE
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -215,17 +216,17 @@ const Permission = () => {
       
       // Prepare complete form data with permissions
       const completeFormData = {
-        name: formData.name,
-        email: formData.email,
+        name: formData.name.trim(),
+        email: formData.email.trim(),
         password: formData.password,
-        // Include permissions data
+        // Spread the permissions data (this should contain the structure your API expects)
         ...permissionsData
       };
 
       console.log("Submitting user data:", completeFormData);
 
       try {
-        // THIS is where the API call should happen - only on form submission
+        // THIS is the ONLY place where API call should happen
         const response = await api.postDataToken(
           `${user}`,
           completeFormData
@@ -356,11 +357,12 @@ const Permission = () => {
           </div>
         </div>
 
-        <div>
-          {/* Pass a prop to PermissionManager to prevent API calls */}
+        <div className="mt-10">
+          {/* PermissionManager should NOT make API calls - only collect data */}
           <PermissionManager
             onPermissionsChange={handlePermissionsChange}
-            preventApiCalls={true}
+            preventApiCalls={true} // Make sure this prop prevents API calls
+            mode="dataOnly" // Additional prop to ensure only data collection
             key="permission-manager"
           />
           {errors.permissions && (
@@ -378,12 +380,14 @@ const Permission = () => {
             style={{
               backgroundColor: loading ? "#6c757d" : "#007bff",
               color: "white",
-              padding: "10px 20px",
+              padding: "12px 24px",
               border: "none",
               borderRadius: "5px",
               cursor: loading ? "not-allowed" : "pointer",
               fontSize: "16px",
+              fontWeight: "500",
               opacity: loading ? 0.7 : 1,
+              transition: "all 0.3s ease",
             }}
           >
             {loading ? "Creating User..." : "Create User"}
@@ -393,8 +397,10 @@ const Permission = () => {
         {/* Debug: Show current permissions data */}
         {process.env.NODE_ENV === 'development' && permissionsData && (
           <div className="mt-4 p-4 bg-gray-100 rounded">
-            <h4>Current Permissions JSON (Modules Only):</h4>
-            <pre>{JSON.stringify(permissionsData, null, 2)}</pre>
+            <h4>Current Permissions Data:</h4>
+            <pre style={{ fontSize: "12px", overflow: "auto" }}>
+              {JSON.stringify(permissionsData, null, 2)}
+            </pre>
           </div>
         )}
       </form>

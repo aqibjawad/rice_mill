@@ -210,63 +210,6 @@ const PermissionsManager = ({ onPermissionsChange }) => {
     );
   };
 
-  const saveData = async () => {
-    const myModules = Object.entries(modulePerms).map(
-      ([parent, permissions]) => ({
-        parent,
-        permissions: permissions,
-      })
-    );
-
-    // Transform fieldPerms for all modules
-    const moduleFields = {};
-    Object.keys(modules).forEach((moduleName) => {
-      if (modules[moduleName].fields) {
-        const fieldsList = {};
-        modules[moduleName].fields.forEach((field) => {
-          fieldsList[field] = {
-            permissions: fieldPerms[`${moduleName}.${field}`] || [],
-          };
-        });
-
-        moduleFields[moduleName] = {
-          module: moduleName,
-          fields: fieldsList,
-        };
-      }
-    });
-
-    const transformedData = {
-      permissions: {
-        modules: myModules,
-        fields: Object.values(moduleFields),
-      },
-    };
-
-    setSendingData(true);
-
-    try {
-      console.log("Saving data:", {
-        roleName: selectedRoleName,
-        permissions: transformedData,
-      });
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setSelectedRoleName("");
-      setSendingData(false);
-      setModulePerms({});
-      setFieldPerms({});
-      setSelectedRoleId(null);
-
-      alert("Data saved successfully!");
-    } catch (err) {
-      console.error("Error saving data:", err);
-      setSendingData(false);
-      alert("Error saving permissions");
-    }
-  };
-
   const hasViewPermission = (moduleName) => {
     return modulePerms[moduleName]?.some(
       (perm) =>
