@@ -404,7 +404,7 @@ const PermissionsManager = ({ onPermissionsChange }) => {
 
       {/* Save Button */}
       <div className="flex items-center justify-end pt-4 border-t border-gray-200">
-        <button
+        {/* <button
           onClick={() => {
             if (
               Object.keys(modulePerms).length === 0 &&
@@ -425,7 +425,7 @@ const PermissionsManager = ({ onPermissionsChange }) => {
           disabled={sendingData}
         >
           {sendingData ? "Saving..." : "Save Permissions"}
-        </button>
+        </button> */}
       </div>
     </div>
   );

@@ -1,60 +1,93 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import PermissionManager from "../../components/permissionManager";
+import withAuth from "@/utils/withAuth";
+import { user } from "../../networkApi/Constants";
+import APICall from "../../networkApi/APICall";
+import { useRouter } from "next/navigation";
 
 const Permission = () => {
+  const router = useRouter();
+  const api = new APICall();
+
   const [permissionsData, setPermissionsData] = useState(null);
   const [formData, setFormData] = useState({
-    person_name: "",
+    name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
 
+  // Use ref to prevent infinite re-renders
+  const permissionsRef = useRef(null);
+
   // Function to receive permissions data from child component
-  const handlePermissionsChange = (data) => {
-    setPermissionsData(data);
-    console.log("Permissions data received:", data);
-  };
+  const handlePermissionsChange = useCallback((data) => {
+    // Prevent unnecessary updates if data is the same
+    if (JSON.stringify(data) === JSON.stringify(permissionsRef.current)) {
+      return;
+    }
+
+    // Extract only the modules part from the permissions data
+    const modulesOnlyData = data?.permissions?.modules
+      ? {
+          permissions: {
+            modules: data.permissions.modules,
+          },
+        }
+      : data;
+
+    permissionsRef.current = data;
+    setPermissionsData(modulesOnlyData);
+    console.log("Permissions data received (modules only):", modulesOnlyData);
+  }, []);
 
   // Function to handle input changes
-  const handleInputChange = (name, value) => {
-    setFormData(prev => ({
+  const handleInputChange = useCallback((name, value) => {
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     // Clear specific error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ""
-      }));
-    }
+    setErrors((prev) => {
+      if (prev[name]) {
+        return {
+          ...prev,
+          [name]: "",
+        };
+      }
+      return prev;
+    });
 
     // Real-time password confirmation validation
-    if (name === "confirmPassword" || (name === "password" && formData.confirmPassword)) {
-      const password = name === "password" ? value : formData.password;
-      const confirmPassword = name === "confirmPassword" ? value : formData.confirmPassword;
-      
-      if (confirmPassword && password !== confirmPassword) {
-        setErrors(prev => ({
-          ...prev,
-          confirmPassword: "Passwords do not match"
-        }));
-      } else {
-        setErrors(prev => ({
-          ...prev,
-          confirmPassword: ""
-        }));
-      }
+    if (name === "confirmPassword" || name === "password") {
+      setFormData((currentFormData) => {
+        const password = name === "password" ? value : currentFormData.password;
+        const confirmPassword =
+          name === "confirmPassword" ? value : currentFormData.confirmPassword;
+
+        if (confirmPassword && password !== confirmPassword) {
+          setErrors((prev) => ({
+            ...prev,
+            confirmPassword: "Passwords do not match",
+          }));
+        } else {
+          setErrors((prev) => ({
+            ...prev,
+            confirmPassword: "",
+          }));
+        }
+
+        return currentFormData;
+      });
     }
-  };
+  }, []);
 
   // Password validation function
-  const validatePassword = (password) => {
+  const validatePassword = useCallback((password) => {
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
@@ -77,15 +110,15 @@ const Permission = () => {
       return "Password must contain at least one special character";
     }
     return "";
-  };
+  }, []);
 
   // Form validation function
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors = {};
 
     // Name validation
-    if (!formData.person_name.trim()) {
-      newErrors.person_name = "Name is required";
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
     }
 
     // Email validation
@@ -115,25 +148,33 @@ const Permission = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData, validatePassword]);
 
   // Function to handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (validateForm()) {
-      const completeFormData = {
-        ...formData,
-        permissions: permissionsData,
-      };
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-      console.log("Complete form data:", completeFormData);
-      // Send this data to your API
-      alert("Form submitted successfully!");
-    } else {
-      console.log("Form validation failed");
-    }
-  };
+      if (validateForm()) {
+        const completeFormData = {
+          ...formData,
+          permissions: permissionsData,
+        };
+
+        try {
+          const response = await api.getDataWithToken(
+            `${user}`,
+            completeFormData
+          );
+        } catch (error) {
+          console.error("Error fetching ref no:", error);
+        }
+      } else {
+        console.log("Form validation failed");
+      }
+    },
+    [formData, permissionsData, validateForm, user]
+  );
 
   return (
     <div>
@@ -149,13 +190,13 @@ const Permission = () => {
               title="Name"
               type="text"
               placeholder="Name"
-              name="person_name"
-              value={formData.person_name}
-              onChange={(e) => handleInputChange("person_name", e.target.value)}
+              name="name"
+              value={formData.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
             />
-            {errors.person_name && (
+            {errors.name && (
               <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
-                {errors.person_name}
+                {errors.name}
               </div>
             )}
           </div>
@@ -196,7 +237,8 @@ const Permission = () => {
             )}
             {/* Password requirements hint */}
             <div style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
-              Password must contain: 8+ characters, uppercase, lowercase, number, special character
+              Password must contain: 8+ characters, uppercase, lowercase,
+              number, special character
             </div>
           </div>
           <div style={{ flex: 1, marginLeft: "10px" }}>
@@ -206,7 +248,9 @@ const Permission = () => {
               placeholder="Confirm Password"
               name="confirmPassword"
               value={formData.confirmPassword}
-              onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("confirmPassword", e.target.value)
+              }
             />
             {errors.confirmPassword && (
               <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
@@ -217,7 +261,10 @@ const Permission = () => {
         </div>
 
         <div>
-          <PermissionManager onPermissionsChange={handlePermissionsChange} />
+          <PermissionManager
+            onPermissionsChange={handlePermissionsChange}
+            key="permission-manager"
+          />
         </div>
 
         {/* Submit Button */}
@@ -231,7 +278,7 @@ const Permission = () => {
               border: "none",
               borderRadius: "5px",
               cursor: "pointer",
-              fontSize: "16px"
+              fontSize: "16px",
             }}
           >
             Submit
@@ -241,7 +288,7 @@ const Permission = () => {
         {/* Debug: Show current permissions data */}
         {permissionsData && (
           <div className="mt-4 p-4 bg-gray-100 rounded">
-            <h4>Current Permissions JSON:</h4>
+            <h4>Current Permissions JSON (Modules Only):</h4>
             <pre>{JSON.stringify(permissionsData, null, 2)}</pre>
           </div>
         )}
