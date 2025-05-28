@@ -23,14 +23,14 @@ const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [allowedMenuItems, setAllowedMenuItems] = useState([]);
 
-  // All possible menu items
+  // All possible menu items - will show all for users with null permissions
   const allMenuItems = [
     { href: "/dashboard/", icon: <FaHome />, label: "Dashboard", parent: "Dashboard" },
     { href: "/sale/", icon: <FaUserTie />, label: "Sales", parent: "Sales" },
     { href: "/purchase/", icon: <FaShoppingBag />, label: "Purchase", parent: "Purchase" },
     { href: "/inflow/", icon: <FaArrowRight />, label: "Recieves", parent: "Recieves" },
     { href: "/outflow/", icon: <FaArrowLeft />, label: "Payments", parent: "Payments" },
-    { href: "/trialBalance/", icon: <FaTruck />, label: "Trial Balance", parent: "Trial Balance" },
+    { href: "/trialBalance/", icon: <FaTruck />, label: "Trial Balance", parent: "TrialBalance" },
     { href: "/investor/", icon: <FaTruck />, label: "Investor", parent: "Investor" },
     { href: "/party/", icon: <FaUserTie />, label: "Party", parent: "Party" },
     { href: "/expenses/", icon: <FaMoneyBill />, label: "Expenses", parent: "Expenses" },
@@ -52,11 +52,23 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    // Get permissions from localStorage
+    // Get user and permissions from localStorage
+    const user = localStorage.getItem("user");
     const permissions = localStorage.getItem("permissions");
     
-    if (permissions) {
-      try {
+    try {
+      // Check if user exists and has null permissions
+      if (user) {
+        const parsedUser = JSON.parse(user);
+        
+        // If permissions is null (string "null" or actual null), show all menu items
+        if (permissions === "null" || permissions === null || !permissions) {
+          console.log("User has null permissions - showing all menu items");
+          setAllowedMenuItems(allMenuItems);
+          return;
+        }
+        
+        // If permissions exist, filter based on permissions
         const parsedPermissions = JSON.parse(permissions);
         
         // Extract parent names from permissions modules
@@ -69,20 +81,24 @@ const Header = () => {
           });
         }
         
-        // Filter menu items based on allowed parents
+        console.log("Allowed parents from localStorage:", allowedParents);
+        
+        // Filter menu items: show if parent is null (always show) OR if parent is in allowed permissions
         const filteredMenuItems = allMenuItems.filter(item => 
-          allowedParents.includes(item.parent)
+          item.parent === null || allowedParents.includes(item.parent)
         );
         
+        console.log("Filtered menu items:", filteredMenuItems);
         setAllowedMenuItems(filteredMenuItems);
-      } catch (error) {
-        console.error("Error parsing permissions:", error);
-        // If there's an error, show all menu items
-        setAllowedMenuItems(allMenuItems);
+      } else {
+        console.log("No user found in localStorage");
+        setAllowedMenuItems([]);
       }
-    } else {
-      // If no permissions found, show all menu items
-      setAllowedMenuItems(allMenuItems);
+    } catch (error) {
+      console.error("Error parsing user/permissions:", error);
+      // If there's an error, show only items with null parent (always accessible)
+      const alwaysShowItems = allMenuItems.filter(item => item.parent === null);
+      setAllowedMenuItems(alwaysShowItems);
     }
   }, []);
 

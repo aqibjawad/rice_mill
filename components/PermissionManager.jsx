@@ -2,9 +2,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
 
 const modules = {
-  Dashbaord: {
-    name: "Dashbaord",
-    permissions: ["View Dashbaord"],
+  Dashboard: {
+    name: "Dashboard",
+    permissions: ["View Dashboard"],
   },
   Sales: {
     name: "Sales",
@@ -46,9 +46,9 @@ const modules = {
     name: "Party",
     permissions: ["Add Party", "View Party"],
   },
-  Expense: {
-    name: "Expense",
-    permissions: ["Add Expense", "View Expense"],
+  Expenses: {
+    name: "Expenses",
+    permissions: ["Add Expenses", "View Expenses"],
   },
   Banks: {
     name: "Banks",
@@ -363,11 +363,11 @@ const PermissionsManager = ({
       </h2>
       
       {/* Debug info - remove in production */}
-      <div className="mb-4 p-4 bg-gray-100 rounded-lg text-sm">
+      {/* <div className="mb-4 p-4 bg-gray-100 rounded-lg text-sm">
         <div><strong>Initialized:</strong> {isInitialized ? 'Yes' : 'No'}</div>
         <div><strong>Current State Permissions:</strong> {JSON.stringify(modulePerms, null, 2)}</div>
         <div><strong>Original Current Permissions:</strong> {JSON.stringify(currentPermissions, null, 2)}</div>
-      </div>
+      </div> */}
       
       {/* Grid Layout for Modules */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
