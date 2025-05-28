@@ -65,7 +65,7 @@ const PermissionsManager = ({
   preventApiCalls = false,
   mode = "normal",
   existingPermissions = null,
-  currentPermissions,
+  currentPermissions, // Yeh prop se aane wali permissions
 }) => {
   const [modulePerms, setModulePerms] = useState({});
   const [isModuleOpen, setIsModuleOpen] = useState({});
@@ -74,14 +74,65 @@ const PermissionsManager = ({
   const [sendingData, setSendingData] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize permissions from existing data - Fixed version
+  // Initialize permissions from currentPermissions prop
   useEffect(() => {
-    if (existingPermissions && !isInitialized) {
+    if (currentPermissions && !isInitialized) {
+      console.log("Initializing from currentPermissions:", currentPermissions);
+      
+      const processedPermissions = {};
+      
+      // Handle nested structure: { "permissions": { "modules": [] } }
+      let modulesData = [];
+      
+      if (currentPermissions.permissions && currentPermissions.permissions.modules) {
+        modulesData = currentPermissions.permissions.modules;
+        console.log("Found nested modules:", modulesData);
+      } else if (currentPermissions.modules) {
+        modulesData = currentPermissions.modules;
+        console.log("Found direct modules:", modulesData);
+      } else if (Array.isArray(currentPermissions)) {
+        modulesData = currentPermissions;
+        console.log("Found array modules:", modulesData);
+      } else {
+        // Direct object format { "ModuleName": ["permission1", "permission2"] }
+        Object.keys(currentPermissions).forEach(moduleName => {
+          if (Array.isArray(currentPermissions[moduleName]) && currentPermissions[moduleName].length > 0) {
+            processedPermissions[moduleName] = [...currentPermissions[moduleName]];
+          }
+        });
+        console.log("Processed direct format:", processedPermissions);
+      }
+      
+      // Process modules array format
+      if (Array.isArray(modulesData) && modulesData.length > 0) {
+        modulesData.forEach((module) => {
+          if (module.parent && module.permissions && Array.isArray(module.permissions)) {
+            processedPermissions[module.parent] = [...module.permissions];
+            console.log(`Processed module: ${module.parent}`, module.permissions);
+          }
+        });
+      }
 
+      console.log("Final processed permissions:", processedPermissions);
+      
+      // State mein set kar rahe hain
+      setModulePerms(processedPermissions);
+
+      // Jo modules mein permissions hain unhe open kar dete hain
+      const openModules = {};
+      Object.keys(processedPermissions).forEach((moduleName) => {
+        if (processedPermissions[moduleName] && processedPermissions[moduleName].length > 0) {
+          openModules[moduleName] = true;
+        }
+      });
+      setIsModuleOpen(openModules);
+
+      setIsInitialized(true);
+    } else if (existingPermissions && !isInitialized) {
+      // Existing permissions se initialize karna (previous logic)
       const existingModules = {};
       let modulesArray = [];
 
-      // Handle different possible structures
       if (existingPermissions.permissions && existingPermissions.permissions.modules) {
         modulesArray = existingPermissions.permissions.modules;
       } else if (existingPermissions.modules) {
@@ -90,40 +141,77 @@ const PermissionsManager = ({
         modulesArray = existingPermissions;
       }
 
-      // Process the modules array with proper immutability
       if (Array.isArray(modulesArray)) {
         modulesArray.forEach((module) => {
           if (module.parent && module.permissions && Array.isArray(module.permissions)) {
-            // Ensure we create a completely new array reference
             existingModules[module.parent] = module.permissions.slice();
-            // console.log(`Set permissions for ${module.parent}:`, existingModules[module.parent]);
           }
         });
       }
 
-      // console.log("Final processed existing modules:", existingModules);
-      
-      // Use functional update to ensure proper state setting
       setModulePerms(() => ({ ...existingModules }));
 
-      // Open modules that have permissions set
       const openModules = {};
       Object.keys(existingModules).forEach((moduleName) => {
         if (existingModules[moduleName].length > 0) {
           openModules[moduleName] = true;
-          // console.log(`Opening module: ${moduleName}`);
         }
       });
       setIsModuleOpen(() => ({ ...openModules }));
 
       setIsInitialized(true);
-      // console.log("Initialization complete - modulePerms:", existingModules);
-    } else if (!existingPermissions && !isInitialized) {
-      // No existing permissions, just mark as initialized
+    } else if (!currentPermissions && !existingPermissions && !isInitialized) {
+      // Koi permissions nahi aayi, empty state se start karte hain
+      console.log("No permissions found, initializing empty state");
       setIsInitialized(true);
-      // console.log("No existing permissions, marking as initialized");
     }
-  }, [existingPermissions, isInitialized]);
+    
+    // Agar currentPermissions change ho jaaye to re-initialize karna
+    if (isInitialized && currentPermissions) {
+      console.log("Re-initializing due to currentPermissions change:", currentPermissions);
+      
+      const processedPermissions = {};
+      
+      // Handle nested structure
+      let modulesData = [];
+      
+      if (currentPermissions.permissions && currentPermissions.permissions.modules) {
+        modulesData = currentPermissions.permissions.modules;
+      } else if (currentPermissions.modules) {
+        modulesData = currentPermissions.modules;
+      } else if (Array.isArray(currentPermissions)) {
+        modulesData = currentPermissions;
+      } else {
+        // Direct object format
+        Object.keys(currentPermissions).forEach(moduleName => {
+          if (Array.isArray(currentPermissions[moduleName]) && currentPermissions[moduleName].length > 0) {
+            processedPermissions[moduleName] = [...currentPermissions[moduleName]];
+          }
+        });
+      }
+      
+      // Process modules array format
+      if (Array.isArray(modulesData) && modulesData.length > 0) {
+        modulesData.forEach((module) => {
+          if (module.parent && module.permissions && Array.isArray(module.permissions)) {
+            processedPermissions[module.parent] = [...module.permissions];
+          }
+        });
+      }
+
+      console.log("Re-processed permissions:", processedPermissions);
+      setModulePerms(processedPermissions);
+      
+      // Update open modules
+      const openModules = {};
+      Object.keys(processedPermissions).forEach((moduleName) => {
+        if (processedPermissions[moduleName] && processedPermissions[moduleName].length > 0) {
+          openModules[moduleName] = true;
+        }
+      });
+      setIsModuleOpen(openModules);
+    }
+  }, [currentPermissions, existingPermissions, isInitialized]);
 
   // Memoized callback for sending permissions to parent
   const sendPermissionsToParent = useCallback((perms) => {
@@ -135,7 +223,7 @@ const PermissionsManager = ({
       .filter(([parent, permissions]) => permissions && permissions.length > 0)
       .map(([parent, permissions]) => ({
         parent,
-        permissions: [...permissions], // Create new array reference
+        permissions: [...permissions],
       }));
 
     const transformedData = {
@@ -144,11 +232,16 @@ const PermissionsManager = ({
       },
     };
 
+    // Yahan aap direct object format bhi bhej sakte hain
+    const directFormat = { ...perms };
+
     if (onPermissionsChange) {
-      onPermissionsChange(transformedData);
+      // Dono formats pass kar sakte hain parent ko
+      onPermissionsChange(transformedData, directFormat);
     }
 
-    // console.log("Sending permissions to parent:", transformedData);
+    console.log("Sending permissions - Transformed:", transformedData);
+    console.log("Sending permissions - Direct:", directFormat);
   }, [onPermissionsChange, isInitialized]);
 
   // Send permissions data to parent whenever it changes
@@ -163,12 +256,11 @@ const PermissionsManager = ({
     }));
   };
 
-  // Fixed: Handle module-level permission toggle with proper immutability
+  // Handle module-level permission toggle with proper immutability
   const handleModulePermission = useCallback((moduleName, permission) => {
-    // console.log(`Toggling permission: ${permission} for module: ${moduleName}`);
+    console.log(`Toggling permission: ${permission} for module: ${moduleName}`);
     
     setModulePerms((prev) => {
-      // Create completely new state object
       const newPermissions = {};
       
       // Copy all existing modules with new array references
@@ -182,27 +274,26 @@ const PermissionsManager = ({
         newPermissions[moduleKey] = [];
       }
 
-      // Work with the current permissions array
       const currentPermissions = newPermissions[moduleKey];
       const permissionIndex = currentPermissions.indexOf(permission);
       
       if (permissionIndex === -1) {
-        // Add permission - create new array
+        // Add permission
         newPermissions[moduleKey] = [...currentPermissions, permission];
-        // console.log(`Added permission ${permission} to ${moduleName}`);
+        console.log(`Added permission ${permission} to ${moduleName}`);
       } else {
-        // Remove permission - create new array without the permission
+        // Remove permission
         newPermissions[moduleKey] = currentPermissions.filter(p => p !== permission);
-        // console.log(`Removed permission ${permission} from ${moduleName}`);
+        console.log(`Removed permission ${permission} from ${moduleName}`);
         
         // If no permissions left, remove the module entirely
         if (newPermissions[moduleKey].length === 0) {
           delete newPermissions[moduleKey];
-          // console.log(`Removed module ${moduleName} as it has no permissions`);
+          console.log(`Removed module ${moduleName} as it has no permissions`);
         }
       }
 
-      // console.log("Updated module permissions:", newPermissions);
+      console.log("Updated module permissions:", newPermissions);
       return newPermissions;
     });
   }, []);
@@ -211,45 +302,41 @@ const PermissionsManager = ({
     return modulePerms[moduleName]?.includes(permission) || false;
   };
 
-  // Function to select all permissions for a module - Fixed
+  // Function to select all permissions for a module
   const selectAllModulePermissions = useCallback((moduleName) => {
     const moduleData = modules[moduleName];
     if (!moduleData) return;
 
-    // console.log(`Selecting all permissions for ${moduleName}`);
+    console.log(`Selecting all permissions for ${moduleName}`);
     
     setModulePerms((prev) => {
       const newPermissions = {};
       
-      // Copy all existing modules with new array references
       Object.keys(prev).forEach(key => {
         newPermissions[key] = [...prev[key]];
       });
       
-      // Set all permissions for this module with new array reference
       newPermissions[moduleName] = [...moduleData.permissions];
       
-      // console.log(`Selected all permissions for ${moduleName}:`, newPermissions[moduleName]);
+      console.log(`Selected all permissions for ${moduleName}:`, newPermissions[moduleName]);
       return newPermissions;
     });
   }, []);
 
-  // Function to clear all permissions for a module - Fixed
+  // Function to clear all permissions for a module
   const clearAllModulePermissions = useCallback((moduleName) => {
-    // console.log(`Clearing all permissions for ${moduleName}`);
+    console.log(`Clearing all permissions for ${moduleName}`);
     
     setModulePerms((prev) => {
       const newPermissions = {};
       
-      // Copy all existing modules with new array references
       Object.keys(prev).forEach(key => {
         if (key !== moduleName) {
           newPermissions[key] = [...prev[key]];
         }
       });
       
-      // Don't add the cleared module to newPermissions
-      // console.log(`Cleared all permissions for ${moduleName}. New state:`, newPermissions);
+      console.log(`Cleared all permissions for ${moduleName}. New state:`, newPermissions);
       return newPermissions;
     });
   }, []);
@@ -278,7 +365,8 @@ const PermissionsManager = ({
       {/* Debug info - remove in production */}
       <div className="mb-4 p-4 bg-gray-100 rounded-lg text-sm">
         <div><strong>Initialized:</strong> {isInitialized ? 'Yes' : 'No'}</div>
-        <div><strong>Current Permissions:</strong> {JSON.stringify(modulePerms, null, 2)}</div>
+        <div><strong>Current State Permissions:</strong> {JSON.stringify(modulePerms, null, 2)}</div>
+        <div><strong>Original Current Permissions:</strong> {JSON.stringify(currentPermissions, null, 2)}</div>
       </div>
       
       {/* Grid Layout for Modules */}
