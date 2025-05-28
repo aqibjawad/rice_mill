@@ -72,16 +72,7 @@ const Page = () => {
       fetchData(); // Refresh the data after closing the modal
     }
   };
-
-  const handleEdit = (row) => {
-    if (!permissions.canAddProducts) {
-      console.warn("No permission to edit products");
-      return;
-    }
-    setEditingData(row);
-    setOpen(true);
-  };
-
+  
   useEffect(() => {
     checkPermissions();
   }, []);

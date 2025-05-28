@@ -26,6 +26,81 @@ const Page = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Permission states
+  const [permissions, setPermissions] = useState({
+    canAddSales: false,
+    canViewSales: false,
+    hasAccess: false,
+  });
+
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  useEffect(() => {
+    if (permissions.canViewSales) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [permissions.canViewSales]);
+
+  const checkPermissions = () => {
+    try {
+      const storedPermissions = localStorage.getItem("permissions");
+
+      if (storedPermissions) {
+        const parsedPermissions = JSON.parse(storedPermissions);
+
+        // Find Sales module permissions
+        let canAddSales = false;
+        let canViewSales = false;
+
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
+          const SalesModule = parsedPermissions.modules.find(
+            (module) => module.parent === "Sales" || module.name === "Sales"
+          );
+
+          if (SalesModule && SalesModule.permissions) {
+            canAddSales = SalesModule.permissions.includes("Add Sales");
+            canViewSales = SalesModule.permissions.includes("View Sales");
+          }
+        }
+
+        setPermissions({
+          canAddSales,
+          canViewSales,
+          hasAccess: canAddSales || canViewSales,
+        });
+
+        // If user has no Sales permissions at all, redirect or show error
+        if (!canAddSales && !canViewSales) {
+          console.warn("No Sales permissions found");
+          // Optional: redirect to unauthorized page
+          // router.push("/unauthorized");
+        }
+      } else {
+        // No permissions found - default behavior
+        setPermissions({
+          canAddSales: true,
+          canViewSales: true,
+          hasAccess: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error parsing permissions:", error);
+      // Default to showing all on error
+      setPermissions({
+        canAddSales: true,
+        canViewSales: true,
+        hasAccess: true,
+      });
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -67,75 +142,71 @@ const Page = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <Buttons leftSectionText="Sale" addButtonLink="/addSale" />
+      {permissions.canAddSales && (
+        <Buttons leftSectionText="Sale" addButtonLink="/addSale" />
+      )}
 
       <div className={styles.contentContainer}>
-        {/* <input
-          type="text"
-          placeholder="Search by buyer name"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ marginBottom: "10px", width: "100%", padding: "5px" }}
-        /> */}
-
-        <TableContainer
-          sx={{
-            maxHeight: "400px",
-            overflow: "auto",
-          }}
-          component={Paper}
-        >
-          <Table
+        {permissions.canViewSales && (
+          <TableContainer
             sx={{
-              minWidth: 650,
-              position: "relative",
-              borderCollapse: "separate",
+              maxHeight: "400px",
+              overflow: "auto",
             }}
+            component={Paper}
           >
-            <TableHead>
-              <TableRow>
-                <TableCell>Sr.</TableCell>
-                <TableCell>Reference No</TableCell>
-                <TableCell>Buyer Name</TableCell>
-                <TableCell>Total Amount</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                [...Array(5)].map((_, index) => (
-                  <TableRow key={index}>
-                    {[...Array(4)].map((_, cellIndex) => (
-                      <TableCell key={cellIndex}>
-                        <Skeleton animation="wave" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : filteredData.length === 0 ? (
+            <Table
+              sx={{
+                minWidth: 650,
+                position: "relative",
+                borderCollapse: "separate",
+              }}
+            >
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={4}>No data available</TableCell>
+                  <TableCell>Sr.</TableCell>
+                  <TableCell>Reference No</TableCell>
+                  <TableCell>Buyer Name</TableCell>
+                  <TableCell>Total Amount</TableCell>
                 </TableRow>
-              ) : (
-                filteredData.map((row, index) => (
-                  <TableRow
-                    onClick={() => handleViewDetails(row)}
-                    key={row.id}
-                    hover
-                  >
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.ref_no}</TableCell>
-                    <TableCell>
-                      {row.party?.person_name ||
-                        row.buyer?.person_name ||
-                        "N/A"}
-                    </TableCell>
-                    <TableCell>{row.total_amount}</TableCell>
+              </TableHead>
+              <TableBody>
+                {loading ? (
+                  [...Array(5)].map((_, index) => (
+                    <TableRow key={index}>
+                      {[...Array(4)].map((_, cellIndex) => (
+                        <TableCell key={cellIndex}>
+                          <Skeleton animation="wave" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : filteredData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4}>No data available</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                ) : (
+                  filteredData.map((row, index) => (
+                    <TableRow
+                      onClick={() => handleViewDetails(row)}
+                      key={row.id}
+                      hover
+                    >
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{row.ref_no}</TableCell>
+                      <TableCell>
+                        {row.party?.person_name ||
+                          row.buyer?.person_name ||
+                          "N/A"}
+                      </TableCell>
+                      <TableCell>{row.total_amount}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </div>
     </div>
   );
