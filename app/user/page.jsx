@@ -18,10 +18,11 @@ import {
   FormControlLabel,
   tableCellClasses,
   styled,
+  IconButton,
 } from "@mui/material";
 import { user } from "../../networkApi/Constants";
 import APICall from "@/networkApi/APICall";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaEdit } from "react-icons/fa";
 
 import SearchInput from "@/components/generic/searchInput";
 
@@ -72,6 +73,17 @@ const AddButton = styled(Button)(({ theme }) => ({
   marginRight: theme.spacing(2),
 }));
 
+const EditButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.primary.main,
+  "&:hover": {
+    backgroundColor: theme.palette.primary.light + "20",
+  },
+  "&:disabled": {
+    color: theme.palette.grey[400],
+    cursor: "not-allowed",
+  },
+}));
+
 const Page = () => {
   const api = new APICall();
   const router = useRouter();
@@ -107,6 +119,27 @@ const Page = () => {
   // Add button redirect function
   const handleAddNew = () => {
     router.push("/permissions"); // Change this path to your desired route
+  };
+
+  // Handle Edit User - only allow if status is active
+  const handleEditUser = (userData) => {
+    if (userData.status !== "active") {
+      alert("Only active users can be edited");
+      return;
+    }
+
+    // Store user data in localStorage for the edit page
+    localStorage.setItem(
+      "editUserData",
+      JSON.stringify({
+        mode: "edit",
+        userId: userData.id,
+        userData: userData,
+      })
+    );
+
+    // Navigate to permissions page in edit mode
+    router.push(`/permissions?mode=edit&userId=${userData.id}`);
   };
 
   // Switch change handler
@@ -210,6 +243,7 @@ const Page = () => {
                 <StyledTableCell>Name</StyledTableCell>
                 <StyledTableCell>Email</StyledTableCell>
                 <StyledTableCell>Status</StyledTableCell>
+                <StyledTableCell>Update</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -231,6 +265,9 @@ const Page = () => {
                           width={50}
                           height={25}
                         />
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <Skeleton variant="circular" width={40} height={40} />
                       </StyledTableCell>
                     </StyledTableRow>
                   ))
@@ -266,6 +303,19 @@ const Page = () => {
                             },
                           }}
                         />
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <EditButton
+                          onClick={() => handleEditUser(row)}
+                          disabled={row.status !== "active"}
+                          title={
+                            row.status === "active"
+                              ? "Edit User"
+                              : "Only active users can be edited"
+                          }
+                        >
+                          <FaEdit />
+                        </EditButton>
                       </StyledTableCell>
                     </StyledTableRow>
                   ))}

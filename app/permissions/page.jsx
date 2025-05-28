@@ -1,15 +1,17 @@
 "use client";
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import InputWithTitle from "../../components/generic/InputWithTitle";
 import PermissionManager from "../../components/permissionManager";
 import withAuth from "@/utils/withAuth";
 import { user } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
-import { useRouter } from "next/navigation";
-import Swal from 'sweetalert2';
+import { useRouter, useSearchParams } from "next/navigation";
+import Swal from "sweetalert2";
 
 const Permission = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId"); // Get userId from URL params
   const api = new APICall();
 
   const [permissionsData, setPermissionsData] = useState(null);
@@ -21,25 +23,93 @@ const Permission = () => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [userDataLoading, setUserDataLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [existingUserPermissions, setExistingUserPermissions] = useState(null);
 
   // Use ref to prevent infinite re-renders
   const permissionsRef = useRef(null);
 
+  // Fetch user details if userId is provided
+  useEffect(() => {
+    if (userId) {
+      fetchUserDetails(userId);
+      setIsEditMode(true);
+    }
+  }, [userId]);
+
+  // Function to fetch user details by ID
+  const fetchUserDetails = async (id) => {
+    setUserDataLoading(true);
+    try {
+      const response = await api.getDataWithToken(`${user}/${id}`);
+
+
+      // Check multiple possible success indicators
+      if (
+        response &&
+        (response.success || response.status === "success" || response.data)
+      ) {
+        const userData = response.data || response;
+
+
+        // Populate form data
+        setFormData({
+          name: userData.name || "",
+          email: userData.email || "",
+          password: "", // Don't populate password for security
+          confirmPassword: "",
+        });
+
+        // Set existing permissions if available
+        if (userData.permissions) {
+          setExistingUserPermissions(userData.permissions);
+          // Set permissions data for validation
+          setPermissionsData(userData.permissions);
+          permissionsRef.current = userData.permissions;
+        }
+
+      } else {
+        console.error("API Response doesn't indicate success:", response);
+        showErrorAlert(response?.message || "Failed to load user details");
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+
+      if (error.response) {
+        console.error("Error response:", error.response);
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+      }
+
+      let errorMessage = "Error loading user details";
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      showErrorAlert(errorMessage);
+    } finally {
+      setUserDataLoading(false);
+    }
+  };
+
   // Function to receive permissions data from child component
-  // This should NOT trigger API calls - just store the permissions
   const handlePermissionsChange = useCallback((data) => {
-    console.log("Received permissions data:", data);
-    
+
     // Prevent unnecessary updates if data is the same
     if (JSON.stringify(data) === JSON.stringify(permissionsRef.current)) {
       return;
     }
 
-    // Store the complete permissions data (not just modules)
+    // Store the complete permissions data
     permissionsRef.current = data;
     setPermissionsData(data);
-    console.log("Permissions data stored:", data);
-    
+
     // Clear permissions error if data is provided
     if (data && Object.keys(data).length > 0) {
       setErrors((prev) => ({
@@ -134,68 +204,75 @@ const Permission = () => {
       newErrors.email = "Please enter a valid email address";
     }
 
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else {
-      const passwordError = validatePassword(formData.password);
-      if (passwordError) {
-        newErrors.password = passwordError;
+    // Password validation (only for new users or if password is being changed)
+    if (!isEditMode || formData.password) {
+      if (!formData.password) {
+        newErrors.password = "Password is required";
+      } else {
+        const passwordError = validatePassword(formData.password);
+        if (passwordError) {
+          newErrors.password = passwordError;
+        }
+      }
+
+      // Confirm password validation
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = "Please confirm your password";
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
       }
     }
 
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    // Permissions validation - check if permissions data exists
+    // Permissions validation
     if (!permissionsData || Object.keys(permissionsData).length === 0) {
       newErrors.permissions = "Please select user permissions";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData, validatePassword, permissionsData]);
+  }, [formData, validatePassword, permissionsData, isEditMode]);
 
   // SweetAlert Success function
-  const showSuccessAlert = (message = "User Created Successfully!") => {
+  const showSuccessAlert = (message) => {
+    const defaultMessage = isEditMode
+      ? "User Updated Successfully!"
+      : "User Created Successfully!";
     Swal.fire({
-      title: 'Success!',
-      text: message,
-      icon: 'success',
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#28a745',
+      title: "Success!",
+      text: message || defaultMessage,
+      icon: "success",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#28a745",
       timer: 3000,
-      timerProgressBar: true
+      timerProgressBar: true,
     }).then(() => {
-      // Reset form after success
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-      setPermissionsData(null);
-      permissionsRef.current = null;
-      setErrors({});
+      if (!isEditMode) {
+        // Reset form after success for new user creation
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        setPermissionsData(null);
+        permissionsRef.current = null;
+        setErrors({});
+      }
     });
   };
 
   // SweetAlert Error function
   const showErrorAlert = (message = "Something went wrong!") => {
     Swal.fire({
-      title: 'Error!',
+      title: "Error!",
       text: message,
-      icon: 'error',
-      confirmButtonText: 'Try Again',
-      confirmButtonColor: '#dc3545'
+      icon: "error",
+      confirmButtonText: "Try Again",
+      confirmButtonColor: "#dc3545",
     });
   };
 
-  // Function to handle form submission - ONLY API call happens HERE
+  // Function to handle form submission
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -208,51 +285,63 @@ const Permission = () => {
       // Validate form including permissions
       if (!validateForm()) {
         console.log("Form validation failed");
-        showErrorAlert("Please fill all required fields correctly and select permissions!");
+        showErrorAlert(
+          "Please fill all required fields correctly and select permissions!"
+        );
         return;
       }
 
       setLoading(true);
-      
+
       // Prepare complete form data with permissions
       const completeFormData = {
         name: formData.name.trim(),
         email: formData.email.trim(),
-        password: formData.password,
-        // Spread the permissions data (this should contain the structure your API expects)
-        ...permissionsData
+        ...permissionsData,
       };
+
+      // Only include password if it's provided (for edit mode)
+      if (formData.password) {
+        completeFormData.password = formData.password;
+      }
 
       console.log("Submitting user data:", completeFormData);
 
       try {
-        // THIS is the ONLY place where API call should happen
-        const response = await api.postDataToken(
-          `${user}`,
-          completeFormData
-        );
+        let response;
 
-        console.log("User creation response:", response);
+        if (isEditMode && userId) {
+          // Update existing user
+          response = await api.postDataToken(
+            `${user}/${userId}`,
+            completeFormData
+          );
+        } else {
+          // Create new user
+          response = await api.postDataToken(`${user}`, completeFormData);
+        }
+
+        console.log("User operation response:", response);
 
         // Check if response indicates success
         if (response && (response.status === "success" || response.success)) {
-          const successMessage = response.message || "User Created Successfully!";
+          const successMessage =
+            response.message ||
+            (isEditMode
+              ? "User Updated Successfully!"
+              : "User Created Successfully!");
           showSuccessAlert(successMessage);
         } else if (response && response.message) {
-          // If there's a message in response but not success
           showErrorAlert(response.message);
         } else {
           showSuccessAlert();
         }
-        
       } catch (error) {
-        console.error("Error creating user:", error);
-        
-        // Handle different types of errors
+        console.error("Error with user operation:", error);
+
         let errorMessage = "Something went wrong!";
-        
+
         if (error.response) {
-          // Server responded with error status
           if (error.response.data && error.response.data.message) {
             errorMessage = error.response.data.message;
           } else if (error.response.data && error.response.data.error) {
@@ -261,21 +350,40 @@ const Permission = () => {
             errorMessage = `Server Error: ${error.response.status}`;
           }
         } else if (error.message) {
-          // Network or other error
           errorMessage = error.message;
         }
-        
+
         showErrorAlert(errorMessage);
       } finally {
         setLoading(false);
       }
     },
-    [formData, permissionsData, validateForm, api, user, loading]
+    [
+      formData,
+      permissionsData,
+      validateForm,
+      api,
+      user,
+      loading,
+      isEditMode,
+      userId,
+    ]
   );
+
+  // Show loading spinner while fetching user data
+  if (userDataLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-lg">Loading user details...</div>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div style={{ fontSize: "24px", fontWeight: 600 }}>User</div>
+      <div style={{ fontSize: "24px", fontWeight: 600 }}>
+        {isEditMode ? "Edit User" : "Create User"}
+      </div>
 
       <form onSubmit={handleSubmit}>
         <div
@@ -320,7 +428,11 @@ const Permission = () => {
         >
           <div style={{ flex: 1, marginRight: "10px" }}>
             <InputWithTitle
-              title="Password"
+              title={
+                isEditMode
+                  ? "New Password (Leave blank to keep current)"
+                  : "Password"
+              }
               type="password"
               placeholder="Password"
               name="password"
@@ -333,10 +445,14 @@ const Permission = () => {
               </div>
             )}
             {/* Password requirements hint */}
-            <div style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
-              Password must contain: 8+ characters, uppercase, lowercase,
-              number, special character
-            </div>
+            {(!isEditMode || formData.password) && (
+              <div
+                style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}
+              >
+                Password must contain: 8+ characters, uppercase, lowercase,
+                number, special character
+              </div>
+            )}
           </div>
           <div style={{ flex: 1, marginLeft: "10px" }}>
             <InputWithTitle
@@ -358,12 +474,14 @@ const Permission = () => {
         </div>
 
         <div className="mt-10">
-          {/* PermissionManager should NOT make API calls - only collect data */}
           <PermissionManager
             onPermissionsChange={handlePermissionsChange}
-            preventApiCalls={true} // Make sure this prop prevents API calls
-            mode="dataOnly" // Additional prop to ensure only data collection
-            key="permission-manager"
+            preventApiCalls={true}
+            mode="dataOnly"
+            // Pass both existing permissions and current permissions data
+            existingPermissions={existingUserPermissions || permissionsData}
+            currentPermissions={permissionsData} // Add this new prop
+            key={`permission-manager-${userId || "new"}-${JSON.stringify(permissionsData)}`}
           />
           {errors.permissions && (
             <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
@@ -390,19 +508,25 @@ const Permission = () => {
               transition: "all 0.3s ease",
             }}
           >
-            {loading ? "Creating User..." : "Create User"}
+            {loading
+              ? isEditMode
+                ? "Updating User..."
+                : "Creating User..."
+              : isEditMode
+              ? "Update User"
+              : "Create User"}
           </button>
         </div>
 
         {/* Debug: Show current permissions data */}
-        {process.env.NODE_ENV === 'development' && permissionsData && (
+        {/* {process.env.NODE_ENV === "development" && permissionsData && (
           <div className="mt-4 p-4 bg-gray-100 rounded">
             <h4>Current Permissions Data:</h4>
             <pre style={{ fontSize: "12px", overflow: "auto" }}>
               {JSON.stringify(permissionsData, null, 2)}
             </pre>
           </div>
-        )}
+        )} */}
       </form>
     </div>
   );
