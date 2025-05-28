@@ -19,7 +19,7 @@ import {
   CardContent,
   Skeleton,
 } from "@mui/material";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import Swal from "sweetalert2";
 
 import {
   party,
@@ -53,68 +53,148 @@ const Page = () => {
   });
 
   const [selectedParty, setSelectedParty] = useState(null);
-
   const [tableBankData, setTableBankData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [activeTab, setActiveTab] = useState("cash");
   const [tablePartyData, setPartyData] = useState([]);
-  const [dataFetched, setDataFetched] = useState(false); // Flag to track if both data have been fetched
   const [responseData, setResponseData] = useState();
   const [isSelf, setIsSelf] = useState(false);
 
-  const [tableProductData, setTableProductData] = useState([]);
-  const [producttData, setProductData] = useState([]);
+  // Permission states
+  const [permissions, setPermissions] = useState({
+    canAddParty: false,
+    canAddInvestor: false,
+    canAddProduct: false,
+    hasAccess: false,
+  });
 
+  // Individual loading states for better UX
+  const [loadingStates, setLoadingStates] = useState({
+    parties: false,
+    investors: false,
+    products: false,
+    banks: false,
+  });
+
+  // Check permissions on component mount
   useEffect(() => {
-    fetchData();
-    fetchBankData();
-    fetchInvestorsData();
-    fetchProductData();
+    checkPermissions();
   }, []);
 
-  const fetchProductData = async () => {
-    try {
-      const response = await api.getDataWithToken(products);
-      const data = response.data;
-      if (Array.isArray(data)) {
-        const formattedData = data.map((product) => ({
-          label: `${product.product_name} (Product)`,
-          customer_type: "product", // Add customer_type for products
-          id: product.id,
-        }));
+  // Load data based on permissions
+  useEffect(() => {
+    if (permissions.hasAccess) {
+      loadDataBasedOnPermissions();
+    }
+  }, [permissions]);
 
-        // Add product data to the same tablePartyData that's used for the dropdown
-        setPartyData((prevData) => {
-          const existingIds = new Set(prevData.map((item) => item.id));
-          const newData = formattedData.filter(
-            (item) => !existingIds.has(item.id)
+  const checkPermissions = () => {
+    try {
+      const storedPermissions = localStorage.getItem("permissions");
+
+      if (storedPermissions) {
+        const parsedPermissions = JSON.parse(storedPermissions);
+
+        // Check if permissions is null - give full access
+        if (parsedPermissions === null || parsedPermissions === "null") {
+          setPermissions({
+            canAddParty: true,
+            canAddInvestor: true,  
+            canAddProduct: true,
+            hasAccess: true,
+          });
+          console.log("Permissions are null - granting full access");
+          return;
+        }
+
+        let canAddParty = false;
+        let canAddInvestor = false;
+        let canAddProduct = false;
+
+        if (parsedPermissions.modules && Array.isArray(parsedPermissions.modules)) {
+          const PaymentsModule = parsedPermissions.modules.find(
+            (module) => module.parent === "Payments" || module.name === "Payments"
           );
-          return [...prevData, ...newData];
+
+          if (PaymentsModule && PaymentsModule.permissions) {
+            // Check for exact permission names
+            canAddParty = PaymentsModule.permissions.includes("Payment Party");
+            canAddInvestor = PaymentsModule.permissions.includes("Payment Investor");
+            canAddProduct = PaymentsModule.permissions.includes("Payment Product");
+          }
+        }
+
+        setPermissions({
+          canAddParty,
+          canAddInvestor,
+          canAddProduct,
+          hasAccess: canAddParty || canAddInvestor || canAddProduct,
         });
 
-        // Also keep the product data separately if needed
-        setTableProductData(formattedData);
+        console.log("Permissions set:", { canAddParty, canAddInvestor, canAddProduct });
       } else {
-        throw new Error("Fetched product data is not an array");
+        // No permissions found in localStorage - give full access
+        setPermissions({
+          canAddParty: true,
+          canAddInvestor: true,
+          canAddProduct: true,
+          hasAccess: true,
+        });
+        console.log("No permissions found in localStorage - granting full access");
       }
     } catch (error) {
-      console.error("Error fetching product data:", error.message);
-      Swal.fire("Error", "Failed to fetch product data", "error");
-    } finally {
-      setLoading(false);
+      console.error("Error parsing permissions:", error);
+      // Default to full access on error (assuming null permissions)
+      setPermissions({
+        canAddParty: true,
+        canAddInvestor: true,
+        canAddProduct: true,
+        hasAccess: true,
+      });
     }
-  }; 
+  };
 
-  const fetchData = async () => {
+  const loadDataBasedOnPermissions = async () => {
+    setLoading(true);
+    
+    // Always load bank data for cheque and online payments
+    await fetchBankData();
+
+    // Load data based on permissions
+    const promises = [];
+
+    if (permissions.canAddParty) {
+      setLoadingStates(prev => ({ ...prev, parties: true }));
+      promises.push(fetchPartyData());
+    }
+
+    if (permissions.canAddInvestor) {
+      setLoadingStates(prev => ({ ...prev, investors: true }));
+      promises.push(fetchInvestorsData());
+    }
+
+    if (permissions.canAddProduct) {
+      setLoadingStates(prev => ({ ...prev, products: true }));
+      promises.push(fetchProductData());
+    }
+
+    // Wait for all API calls to complete
+    await Promise.allSettled(promises);
+    
+    setLoading(false);
+  };
+
+  const fetchPartyData = async () => {
     try {
+      setLoadingStates(prev => ({ ...prev, parties: true }));
       const response = await api.getDataWithToken(party);
       const data = response.data;
-      console.log("party Data:", data); // Log to check party data
+      
       if (Array.isArray(data)) {
         const formattedData = data.map((parties) => ({
           label: `${parties.person_name} (Party)`,
-          customer_type: parties.customer_type,
+          customer_type: "party",
           id: parties.id,
         }));
 
@@ -125,26 +205,26 @@ const Page = () => {
           );
           return [...prevData, ...newData];
         });
-      } else {
-        throw new Error("Fetched buyer data is not an array");
       }
     } catch (error) {
-      console.error("Error fetching buyer data:", error.message);
+      console.error("Error fetching party data:", error.message);
+      Swal.fire("Error", "Failed to fetch party data", "error");
     } finally {
-      setLoading(false);
-      setDataFetched(true); // Mark as fetched
+      setLoadingStates(prev => ({ ...prev, parties: false }));
     }
   };
 
   const fetchInvestorsData = async () => {
     try {
+      setLoadingStates(prev => ({ ...prev, investors: true }));
       const response = await api.getDataWithToken(investors);
       const data = response.data;
+      
       if (Array.isArray(data)) {
-        const formattedData = data.map((supplier) => ({
-          label: `${supplier.person_name} (Investor)`,
-          customer_type: supplier.customer_type,
-          id: supplier.id,
+        const formattedData = data.map((investor) => ({
+          label: `${investor.person_name} (Investor)`,
+          customer_type: "investor",
+          id: investor.id,
         }));
 
         setPartyData((prevData) => {
@@ -154,39 +234,62 @@ const Page = () => {
           );
           return [...prevData, ...newData];
         });
-      } else {
-        throw new Error("Fetched supplier data is not an array");
       }
     } catch (error) {
-      console.error("Error fetching supplier data:", error.message);
+      console.error("Error fetching investor data:", error.message);
+      Swal.fire("Error", "Failed to fetch investor data", "error");
     } finally {
-      setLoading(false);
-      setDataFetched(true); // Mark as fetched
+      setLoadingStates(prev => ({ ...prev, investors: false }));
     }
   };
 
-  useEffect(() => {
-    if (dataFetched) {
+  const fetchProductData = async () => {
+    try {
+      setLoadingStates(prev => ({ ...prev, products: true }));
+      const response = await api.getDataWithToken(products);
+      const data = response.data;
+      
+      if (Array.isArray(data)) {
+        const formattedData = data.map((product) => ({
+          label: `${product.product_name} (Product)`,
+          customer_type: "product",
+          id: product.id,
+        }));
+
+        setPartyData((prevData) => {
+          const existingIds = new Set(prevData.map((item) => item.id));
+          const newData = formattedData.filter(
+            (item) => !existingIds.has(item.id)
+          );
+          return [...prevData, ...newData];
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching product data:", error.message);
+      Swal.fire("Error", "Failed to fetch product data", "error");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, products: false }));
     }
-  }, [tablePartyData, dataFetched]);
+  };
 
   const fetchBankData = async () => {
     try {
+      setLoadingStates(prev => ({ ...prev, banks: true }));
       const response = await api.getDataWithToken(banks);
       const data = response.data;
+      
       if (Array.isArray(data)) {
         const formattedData = data.map((bank) => ({
           label: bank.bank_name,
           id: bank.id,
         }));
         setTableBankData(formattedData);
-      } else {
-        throw new Error("Fetched data is not an array");
       }
     } catch (error) {
       console.error("Error fetching bank data:", error.message);
+      Swal.fire("Error", "Failed to fetch bank data", "error");
     } finally {
-      setLoading(false);
+      setLoadingStates(prev => ({ ...prev, banks: false }));
     }
   };
 
@@ -208,7 +311,7 @@ const Page = () => {
 
   const handleDropdownChange = (name, selectedOption) => {
     if (selectedOption) {
-      setSelectedParty(selectedOption); // Store the selected party
+      setSelectedParty(selectedOption);
 
       // Reset all IDs first
       setFormData((prevState) => ({
@@ -236,7 +339,6 @@ const Page = () => {
         }));
       }
 
-      // Add a console log to see what's happening
       console.log("Selected option:", selectedOption);
     }
   };
@@ -257,7 +359,6 @@ const Page = () => {
       let requestData = { ...formData };
 
       if (isSelf) {
-        // Self payment logic remains the same
         requestData = {
           bank_id: formData.bank_id,
           amount: formData.cash_amount,
@@ -268,14 +369,11 @@ const Page = () => {
           requestData
         );
       } else {
-        // Find the selected item (party, investor, or product)
         const selectedItem = tablePartyData.find(
           (item) =>
             (item.customer_type === "party" && item.id === formData.party_id) ||
-            (item.customer_type === "investor" &&
-              item.id === formData.investor_id) ||
-            (item.customer_type === "product" &&
-              item.id === formData.product_id)
+            (item.customer_type === "investor" && item.id === formData.investor_id) ||
+            (item.customer_type === "product" && item.id === formData.product_id)
         );
 
         if (selectedItem) {
@@ -296,10 +394,7 @@ const Page = () => {
                   ? -Math.abs(formData.cash_amount)
                   : "",
               };
-              response = await api.postDataWithToken(
-                investorLedger,
-                requestData
-              );
+              response = await api.postDataWithToken(investorLedger, requestData);
               break;
 
             case "product":
@@ -308,10 +403,7 @@ const Page = () => {
                 product_id: formData.product_id,
                 cash_amount: formData.cash_amount,
               };
-              response = await api.postDataWithToken(
-                companyProduct,
-                requestData
-              );
+              response = await api.postDataWithToken(companyProduct, requestData);
               break;
 
             default:
@@ -322,7 +414,6 @@ const Page = () => {
         }
       }
 
-      // Check response status
       if (response?.status === "success") {
         setResponseData(response);
         Swal.fire({
@@ -332,12 +423,10 @@ const Page = () => {
           confirmButtonText: "OK",
         }).then((result) => {
           if (result.isConfirmed) {
-            // router.push("/dashboard");
             window.location.reload();
           }
         });
       } else {
-        // Handle API error response
         Swal.fire(
           "Error",
           response?.message ||
@@ -356,6 +445,30 @@ const Page = () => {
       setLoadingSubmit(false);
     }
   };
+
+  // Show loading if no permissions or still checking
+  if (!permissions.hasAccess) {
+    return (
+      <Card sx={{ p: 3, maxWidth: 1200, mx: "auto", mt: 3 }}>
+        <CardContent>
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            {loading ? (
+              <>
+                <Skeleton variant="rectangular" height={40} sx={{ mb: 2 }} />
+                <Skeleton variant="text" />
+              </>
+            ) : (
+              <div>
+                <h3>Access Denied</h3>
+                <p>You don't have permission to access this payment module.</p>
+                <p>Required permissions: Payment Party, Payment Investor, or Payment Product</p>
+              </div>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card sx={{ p: 3, maxWidth: 1200, mx: "auto", mt: 3 }}>
@@ -402,7 +515,7 @@ const Page = () => {
         <Grid container spacing={3}>
           {!isSelf && (
             <Grid item xs={12} md={6}>
-              {loading ? (
+              {loading || loadingStates.parties || loadingStates.investors || loadingStates.products ? (
                 <Skeleton variant="rectangular" height={56} />
               ) : (
                 <DropDown
@@ -410,11 +523,6 @@ const Page = () => {
                   options={tablePartyData}
                   onChange={handleDropdownChange}
                   value={selectedParty}
-                  // name={
-                  //   selectedParty?.customer_type === "party"
-                  //     ? "sup_id"
-                  //     : "party_id"
-                  // }
                   name={
                     selectedParty?.customer_type === "party"
                       ? "sup_id"
@@ -423,6 +531,11 @@ const Page = () => {
                       : "product_id"
                   }
                 />
+              )}
+              {tablePartyData.length === 0 && !loading && (
+                <Box sx={{ mt: 1, color: 'text.secondary', fontSize: '0.875rem' }}>
+                  No data available based on your permissions
+                </Box>
               )}
             </Grid>
           )}
@@ -443,14 +556,18 @@ const Page = () => {
           {(activeTab === "cheque" || activeTab === "both") && (
             <>
               <Grid item xs={12} md={4}>
-                <Autocomplete
-                  disablePortal
-                  options={tableBankData}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Select Bank" />
-                  )}
-                  onChange={handleBankSelect}
-                />
+                {loadingStates.banks ? (
+                  <Skeleton variant="rectangular" height={56} />
+                ) : (
+                  <Autocomplete
+                    disablePortal
+                    options={tableBankData}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Select Bank" />
+                    )}
+                    onChange={handleBankSelect}
+                  />
+                )}
               </Grid>
               <Grid item xs={12} md={4}>
                 <InputWithTitle
@@ -510,14 +627,18 @@ const Page = () => {
               </Grid>
 
               <Grid className="mt-5" item xs={12} md={4}>
-                <Autocomplete
-                  disablePortal
-                  options={tableBankData}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Select Bank" />
-                  )}
-                  onChange={handleBankSelect}
-                />
+                {loadingStates.banks ? (
+                  <Skeleton variant="rectangular" height={56} />
+                ) : (
+                  <Autocomplete
+                    disablePortal
+                    options={tableBankData}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Select Bank" />
+                    )}
+                    onChange={handleBankSelect}
+                  />
+                )}
               </Grid>
 
               {!isSelf && (
@@ -573,7 +694,7 @@ const Page = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={loadingSubmit}
+            disabled={loadingSubmit || tablePartyData.length === 0}
             sx={{ minWidth: 200 }}
           >
             {loadingSubmit ? "Submitting..." : "Submit Payment"}

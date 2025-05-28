@@ -462,19 +462,6 @@ const Page = () => {
     }
   };
 
-  // Show message if user has no access
-  if (!permissions.hasAccess) {
-    return (
-      <div className="min-h-screen w-full overflow-x-hidden px-4 md:px-6">
-        <div className={styles.recievesHead}>Add Amount Receives</div>
-        <div className="mt-10 text-center">
-          <p className="text-red-500">You don't have permission to access this module.</p>
-          <p className="text-gray-600">Please contact your administrator for access.</p>
-        </div>
-      </div>
-    );
-  }
-
   // Check if any data is still loading
   const isAnyDataLoading = Object.values(loadingStates).some(state => state);
 

@@ -1,262 +1,411 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
-import styles from "../../styles/packing.module.css";
-import {
-  Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-} from "@mui/material";
-import { saleBook } from "../../networkApi/Constants";
+import React, { useState, useCallback, useRef } from "react";
+import InputWithTitle from "../../components/generic/InputWithTitle";
+import PermissionManager from "../../components/permissionManager";
+import withAuth from "@/utils/withAuth";
+import { user } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
-import Buttons from "@/components/buttons";
+import Swal from 'sweetalert2';
 
-const Page = () => {
-  const api = new APICall();
+const Permission = () => {
   const router = useRouter();
+  const api = new APICall();
 
-  const [tableData, setTableData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // Permission states
-  const [permissions, setPermissions] = useState({
-    canAddSales: false,
-    canViewSales: false,
-    hasAccess: false
+  const [permissionsData, setPermissionsData] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    checkPermissions();
-    if (permissions.canViewSales) {
-      fetchData();
-    } else {
-      setLoading(false);
+  // Use ref to prevent infinite re-renders
+  const permissionsRef = useRef(null);
+
+  // Function to receive permissions data from child component
+  // This should NOT trigger API calls - just store the permissions
+  const handlePermissionsChange = useCallback((data) => {
+    console.log("Received permissions data:", data);
+    
+    // Prevent unnecessary updates if data is the same
+    if (JSON.stringify(data) === JSON.stringify(permissionsRef.current)) {
+      return;
     }
-  }, [permissions.canViewSales]);
 
-  const checkPermissions = () => {
-    try {
-      const storedPermissions = localStorage.getItem("permissions");
-      
-      if (storedPermissions) {
-        const parsedPermissions = JSON.parse(storedPermissions);
-        
-        // Find Sales module permissions
-        let canAddSales = false;
-        let canViewSales = false;
-        
-        if (parsedPermissions.modules && Array.isArray(parsedPermissions.modules)) {
-          const salesModule = parsedPermissions.modules.find(
-            module => module.parent === "Sales" || module.name === "Sales"
-          );
-          
-          if (salesModule && salesModule.permissions) {
-            canAddSales = salesModule.permissions.includes("Add Sales");
-            canViewSales = salesModule.permissions.includes("View Sales");
-          }
-        }
-        
-        setPermissions({
-          canAddSales,
-          canViewSales,
-          hasAccess: canAddSales || canViewSales
-        });
-        
-        // If user has no sales permissions at all, redirect or show error
-        if (!canAddSales && !canViewSales) {
-          console.warn("No sales permissions found");
-          // Optional: redirect to unauthorized page
-          // router.push("/unauthorized");
-        }
-        
-      } else {
-        // No permissions found - default behavior
-        setPermissions({
-          canAddSales: true,
-          canViewSales: true,
-          hasAccess: true
-        });
+    // Store the complete permissions data (not just modules)
+    permissionsRef.current = data;
+    setPermissionsData(data);
+    console.log("Permissions data stored:", data);
+    
+    // Clear permissions error if data is provided
+    if (data && Object.keys(data).length > 0) {
+      setErrors((prev) => ({
+        ...prev,
+        permissions: "",
+      }));
+    }
+  }, []);
+
+  // Function to handle input changes
+  const handleInputChange = useCallback((name, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear specific error when user starts typing
+    setErrors((prev) => {
+      if (prev[name]) {
+        return {
+          ...prev,
+          [name]: "",
+        };
       }
-    } catch (error) {
-      console.error("Error parsing permissions:", error);
-      // Default to showing all on error
-      setPermissions({
-        canAddSales: true,
-        canViewSales: true,
-        hasAccess: true
+      return prev;
+    });
+
+    // Real-time password confirmation validation
+    if (name === "confirmPassword" || name === "password") {
+      setFormData((currentFormData) => {
+        const password = name === "password" ? value : currentFormData.password;
+        const confirmPassword =
+          name === "confirmPassword" ? value : currentFormData.confirmPassword;
+
+        if (confirmPassword && password !== confirmPassword) {
+          setErrors((prev) => ({
+            ...prev,
+            confirmPassword: "Passwords do not match",
+          }));
+        } else {
+          setErrors((prev) => ({
+            ...prev,
+            confirmPassword: "",
+          }));
+        }
+
+        return currentFormData;
       });
     }
-  };
+  }, []);
 
-  const fetchData = async () => {
-    if (!permissions.canViewSales) {
-      setLoading(false);
-      return;
+  // Password validation function
+  const validatePassword = useCallback((password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!hasUpperCase) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!hasLowerCase) {
+      return "Password must contain at least one lowercase letter";
+    }
+    if (!hasNumbers) {
+      return "Password must contain at least one number";
+    }
+    if (!hasSpecialChar) {
+      return "Password must contain at least one special character";
+    }
+    return "";
+  }, []);
+
+  // Form validation function
+  const validateForm = useCallback(() => {
+    const newErrors = {};
+
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
     }
 
-    setLoading(true);
-    try {
-      const response = await api.getDataWithToken(saleBook);
-      const data = response.data || [];
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
 
-      if (Array.isArray(data)) {
-        // Add additional validation to ensure buyer info exists
-        const validData = data.filter((row) => row.party || row.buyer);
-        setTableData(validData);
-
-        if (validData.length === 0) {
-          setError("No valid sale records found");
-        }
-      } else {
-        throw new Error("Fetched data is not an array");
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else {
+      const passwordError = validatePassword(formData.password);
+      if (passwordError) {
+        newErrors.password = passwordError;
       }
-    } catch (error) {
-      console.error("Fetch error:", error);
-      setError(error.message || "Failed to fetch sale data");
-    } finally {
-      setLoading(false);
     }
+
+    // Confirm password validation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    // Permissions validation - check if permissions data exists
+    if (!permissionsData || Object.keys(permissionsData).length === 0) {
+      newErrors.permissions = "Please select user permissions";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [formData, validatePassword, permissionsData]);
+
+  // SweetAlert Success function
+  const showSuccessAlert = (message = "User Created Successfully!") => {
+    Swal.fire({
+      title: 'Success!',
+      text: message,
+      icon: 'success',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#28a745',
+      timer: 3000,
+      timerProgressBar: true
+    }).then(() => {
+      // Reset form after success
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setPermissionsData(null);
+      permissionsRef.current = null;
+      setErrors({});
+    });
   };
 
-  const handleViewDetails = (row) => {
-    if (!permissions.canViewSales) {
-      console.warn("No permission to view sales details");
-      return;
-    }
-    
-    localStorage.setItem("saleBookId", row.id);
-    router.push("/invoice");
+  // SweetAlert Error function
+  const showErrorAlert = (message = "Something went wrong!") => {
+    Swal.fire({
+      title: 'Error!',
+      text: message,
+      icon: 'error',
+      confirmButtonText: 'Try Again',
+      confirmButtonColor: '#dc3545'
+    });
   };
 
-  const filteredData = tableData.filter((row) => {
-    const buyerName = row.party?.person_name || row.buyer?.person_name || "";
-    return buyerName.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  // Function to handle form submission - ONLY API call happens HERE
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-  // If user has no access to sales at all
-  if (!permissions.hasAccess) {
-    return (
-      <div className={styles.pageContainer}>
-        <div className={styles.contentContainer}>
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            <h3>Access Denied</h3>
-            <p>You don't have permission to access Sales module.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+      // Prevent multiple simultaneous submissions
+      if (loading) {
+        return;
+      }
+
+      // Validate form including permissions
+      if (!validateForm()) {
+        console.log("Form validation failed");
+        showErrorAlert("Please fill all required fields correctly and select permissions!");
+        return;
+      }
+
+      setLoading(true);
+      
+      // Prepare complete form data with permissions
+      const completeFormData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+        // Spread the permissions data (this should contain the structure your API expects)
+        ...permissionsData
+      };
+
+      console.log("Submitting user data:", completeFormData);
+
+      try {
+        // THIS is the ONLY place where API call should happen
+        const response = await api.postDataToken(
+          `${user}`,
+          completeFormData
+        );
+
+        console.log("User creation response:", response);
+
+        // Check if response indicates success
+        if (response && (response.status === "success" || response.success)) {
+          const successMessage = response.message || "User Created Successfully!";
+          showSuccessAlert(successMessage);
+        } else if (response && response.message) {
+          // If there's a message in response but not success
+          showErrorAlert(response.message);
+        } else {
+          showSuccessAlert();
+        }
+        
+      } catch (error) {
+        console.error("Error creating user:", error);
+        
+        // Handle different types of errors
+        let errorMessage = "Something went wrong!";
+        
+        if (error.response) {
+          // Server responded with error status
+          if (error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+          } else if (error.response.data && error.response.data.error) {
+            errorMessage = error.response.data.error;
+          } else {
+            errorMessage = `Server Error: ${error.response.status}`;
+          }
+        } else if (error.message) {
+          // Network or other error
+          errorMessage = error.message;
+        }
+        
+        showErrorAlert(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [formData, permissionsData, validateForm, api, user, loading]
+  );
 
   return (
-    <div className={styles.pageContainer}>
-      {/* Show Buttons component only if user can add sales */}
-      {permissions.canAddSales && (
-        <Buttons leftSectionText="Sale" addButtonLink="/addSale" />
-      )}
+    <div>
+      <div style={{ fontSize: "24px", fontWeight: 600 }}>User</div>
 
-      <div className={styles.contentContainer}>
-        {/* Show search and table only if user can view sales */}
-        {permissions.canViewSales && (
-          <>
-            {/* Uncomment if you want search functionality */}
-            {/* <input
+      <form onSubmit={handleSubmit}>
+        <div
+          className="mt-10"
+          style={{ display: "flex", justifyContent: "space-between" }}
+        >
+          <div style={{ flex: 1, marginRight: "10px" }}>
+            <InputWithTitle
+              title="Name"
               type="text"
-              placeholder="Search by buyer name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ marginBottom: "10px", width: "100%", padding: "5px" }}
-            /> */}
+              placeholder="Name"
+              name="name"
+              value={formData.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+            />
+            {errors.name && (
+              <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+                {errors.name}
+              </div>
+            )}
+          </div>
+          <div style={{ flex: 1, marginLeft: "10px" }}>
+            <InputWithTitle
+              title="Email"
+              type="email"
+              placeholder="Email"
+              name="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+            />
+            {errors.email && (
+              <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+                {errors.email}
+              </div>
+            )}
+          </div>
+        </div>
 
-            <TableContainer
-              sx={{
-                maxHeight: "400px",
-                overflow: "auto",
-              }}
-              component={Paper}
-            >
-              <Table
-                sx={{
-                  minWidth: 650,
-                  position: "relative",
-                  borderCollapse: "separate",
-                }}
-              >
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Sr.</TableCell>
-                    <TableCell>Reference No</TableCell>
-                    <TableCell>Buyer Name</TableCell>
-                    <TableCell>Total Amount</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {loading ? (
-                    [...Array(5)].map((_, index) => (
-                      <TableRow key={index}>
-                        {[...Array(4)].map((_, cellIndex) => (
-                          <TableCell key={cellIndex}>
-                            <Skeleton animation="wave" />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : filteredData.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4}>
-                        {error || "No data available"}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredData.map((row, index) => (
-                      <TableRow
-                        onClick={() => handleViewDetails(row)}
-                        key={row.id}
-                        hover
-                        style={{ 
-                          cursor: permissions.canViewSales ? 'pointer' : 'default' 
-                        }}
-                      >
-                        <TableCell>{index + 1}</TableCell>
-                        <TableCell>{row.ref_no}</TableCell>
-                        <TableCell>
-                          {row.party?.person_name ||
-                            row.buyer?.person_name ||
-                            "N/A"}
-                        </TableCell>
-                        <TableCell>{row.total_amount}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </>
-        )}
+        <div
+          className="mt-10"
+          style={{ display: "flex", justifyContent: "space-between" }}
+        >
+          <div style={{ flex: 1, marginRight: "10px" }}>
+            <InputWithTitle
+              title="Password"
+              type="password"
+              placeholder="Password"
+              name="password"
+              value={formData.password}
+              onChange={(e) => handleInputChange("password", e.target.value)}
+            />
+            {errors.password && (
+              <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+                {errors.password}
+              </div>
+            )}
+            {/* Password requirements hint */}
+            <div style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
+              Password must contain: 8+ characters, uppercase, lowercase,
+              number, special character
+            </div>
+          </div>
+          <div style={{ flex: 1, marginLeft: "10px" }}>
+            <InputWithTitle
+              title="Confirm Password"
+              type="password"
+              placeholder="Confirm Password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={(e) =>
+                handleInputChange("confirmPassword", e.target.value)
+              }
+            />
+            {errors.confirmPassword && (
+              <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+                {errors.confirmPassword}
+              </div>
+            )}
+          </div>
+        </div>
 
-        {/* Show message if user can only add but not view */}
-        {permissions.canAddSales && !permissions.canViewSales && (
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            <p>You have permission to add sales but cannot view the sales list.</p>
+        <div className="mt-10">
+          {/* PermissionManager should NOT make API calls - only collect data */}
+          <PermissionManager
+            onPermissionsChange={handlePermissionsChange}
+            preventApiCalls={true} // Make sure this prop prevents API calls
+            mode="dataOnly" // Additional prop to ensure only data collection
+            key="permission-manager"
+          />
+          {errors.permissions && (
+            <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+              {errors.permissions}
+            </div>
+          )}
+        </div>
+
+        {/* Submit Button */}
+        <div className="mt-10">
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              backgroundColor: loading ? "#6c757d" : "#007bff",
+              color: "white",
+              padding: "12px 24px",
+              border: "none",
+              borderRadius: "5px",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontSize: "16px",
+              fontWeight: "500",
+              opacity: loading ? 0.7 : 1,
+              transition: "all 0.3s ease",
+            }}
+          >
+            {loading ? "Creating User..." : "Create User"}
+          </button>
+        </div>
+
+        {/* Debug: Show current permissions data */}
+        {process.env.NODE_ENV === 'development' && permissionsData && (
+          <div className="mt-4 p-4 bg-gray-100 rounded">
+            <h4>Current Permissions Data:</h4>
+            <pre style={{ fontSize: "12px", overflow: "auto" }}>
+              {JSON.stringify(permissionsData, null, 2)}
+            </pre>
           </div>
         )}
-
-        {/* Show message if user can only view but not add */}
-        {!permissions.canAddSales && permissions.canViewSales && (
-          <div style={{ textAlign: 'center', padding: '10px', fontSize: '14px', color: '#666' }}>
-            <p>You can view sales but don't have permission to add new sales.</p>
-          </div>
-        )}
-      </div>
+      </form>
     </div>
   );
 };
 
-export default Page;
+export default withAuth(Permission);
