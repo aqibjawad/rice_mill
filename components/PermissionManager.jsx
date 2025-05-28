@@ -52,7 +52,7 @@ const modules = {
   },
   Banks: {
     name: "Banks",
-    permissions: ["View Banks", "Add Banks"],
+    permissions: ["View Banks", "Add Banks" , "Bank Ledger"],
   },
   Products: {
     name: "Products",

@@ -14,6 +14,8 @@ import {
   Card,
   Box,
   Button,
+  Switch,
+  FormControlLabel,
   tableCellClasses,
   styled,
 } from "@mui/material";
@@ -46,6 +48,15 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   // hide last border
   "&:last-child td, &:last-child th": {
     border: 0,
+  },
+}));
+
+const StyledSwitch = styled(Switch)(({ theme }) => ({
+  "& .MuiSwitch-switchBase.Mui-checked": {
+    color: theme.palette.success.main,
+  },
+  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+    backgroundColor: theme.palette.success.main,
   },
 }));
 
@@ -83,7 +94,7 @@ const Page = () => {
       setFilteredData(tableData);
     } else {
       const filtered = tableData.filter((item) =>
-        item.person_name.toLowerCase().includes(searchQuery.toLowerCase())
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -98,6 +109,33 @@ const Page = () => {
     router.push("/permissions"); // Change this path to your desired route
   };
 
+  // Switch change handler
+  const handleSwitchChange = async (id, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "active" ? "deactivate" : "active";
+
+      // Update local state immediately for better UX
+      setTableData((prevData) =>
+        prevData.map((item) =>
+          item.id === id ? { ...item, status: newStatus } : item
+        )
+      );
+
+      const response = await api.postFormDataWithToken(`${user}/${id}/status`, {
+        newStatus,
+      });
+    } catch (error) {
+      console.error("Error updating user status:", error);
+
+      // Revert the change if API call fails
+      setTableData((prevData) =>
+        prevData.map((item) =>
+          item.id === id ? { ...item, status: currentStatus } : item
+        )
+      );
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -105,7 +143,9 @@ const Page = () => {
       const data = response.data;
 
       if (Array.isArray(data)) {
-        setTableData(data);
+        // Filter out user with ID 1 and set table data
+        const filteredData = data.filter((item) => item.id !== 1);
+        setTableData(filteredData);
       } else {
         throw new Error("Fetched data is not an array");
       }
@@ -169,6 +209,7 @@ const Page = () => {
                 <StyledTableCell>Sr No</StyledTableCell>
                 <StyledTableCell>Name</StyledTableCell>
                 <StyledTableCell>Email</StyledTableCell>
+                <StyledTableCell>Status</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -181,7 +222,10 @@ const Page = () => {
                       <StyledTableCell>
                         <Skeleton variant="text" width={120} />
                       </StyledTableCell>
-                      <StyledTableCell align="right">
+                      <StyledTableCell>
+                        <Skeleton variant="text" width={150} />
+                      </StyledTableCell>
+                      <StyledTableCell>
                         <Skeleton
                           variant="rectangular"
                           width={50}
@@ -195,6 +239,34 @@ const Page = () => {
                       <StyledTableCell>{index + 1}</StyledTableCell>
                       <StyledTableCell>{row.name}</StyledTableCell>
                       <StyledTableCell>{row.email || "N/A"}</StyledTableCell>
+                      <StyledTableCell>
+                        <FormControlLabel
+                          control={
+                            <StyledSwitch
+                              checked={row.status === "active"}
+                              onChange={() =>
+                                handleSwitchChange(row.id, row.status)
+                              }
+                              name={`status-${row.id}`}
+                            />
+                          }
+                          label={
+                            row.status === "active" ? "Active" : "Inactive"
+                          }
+                          labelPlacement="start"
+                          sx={{
+                            margin: 0,
+                            "& .MuiFormControlLabel-label": {
+                              fontSize: "14px",
+                              fontWeight: row.status === "active" ? 600 : 400,
+                              color:
+                                row.status === "active"
+                                  ? "success.main"
+                                  : "text.secondary",
+                            },
+                          }}
+                        />
+                      </StyledTableCell>
                     </StyledTableRow>
                   ))}
             </TableBody>
