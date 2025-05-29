@@ -211,20 +211,6 @@ const Page = () => {
     }
   };
 
-  // If user has no access to products at all
-  if (!permissions.hasAccess) {
-    return (
-      <div>
-        <Box sx={{ p: 3 }}>
-          <div style={{ textAlign: "center", padding: "20px" }}>
-            <h3>Access Denied</h3>
-            <p>You don't have permission to access Products module.</p>
-          </div>
-        </Box>
-      </div>
-    );
-  }
-
   return (
     <div>
       <Box sx={{ p: 3 }}>
