@@ -65,7 +65,7 @@ const PermissionsManager = ({
   preventApiCalls = false,
   mode = "normal",
   existingPermissions = null,
-  currentPermissions, // Yeh prop se aane wali permissions
+  currentPermissions,
 }) => {
   const [modulePerms, setModulePerms] = useState({});
   const [isModuleOpen, setIsModuleOpen] = useState({});
@@ -73,6 +73,89 @@ const PermissionsManager = ({
   const [selectedRoleName, setSelectedRoleName] = useState("");
   const [sendingData, setSendingData] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Helper function to check if permission should be disabled
+  const isPermissionDisabled = (moduleName, permission) => {
+    if (moduleName === "Receives") {
+      const currentModulePerms = modulePerms[moduleName] || [];
+      
+      // If "View Receives" is selected, disable other 4 permissions
+      if (currentModulePerms.includes("View Receives")) {
+        return ["Add Receives", "Receives Party", "Receives Investor", "Receives Product"].includes(permission);
+      }
+    }
+    
+    if (moduleName === "Payments") {
+      const currentModulePerms = modulePerms[moduleName] || [];
+      
+      // If "View Payments" is selected, disable other 4 permissions
+      if (currentModulePerms.includes("View Payments")) {
+        return ["Add Payments", "Payment Party", "Payment Investor", "Payment Product"].includes(permission);
+      }
+    }
+    
+    return false;
+  };
+
+  // Helper function to get conditional permissions that should be auto-added
+  const getConditionalPermissions = (moduleName, permission, isAdding) => {
+    const additionalPermissions = [];
+    
+    if (moduleName === "Receives" && isAdding) {
+      // Auto-select "Add Receives" when selecting party, investor, or product
+      if (["Receives Party", "Receives Investor", "Receives Product"].includes(permission)) {
+        const currentModulePerms = modulePerms[moduleName] || [];
+        if (!currentModulePerms.includes("Add Receives")) {
+          additionalPermissions.push("Add Receives");
+        }
+      }
+    }
+    
+    if (moduleName === "Payments" && isAdding) {
+      // Auto-select "Add Payments" when selecting party, investor, or product
+      if (["Payment Party", "Payment Investor", "Payment Product"].includes(permission)) {
+        const currentModulePerms = modulePerms[moduleName] || [];
+        if (!currentModulePerms.includes("Add Payments")) {
+          additionalPermissions.push("Add Payments");
+        }
+      }
+    }
+    
+    return additionalPermissions;
+  };
+
+  // Helper function to get permissions that should be auto-removed
+  const getPermissionsToRemove = (moduleName, permission, isRemoving) => {
+    const permissionsToRemove = [];
+    
+    if (moduleName === "Receives" && isRemoving) {
+      const currentModulePerms = modulePerms[moduleName] || [];
+      
+      // If removing "Add Receives", also remove party, investor, product permissions
+      if (permission === "Add Receives") {
+        ["Receives Party", "Receives Investor", "Receives Product"].forEach(perm => {
+          if (currentModulePerms.includes(perm)) {
+            permissionsToRemove.push(perm);
+          }
+        });
+      }
+    }
+    
+    if (moduleName === "Payments" && isRemoving) {
+      const currentModulePerms = modulePerms[moduleName] || [];
+      
+      // If removing "Add Payments", also remove party, investor, product permissions
+      if (permission === "Add Payments") {
+        ["Payment Party", "Payment Investor", "Payment Product"].forEach(perm => {
+          if (currentModulePerms.includes(perm)) {
+            permissionsToRemove.push(perm);
+          }
+        });
+      }
+    }
+    
+    return permissionsToRemove;
+  };
 
   // Initialize permissions from currentPermissions prop
   useEffect(() => {
@@ -256,9 +339,15 @@ const PermissionsManager = ({
     }));
   };
 
-  // Handle module-level permission toggle with proper immutability
+  // Handle module-level permission toggle with proper immutability and conditional logic
   const handleModulePermission = useCallback((moduleName, permission) => {
     console.log(`Toggling permission: ${permission} for module: ${moduleName}`);
+    
+    // Check if permission is disabled
+    if (isPermissionDisabled(moduleName, permission)) {
+      console.log(`Permission ${permission} is disabled for module ${moduleName}`);
+      return;
+    }
     
     setModulePerms((prev) => {
       const newPermissions = {};
@@ -281,10 +370,27 @@ const PermissionsManager = ({
         // Add permission
         newPermissions[moduleKey] = [...currentPermissions, permission];
         console.log(`Added permission ${permission} to ${moduleName}`);
+        
+        // Handle conditional permissions
+        const additionalPermissions = getConditionalPermissions(moduleName, permission, true);
+        additionalPermissions.forEach(additionalPerm => {
+          if (!newPermissions[moduleKey].includes(additionalPerm)) {
+            newPermissions[moduleKey].push(additionalPerm);
+            console.log(`Auto-added permission ${additionalPerm} to ${moduleName}`);
+          }
+        });
+        
       } else {
         // Remove permission
         newPermissions[moduleKey] = currentPermissions.filter(p => p !== permission);
         console.log(`Removed permission ${permission} from ${moduleName}`);
+        
+        // Handle conditional removals
+        const permissionsToRemove = getPermissionsToRemove(moduleName, permission, true);
+        permissionsToRemove.forEach(permToRemove => {
+          newPermissions[moduleKey] = newPermissions[moduleKey].filter(p => p !== permToRemove);
+          console.log(`Auto-removed permission ${permToRemove} from ${moduleName}`);
+        });
         
         // If no permissions left, remove the module entirely
         if (newPermissions[moduleKey].length === 0) {
@@ -296,7 +402,7 @@ const PermissionsManager = ({
       console.log("Updated module permissions:", newPermissions);
       return newPermissions;
     });
-  }, []);
+  }, [modulePerms]);
 
   const isModulePermissionSelected = (moduleName, permission) => {
     return modulePerms[moduleName]?.includes(permission) || false;
@@ -361,13 +467,6 @@ const PermissionsManager = ({
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
         Permissions Manager
       </h2>
-      
-      {/* Debug info - remove in production */}
-      {/* <div className="mb-4 p-4 bg-gray-100 rounded-lg text-sm">
-        <div><strong>Initialized:</strong> {isInitialized ? 'Yes' : 'No'}</div>
-        <div><strong>Current State Permissions:</strong> {JSON.stringify(modulePerms, null, 2)}</div>
-        <div><strong>Original Current Permissions:</strong> {JSON.stringify(currentPermissions, null, 2)}</div>
-      </div> */}
       
       {/* Grid Layout for Modules */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -434,23 +533,59 @@ const PermissionsManager = ({
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {moduleData.permissions.map((permission) => (
-                    <button
-                      key={permission}
-                      type="button"
-                      className={`px-3 py-1 text-sm rounded-lg transition-all font-medium ${
-                        isModulePermissionSelected(moduleName, permission)
-                          ? "bg-blue-500 text-white hover:bg-blue-600"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                      onClick={() =>
-                        handleModulePermission(moduleName, permission)
-                      }
-                    >
-                      {permission.charAt(0).toUpperCase() + permission.slice(1)}
-                    </button>
-                  ))}
+                  {moduleData.permissions.map((permission) => {
+                    const isSelected = isModulePermissionSelected(moduleName, permission);
+                    const isDisabled = isPermissionDisabled(moduleName, permission);
+                    
+                    return (
+                      <button
+                        key={permission}
+                        type="button"
+                        className={`px-3 py-1 text-sm rounded-lg transition-all font-medium ${
+                          isDisabled
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
+                            : isSelected
+                            ? "bg-blue-500 text-white hover:bg-blue-600"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                        onClick={() =>
+                          !isDisabled && handleModulePermission(moduleName, permission)
+                        }
+                        disabled={isDisabled}
+                        title={
+                          isDisabled && moduleName === "Receives" && modulePerms[moduleName]?.includes("View Receives")
+                            ? "This permission is disabled when 'View Receives' is selected"
+                            : isDisabled && moduleName === "Payments" && modulePerms[moduleName]?.includes("View Payments")
+                            ? "This permission is disabled when 'View Payments' is selected"
+                            : ""
+                        }
+                      >
+                        {permission.charAt(0).toUpperCase() + permission.slice(1)}
+                      </button>
+                    );
+                  })}
                 </div>
+                
+                {/* Show conditional logic info for Receives and Payments modules */}
+                {/* {moduleName === "Receives" && isModuleOpen[moduleName] && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                    <div className="text-xs text-blue-700">
+                      <div className="font-medium mb-1">Conditional Logic:</div>
+                      <div>• Selecting Party/Investor/Product auto-selects "Add Receives"</div>
+                      <div>• Selecting "View Receives" disables other permissions</div>
+                    </div>
+                  </div>
+                )} */}
+                
+                {/* {moduleName === "Payments" && isModuleOpen[moduleName] && (
+                  <div className="mt-3 p-3 bg-green-50 rounded-lg">
+                    <div className="text-xs text-green-700">
+                      <div className="font-medium mb-1">Conditional Logic:</div>
+                      <div>• Selecting Party/Investor/Product auto-selects "Add Payments"</div>
+                      <div>• Selecting "View Payments" disables other permissions</div>
+                    </div>
+                  </div>
+                )} */}
               </div>
             </div>
           </div>
