@@ -180,16 +180,16 @@ const Page = () => {
   };
 
   // If user has no access to banks at all
-  if (!permissions.hasAccess) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <h3>Access Denied</h3>
-          <p>You don't have permission to access Banks module.</p>
-        </div>
-      </Box>
-    );
-  }
+  // if (!permissions.hasAccess) {
+  //   return (
+  //     <Box sx={{ p: 3 }}>
+  //       <div style={{ textAlign: 'center', padding: '20px' }}>
+  //         <h3>Access Denied</h3>
+  //         <p>You don't have permission to access Banks module.</p>
+  //       </div>
+  //     </Box>
+  //   );
+  // }
 
   return (
     <>

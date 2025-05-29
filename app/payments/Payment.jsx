@@ -458,11 +458,7 @@ const Page = () => {
                 <Skeleton variant="text" />
               </>
             ) : (
-              <div>
-                <h3>Access Denied</h3>
-                <p>You don't have permission to access this payment module.</p>
-                <p>Required permissions: Payment Party, Payment Investor, or Payment Product</p>
-              </div>
+              ""
             )}
           </Box>
         </CardContent>

@@ -345,7 +345,7 @@ const Page = () => {
                   {[
                     "Sr No",
                     "Payment Type",
-                    "Person",
+                    "Person / Product",
                     "Description",
                     "Bank",
                     "Cheque No",
@@ -421,9 +421,7 @@ const Page = () => {
                           {getProductPaymentTypeDisplay(row)}
                         </StyledTableCell>
                         <StyledTableCell>
-                          {row.linkable?.product_name ||
-                            row.linkable?.transection_id ||
-                            "N/A"}
+                          {row?.product?.product_name || "N/A"}
                         </StyledTableCell>
                         <StyledTableCell>
                           {row.description || "N/A"}

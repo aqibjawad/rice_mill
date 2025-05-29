@@ -86,9 +86,9 @@ export const usePermissions = () => {
     }
 
     // Find the module by parent name
-    const module = permissions.modules.find(
-      (mod) => mod.parent === moduleParentName
-    );
+    // const module = permissions.modules.find(
+    //   (mod) => mod.parent === moduleParentName
+    // );
 
     if (!module) {
       console.log(`❌ Module not found: ${moduleParentName}`, permissions.modules);
@@ -157,9 +157,9 @@ export const usePermissions = () => {
       return false;
     }
 
-    const module = permissions.modules.find(
-      (mod) => mod.parent === moduleParentName
-    );
+    // const module = permissions.modules.find(
+    //   (mod) => mod.parent === moduleParentName
+    // );
 
     const hasAccess = module && module.permissions && module.permissions.length > 0;
     console.log(`${hasAccess ? '✅' : '❌'} Module access check for ${moduleParentName}:`, hasAccess, module);
