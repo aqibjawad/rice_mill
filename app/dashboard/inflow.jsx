@@ -344,6 +344,7 @@ const Page = () => {
                 <TableRow>
                   {[
                     "Sr No",
+                    "Reciever Name",
                     "Payment Type",
                     "Person / Product",
                     "Description",
@@ -378,6 +379,9 @@ const Page = () => {
                     {receivesData.map((row, index) => (
                       <StyledTableRow key={`payment-${row.id}`}>
                         <StyledTableCell>{index + 1}</StyledTableCell>
+                          <StyledTableCell>
+                          {row.user?.name || "Admin"}
+                        </StyledTableCell>
                         <StyledTableCell>
                           {getPaymentTypeChip(row.payment_type)}
                         </StyledTableCell>

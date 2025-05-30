@@ -238,6 +238,7 @@ const Page = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: "primary.main" }}>
                   <TableCell sx={{ color: "white" }}>Sr No</TableCell>
+                  <TableCell sx={{ color: "white" }}>Name</TableCell>
                   <TableCell sx={{ color: "white" }}>Payment Type</TableCell>
                   <TableCell sx={{ color: "white" }}>Person</TableCell>
                   <TableCell sx={{ color: "white" }}>Description</TableCell>
@@ -261,6 +262,7 @@ const Page = () => {
                   : tableData.map((row, index) => (
                       <TableRow key={index}>
                         <TableCell>{index + 1}</TableCell>
+                        <TableCell>{row.user?.name || "Admin"}</TableCell>
                         <TableCell>
                           <Chip
                             label={row.payment_type}

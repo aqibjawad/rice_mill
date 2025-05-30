@@ -101,6 +101,7 @@ const Page = () => {
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Cash Amount</TableCell>
               <TableCell>Cheque Amount</TableCell>
               <TableCell>Description</TableCell>
@@ -122,6 +123,7 @@ const Page = () => {
               : tableData.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>{row.id}</TableCell>
+                    <TableCell>{row.user?.name || "Admin"}</TableCell>
                     <TableCell>{row.cash_amount || 0}</TableCell>
                     <TableCell>{row.cheque_amount || 0}</TableCell>
                     <TableCell>{row.description}</TableCell>
