@@ -165,6 +165,7 @@ const Page = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Sr.</TableCell>
+                  <TableCell>Sales By</TableCell>
                   <TableCell>Reference No</TableCell>
                   <TableCell>Buyer Name</TableCell>
                   <TableCell>Total Amount</TableCell>
@@ -172,18 +173,33 @@ const Page = () => {
               </TableHead>
               <TableBody>
                 {loading ? (
-                  [...Array(5)].map((_, index) => (
+                  [...Array(8)].map((_, index) => (
                     <TableRow key={index}>
-                      {[...Array(4)].map((_, cellIndex) => (
+                      {[...Array(5)].map((_, cellIndex) => (
                         <TableCell key={cellIndex}>
-                          <Skeleton animation="wave" />
+                          <Skeleton 
+                            animation="wave" 
+                            height={40}
+                            sx={{ 
+                              borderRadius: 1,
+                              backgroundColor: 'rgba(0, 0, 0, 0.06)'
+                            }}
+                          />
                         </TableCell>
                       ))}
                     </TableRow>
                   ))
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={5} style={{ textAlign: 'center', color: 'red' }}>
+                      {error}
+                    </TableCell>
+                  </TableRow>
                 ) : filteredData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4}>No data available</TableCell>
+                    <TableCell colSpan={5} style={{ textAlign: 'center' }}>
+                      No data available
+                    </TableCell>
                   </TableRow>
                 ) : (
                   filteredData.map((row, index) => (
@@ -191,8 +207,10 @@ const Page = () => {
                       onClick={() => handleViewDetails(row)}
                       key={row.id}
                       hover
+                      sx={{ cursor: 'pointer' }}
                     >
                       <TableCell>{index + 1}</TableCell>
+                      <TableCell>{row?.user?.name || ""}</TableCell>
                       <TableCell>{row.ref_no}</TableCell>
                       <TableCell>
                         {row.party?.person_name ||

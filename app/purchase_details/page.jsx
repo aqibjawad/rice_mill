@@ -115,9 +115,12 @@ const Page = () => {
 
       <div className="mt-10">
         <Grid container spacing={2}>
-          <Grid item xs={12} lg={6} sm={6}>
+          <Grid item xs={12} lg={4} sm={6}>
             <div className={styles.issueDate}>Party Name</div>
-            <div className={styles.buyerName}> {salesBook?.supplier?.person_name} </div>
+            <div className={styles.buyerName}>
+              {" "}
+              {salesBook?.party?.person_name}{" "}
+            </div>
           </Grid>
 
           {/* <Grid item xs={12} lg={4} sm={6}>
@@ -127,7 +130,7 @@ const Page = () => {
             </div>
           </Grid> */}
 
-          <Grid item xs={12} lg={6} sm={6}>
+          <Grid item xs={12} lg={4} sm={6}>
             <div className="flex">
               <div className="flex-grow"></div>
               <div>
@@ -147,8 +150,7 @@ const Page = () => {
           <TableContainer component={Paper} sx={{ mt: 2 }}>
             <Table>
               <TableBody>
-
-                 <TableRow>
+                <TableRow>
                   <TableCell>
                     <strong> Serial Number:</strong>
                   </TableCell>
@@ -275,7 +277,7 @@ const Page = () => {
       </Grid>
 
       <Grid container spacing={2}>
-        <Grid item xs={12} lg={6} sm={6}>
+        <Grid item xs={12} lg={4} sm={6}>
           <TableContainer sx={{ mt: 2 }}>
             <Table>
               <TableBody>
@@ -290,7 +292,7 @@ const Page = () => {
           </TableContainer>
         </Grid>
 
-        <Grid item xs={12} lg={6} sm={6}>
+        <Grid item xs={12} lg={4} sm={6}>
           <TableContainer sx={{ mt: 2 }}>
             <Table>
               <TableBody>
@@ -303,6 +305,10 @@ const Page = () => {
               </TableBody>
             </Table>
           </TableContainer>
+        </Grid>
+        <Grid item xs={12} lg={4} sm={6}>
+          <div className={styles.issueDate}> Cashier</div>
+          <div className={styles.buyerName}> {salesBook?.user?.name} </div>
         </Grid>
       </Grid>
 

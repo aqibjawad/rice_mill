@@ -198,6 +198,7 @@ const Purchase = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Sr No</TableCell>
+                <TableCell>Purchase By</TableCell>
                 <TableCell>Product</TableCell>
                 <TableCell>Party</TableCell>
                 <TableCell>Weight</TableCell>
@@ -219,6 +220,7 @@ const Purchase = () => {
                 : filteredData.map((row, index) => (
                     <TableRow key={index}>
                       <TableCell>{row.id}</TableCell>
+                      <TableCell>{row.user?.name}</TableCell>
                       <TableCell>{row.product?.product_name}</TableCell>
                       <TableCell>{row.party?.person_name}</TableCell>
                       <TableCell>{row.net_weight}</TableCell>

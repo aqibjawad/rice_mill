@@ -22,6 +22,8 @@ const Invoice = () => {
   const [rowData, setRowData] = useState();
   const [isPrinting, setIsPrinting] = useState(false);
 
+  console.log(salesBook);
+  
   const saleBookId = getLocalStorage("saleBookId");
 
   const handlePrint = () => {
@@ -113,13 +115,13 @@ const Invoice = () => {
                 <div className="flex-grow"></div>
                 <div>
                   <div className={styles.issueDate}>
-                    {rowData?.buyer?.person_name}
+                    {rowData?.party?.person_name}
                   </div>
                   <div className={styles.buyerName}>
-                    {rowData?.buyer?.address}
+                    {rowData?.party?.address}
                   </div>
                   <div className={styles.buyerName}>
-                    {rowData?.buyer?.contact}{" "}
+                    {rowData?.party?.contact}{" "}
                   </div>
                 </div>
               </div>
@@ -131,22 +133,25 @@ const Invoice = () => {
           <TableContainer
             component={Paper}
             style={{
-              width: "98%", // Reduced from 100% to 95%
-              margin: "20px auto", // Centered the table
+              width: "98%",
+              margin: "20px auto",
               backgroundColor: "transparent",
-              overflowX: "hidden", // Prevent horizontal scroll
+              overflowX: "hidden",
             }}
           >
             <Table
               style={{
-                tableLayout: "fixed", // Fixed table layout
-                minWidth: "auto", // Remove minimum width constraint
+                tableLayout: "fixed",
+                minWidth: "auto",
               }}
             >
               <TableHead>
                 <TableRow>
                   <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Sr No
+                  </TableCell>
+                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
+                    Sales By
                   </TableCell>
                   <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Name
@@ -184,6 +189,9 @@ const Invoice = () => {
                       {index + 1}
                     </TableCell>
                     <TableCell style={{ padding: "8px 4px" }}>
+                      {rowData?.user?.name || "N/A"}
+                    </TableCell>
+                    <TableCell style={{ padding: "8px 4px" }}>
                       {item.product_name}
                     </TableCell>
                     <TableCell
@@ -218,8 +226,8 @@ const Invoice = () => {
 
           <div
             style={{
-              width: "95%", // Match table width
-              margin: "0 auto", // Center align with table
+              width: "95%",
+              margin: "0 auto",
             }}
           >
             <div className={styles.tableTotalRow}>
