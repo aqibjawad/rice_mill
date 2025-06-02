@@ -16,6 +16,13 @@ import { saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
 import Buttons from "@/components/buttons";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
 
 const Page = () => {
   const api = new APICall();
@@ -25,6 +32,9 @@ const Page = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   // Permission states
   const [permissions, setPermissions] = useState({
@@ -103,12 +113,31 @@ const Page = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [startDate, endDate]);
 
   const fetchData = async () => {
     setLoading(true);
+
+    const queryParams = [];
+
+    if (startDate && endDate) {
+      queryParams.push(`start_date=${startDate}`);
+      queryParams.push(`end_date=${endDate}`);
+    } else {
+      const now = new Date();
+      const monthStartDate = startOfDay(now);
+      const monthEndDate = endOfDay(now);
+
+      const formattedStartDate = format(monthStartDate, "yyyy-MM-dd");
+      const formattedEndDate = format(monthEndDate, "yyyy-MM-dd");
+
+      queryParams.push(`start_date=${formattedStartDate}`);
+      queryParams.push(`end_date=${formattedEndDate}`);
+    }
+    const queryString = queryParams.join("&");
+
     try {
-      const response = await api.getDataWithToken(saleBook);
+      const response = await api.getDataWithToken(`${saleBook}?${queryString}`);
       const data = response.data || [];
 
       if (Array.isArray(data)) {
@@ -140,10 +169,31 @@ const Page = () => {
     return buyerName.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
+  const handleDateChange = (start, end) => {
+    if (start === "this-month") {
+      const now = new Date();
+      const monthStartDate = startOfMonth(now);
+      const monthEndDate = endOfMonth(now);
+
+      const formattedStartDate = format(monthStartDate, "yyyy-MM-dd");
+      const formattedEndDate = format(monthEndDate, "yyyy-MM-dd");
+
+      setStartDate(formattedStartDate);
+      setEndDate(formattedEndDate);
+    } else {
+      setStartDate(start);
+      setEndDate(end);
+    }
+  };
+
   return (
     <div className={styles.pageContainer}>
       {permissions.canAddSales && (
-        <Buttons leftSectionText="Sale" addButtonLink="/addSale" />
+        <Buttons
+          leftSectionText="Sale"
+          addButtonLink="/addSale"
+          onDateChange={handleDateChange}
+        />
       )}
 
       <div className={styles.contentContainer}>
@@ -177,12 +227,12 @@ const Page = () => {
                     <TableRow key={index}>
                       {[...Array(5)].map((_, cellIndex) => (
                         <TableCell key={cellIndex}>
-                          <Skeleton 
-                            animation="wave" 
+                          <Skeleton
+                            animation="wave"
                             height={40}
-                            sx={{ 
+                            sx={{
                               borderRadius: 1,
-                              backgroundColor: 'rgba(0, 0, 0, 0.06)'
+                              backgroundColor: "rgba(0, 0, 0, 0.06)",
                             }}
                           />
                         </TableCell>
@@ -191,13 +241,16 @@ const Page = () => {
                   ))
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={5} style={{ textAlign: 'center', color: 'red' }}>
+                    <TableCell
+                      colSpan={5}
+                      style={{ textAlign: "center", color: "red" }}
+                    >
                       {error}
                     </TableCell>
                   </TableRow>
                 ) : filteredData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} style={{ textAlign: 'center' }}>
+                    <TableCell colSpan={5} style={{ textAlign: "center" }}>
                       No data available
                     </TableCell>
                   </TableRow>
@@ -207,7 +260,7 @@ const Page = () => {
                       onClick={() => handleViewDetails(row)}
                       key={row.id}
                       hover
-                      sx={{ cursor: 'pointer' }}
+                      sx={{ cursor: "pointer" }}
                     >
                       <TableCell>{index + 1}</TableCell>
                       <TableCell>{row?.user?.name || ""}</TableCell>

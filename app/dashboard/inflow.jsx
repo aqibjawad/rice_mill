@@ -379,7 +379,7 @@ const Page = () => {
                     {receivesData.map((row, index) => (
                       <StyledTableRow key={`payment-${row.id}`}>
                         <StyledTableCell>{index + 1}</StyledTableCell>
-                          <StyledTableCell>
+                        <StyledTableCell>
                           {row.user?.name || "Admin"}
                         </StyledTableCell>
                         <StyledTableCell>
@@ -420,6 +420,10 @@ const Page = () => {
                       <StyledTableRow key={`product-${row.id}`}>
                         <StyledTableCell>
                           {receivesData.length + index + 1}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row?.user?.name}{" "}
+                          {/* Changed from receivesProData?.user?.name */}
                         </StyledTableCell>
                         <StyledTableCell>
                           {getProductPaymentTypeDisplay(row)}

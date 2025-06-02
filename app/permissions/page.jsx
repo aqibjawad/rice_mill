@@ -44,14 +44,12 @@ const Permission = () => {
     try {
       const response = await api.getDataWithToken(`${user}/${id}`);
 
-
       // Check multiple possible success indicators
       if (
         response &&
         (response.success || response.status === "success" || response.data)
       ) {
         const userData = response.data || response;
-
 
         // Populate form data
         setFormData({
@@ -68,7 +66,6 @@ const Permission = () => {
           setPermissionsData(userData.permissions);
           permissionsRef.current = userData.permissions;
         }
-
       } else {
         console.error("API Response doesn't indicate success:", response);
         showErrorAlert(response?.message || "Failed to load user details");
@@ -100,7 +97,6 @@ const Permission = () => {
 
   // Function to receive permissions data from child component
   const handlePermissionsChange = useCallback((data) => {
-
     // Prevent unnecessary updates if data is the same
     if (JSON.stringify(data) === JSON.stringify(permissionsRef.current)) {
       return;
@@ -161,32 +157,6 @@ const Permission = () => {
     }
   }, []);
 
-  // Password validation function
-  const validatePassword = useCallback((password) => {
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    if (password.length < minLength) {
-      return "Password must be at least 8 characters long";
-    }
-    if (!hasUpperCase) {
-      return "Password must contain at least one uppercase letter";
-    }
-    if (!hasLowerCase) {
-      return "Password must contain at least one lowercase letter";
-    }
-    if (!hasNumbers) {
-      return "Password must contain at least one number";
-    }
-    if (!hasSpecialChar) {
-      return "Password must contain at least one special character";
-    }
-    return "";
-  }, []);
-
   // Form validation function
   const validateForm = useCallback(() => {
     const newErrors = {};
@@ -208,11 +178,6 @@ const Permission = () => {
     if (!isEditMode || formData.password) {
       if (!formData.password) {
         newErrors.password = "Password is required";
-      } else {
-        const passwordError = validatePassword(formData.password);
-        if (passwordError) {
-          newErrors.password = passwordError;
-        }
       }
 
       // Confirm password validation
@@ -230,7 +195,7 @@ const Permission = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData, validatePassword, permissionsData, isEditMode]);
+  }, [formData, permissionsData, isEditMode]);
 
   // SweetAlert Success function
   const showSuccessAlert = (message) => {
@@ -444,15 +409,6 @@ const Permission = () => {
                 {errors.password}
               </div>
             )}
-            {/* Password requirements hint */}
-            {(!isEditMode || formData.password) && (
-              <div
-                style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}
-              >
-                Password must contain: 8+ characters, uppercase, lowercase,
-                number, special character
-              </div>
-            )}
           </div>
           <div style={{ flex: 1, marginLeft: "10px" }}>
             <InputWithTitle
@@ -481,7 +437,9 @@ const Permission = () => {
             // Pass both existing permissions and current permissions data
             existingPermissions={existingUserPermissions || permissionsData}
             currentPermissions={permissionsData} // Add this new prop
-            key={`permission-manager-${userId || "new"}-${JSON.stringify(permissionsData)}`}
+            key={`permission-manager-${userId || "new"}-${JSON.stringify(
+              permissionsData
+            )}`}
           />
           {errors.permissions && (
             <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
