@@ -102,6 +102,7 @@ const Page = () => {
             <TableRow>
               <TableCell>Sr No</TableCell>
               <TableCell>Name</TableCell>
+              <TableCell>Expense Date</TableCell>
               <TableCell>Cash Amount</TableCell>
               <TableCell>Cheque Amount</TableCell>
               <TableCell>Description</TableCell>
@@ -124,6 +125,14 @@ const Page = () => {
                   <TableRow key={row.id}>
                     <TableCell>{row.id}</TableCell>
                     <TableCell>{row.user?.name || "Admin"}</TableCell>
+                    <TableCell>
+                      {" "}
+                      {new Date(row?.created_at).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short", // use 'long' for full month name or '2-digit' for numbers
+                        year: "numeric",
+                      })}
+                    </TableCell>
                     <TableCell>{row.cash_amount || 0}</TableCell>
                     <TableCell>{row.cheque_amount || 0}</TableCell>
                     <TableCell>{row.description}</TableCell>

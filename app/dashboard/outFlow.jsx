@@ -239,6 +239,7 @@ const Page = () => {
                 <TableRow sx={{ backgroundColor: "primary.main" }}>
                   <TableCell sx={{ color: "white" }}>Sr No</TableCell>
                   <TableCell sx={{ color: "white" }}>Cashier</TableCell>
+                  <TableCell sx={{ color: "white" }}>Payment Date</TableCell>
                   <TableCell sx={{ color: "white" }}>Payment Type</TableCell>
                   <TableCell sx={{ color: "white" }}>Person</TableCell>
                   <TableCell sx={{ color: "white" }}>Description</TableCell>
@@ -263,6 +264,16 @@ const Page = () => {
                       <TableRow key={index}>
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{row.user?.name || "Admin"}</TableCell>
+                        <TableCell>
+                          {new Date(row?.created_at).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "short", // use 'long' for full month name or '2-digit' for numbers
+                              year: "numeric",
+                            }
+                          )}
+                        </TableCell>
                         <TableCell>
                           <Chip
                             label={row.payment_type}

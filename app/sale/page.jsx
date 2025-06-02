@@ -216,6 +216,7 @@ const Page = () => {
                 <TableRow>
                   <TableCell>Sr.</TableCell>
                   <TableCell>Sales By</TableCell>
+                  <TableCell>Sales Date</TableCell>
                   <TableCell>Reference No</TableCell>
                   <TableCell>Buyer Name</TableCell>
                   <TableCell>Total Amount</TableCell>
@@ -264,6 +265,7 @@ const Page = () => {
                     >
                       <TableCell>{index + 1}</TableCell>
                       <TableCell>{row?.user?.name || ""}</TableCell>
+                      <TableCell>{row?.date || ""}</TableCell>
                       <TableCell>{row.ref_no}</TableCell>
                       <TableCell>
                         {row.party?.person_name ||

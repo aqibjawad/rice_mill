@@ -199,6 +199,7 @@ const Purchase = () => {
               <TableRow>
                 <TableCell>Sr No</TableCell>
                 <TableCell>Purchase By</TableCell>
+                <TableCell>Purchase Date</TableCell>
                 <TableCell>Product</TableCell>
                 <TableCell>Party</TableCell>
                 <TableCell>Weight</TableCell>
@@ -221,6 +222,7 @@ const Purchase = () => {
                     <TableRow key={index}>
                       <TableCell>{row.id}</TableCell>
                       <TableCell>{row.user?.name}</TableCell>
+                      <TableCell>{row.date}</TableCell>
                       <TableCell>{row.product?.product_name}</TableCell>
                       <TableCell>{row.party?.person_name}</TableCell>
                       <TableCell>{row.net_weight}</TableCell>

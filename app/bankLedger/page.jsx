@@ -151,6 +151,7 @@ const Page = () => {
           <TableHead>
             <TableRow>
               <TableCell>Sr No</TableCell>
+              <TableCell>Transaction Date</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Transaction ID</TableCell>
               <TableCell>Name</TableCell>
@@ -173,6 +174,13 @@ const Page = () => {
               : tableData.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>{row.srNo}</TableCell>
+                    <TableCell>
+                      {new Date(row?.created_at).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short", // use 'long' for full month name or '2-digit' for numbers
+                        year: "numeric",
+                      })}
+                    </TableCell>
                     <TableCell>{row.description || "N/A"}</TableCell>
                     <TableCell>{row.transection_id || "N/A"}</TableCell>
                     <TableCell>{row.customerName}</TableCell>
@@ -191,7 +199,7 @@ const Page = () => {
                   <strong>Total</strong>
                 </TableCell>
                 <TableCell>
-                  <strong>{totals.debit}</strong> 
+                  <strong>{totals.debit}</strong>
                 </TableCell>
                 <TableCell>
                   <strong>{totals.credit}</strong>

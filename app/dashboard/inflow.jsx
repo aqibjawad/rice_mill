@@ -346,6 +346,7 @@ const Page = () => {
                     "Sr No",
                     "Reciever Name",
                     "Payment Type",
+                    "Recieves Date",
                     "Person / Product",
                     "Description",
                     "Bank",
@@ -384,6 +385,16 @@ const Page = () => {
                         </StyledTableCell>
                         <StyledTableCell>
                           {getPaymentTypeChip(row.payment_type)}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {new Date(row?.created_at).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "short", // use 'long' for full month name or '2-digit' for numbers
+                              year: "numeric",
+                            }
+                          )}
                         </StyledTableCell>
                         <StyledTableCell>
                           {row.customer?.person_name || "N/A"}

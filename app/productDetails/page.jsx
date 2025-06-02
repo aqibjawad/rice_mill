@@ -101,7 +101,7 @@ const Page = () => {
     // Calculate remaining weight divided by the absolute value of balance
     return (balance / remainingWeight).toFixed(2);
   };
-  
+
   const getTotalPurchasePrice = () => {
     return stockDetails
       .filter(
@@ -154,6 +154,9 @@ const Page = () => {
                     <b>Sr No</b>
                   </TableCell>
                   <TableCell>
+                    <b>Date</b>
+                  </TableCell>
+                  <TableCell>
                     <b>Party</b>
                   </TableCell>
                   <TableCell>
@@ -174,6 +177,13 @@ const Page = () => {
                 {stockDetails.map((stock, index) => (
                   <TableRow key={index}>
                     <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      {new Date(stock?.created_at).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short", // use 'long' for full month name or '2-digit' for numbers
+                        year: "numeric",
+                      })}
+                    </TableCell>
                     <TableCell>
                       {stock?.party?.person_name ||
                         stock?.linkable?.product_name}
