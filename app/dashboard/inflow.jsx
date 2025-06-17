@@ -18,8 +18,12 @@ import {
   tableCellClasses,
   styled,
   Skeleton,
+  Button,
 } from "@mui/material";
 import { FaMoneyBillWave, FaUniversity } from "react-icons/fa";
+import { FaDownload } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import APICall from "../../networkApi/APICall";
 import { getAmountReceives, companyProduct } from "../../networkApi/Constants";
 import Buttons from "../../components/buttons";
@@ -272,9 +276,167 @@ const Page = () => {
   // Helper function to determine payment type display for product entries
   const getProductPaymentTypeDisplay = (row) => {
     if (row.linkable_type === "App\\Models\\BankLedger") {
-      return getPaymentTypeChip(row.linkable?.payment_type || "cash");
+      return row.linkable?.payment_type || "cash";
     }
-    return getEntryTypeChip(row.Receives_entry_type);
+    return row.Receives_entry_type;
+  };
+
+  // PDF Download Function
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+
+    // Add title
+    doc.setFontSize(18);
+    doc.setFont(undefined, "bold");
+    doc.text("Amount Receives Report", 14, 22);
+
+    // Add date range if available
+    if (startDate && endDate) {
+      doc.setFontSize(12);
+      doc.setFont(undefined, "normal");
+      doc.text(
+        `Date Range: ${format(startDate, "dd/MM/yyyy")} to ${format(
+          endDate,
+          "dd/MM/yyyy"
+        )}`,
+        14,
+        32
+      );
+    }
+
+    // Add generation date
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 40);
+
+    // Add summary totals
+    doc.setFontSize(12);
+    doc.setFont(undefined, "bold");
+    doc.text("Summary:", 14, 55);
+    doc.setFontSize(10);
+    doc.setFont(undefined, "normal");
+    doc.text(`Cash Total: ${calculateCashTotal()}`, 14, 65);
+    doc.text(`Online Total: ${calculateOnlineTotal()}`, 14, 72);
+    doc.text(
+      `Grand Total: ${(
+        parseFloat(calculateCashTotal()) + parseFloat(calculateOnlineTotal())
+      ).toFixed(2)}`,
+      14,
+      79
+    );
+
+    // Prepare table data
+    const tableColumns = [
+      "Sr No",
+      "Receiver Name",
+      "Payment Type",
+      "Date",
+      "Person/Product",
+      "Description",
+      "Bank",
+      "Cheque No",
+      "Amount",
+      "Balance",
+    ];
+
+    const tableRows = [];
+
+    // Add regular payment data
+    receivesData.forEach((row, index) => {
+      tableRows.push([
+        (index + 1).toString(),
+        row.user?.name || "Admin",
+        row.payment_type || "",
+        new Date(row?.created_at).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+        row.customer?.person_name || "N/A",
+        row.description || "N/A",
+        row.bank?.bank_name || "N/A",
+        row.cheque_no || "N/A",
+        parseFloat(row.cash_amount || 0).toFixed(2),
+        parseFloat(row.balance || 0).toFixed(2),
+      ]);
+    });
+
+    // Add product data
+    receivesProData.forEach((row, index) => {
+      tableRows.push([
+        (receivesData.length + index + 1).toString(),
+        row?.user?.name || "",
+        getProductPaymentTypeDisplay(row),
+        row?.created_at
+          ? new Date(row.created_at).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })
+          : "N/A",
+        row?.product?.product_name || "N/A",
+        row.description || "N/A",
+        row.linkable_type === "App\\Models\\BankLedger" ? "Bank Entry" : "N/A",
+        row.linkable?.cheque_no || "N/A",
+        parseFloat(row.total_amount || 0).toFixed(2),
+        parseFloat(row.balance || 0).toFixed(2),
+      ]);
+    });
+
+    // Add table
+    doc.autoTable({
+      head: [tableColumns],
+      body: tableRows,
+      startY: 90,
+      styles: {
+        fontSize: 7,
+        cellPadding: 2,
+      },
+      headStyles: {
+        fillColor: [63, 81, 181],
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      columnStyles: {
+        0: { halign: "center", cellWidth: 15 }, // Sr No
+        8: { halign: "right" }, // Amount
+        9: { halign: "right" }, // Balance
+      },
+      margin: { top: 90, left: 14, right: 14 },
+      didParseCell: function (data) {
+        // Color negative balances red
+        if (data.column.index === 9 && parseFloat(data.cell.text[0]) < 0) {
+          data.cell.styles.textColor = [220, 53, 69]; // Bootstrap danger red
+        }
+      },
+    });
+
+    // Add footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        doc.internal.pageSize.width - 30,
+        doc.internal.pageSize.height - 10
+      );
+    }
+
+    // Generate filename
+    const dateRange =
+      startDate && endDate
+        ? `_${format(startDate, "yyyy-MM-dd")}_to_${format(
+            endDate,
+            "yyyy-MM-dd"
+          )}`
+        : `_${format(new Date(), "yyyy-MM-dd")}`;
+    const filename = `Amount_Receives_Report${dateRange}.pdf`;
+
+    // Save the PDF
+    doc.save(filename);
   };
 
   return (
@@ -291,6 +453,27 @@ const Page = () => {
 
       {permissions.canViewReceives && (
         <>
+          {/* PDF Download Button */}
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<FaDownload />}
+              onClick={downloadPDF}
+              disabled={
+                loading ||
+                (receivesData.length === 0 && receivesProData.length === 0)
+              }
+              sx={{
+                backgroundColor: "#1976d2",
+                "&:hover": {
+                  backgroundColor: "#1565c0",
+                },
+              }}
+            >
+              Download PDF
+            </Button>
+          </Box>
+
           {/* Summary Cards with Skeletons */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {[
@@ -367,7 +550,7 @@ const Page = () => {
                 {loading ? (
                   Array.from({ length: 5 }).map((_, index) => (
                     <StyledTableRow key={index}>
-                      {Array.from({ length: 8 }).map((_, colIndex) => (
+                      {Array.from({ length: 10 }).map((_, colIndex) => (
                         <StyledTableCell key={colIndex}>
                           <Skeleton variant="text" width="80%" />
                         </StyledTableCell>
@@ -438,6 +621,18 @@ const Page = () => {
                         </StyledTableCell>
                         <StyledTableCell>
                           {getProductPaymentTypeDisplay(row)}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {row?.created_at
+                            ? new Date(row.created_at).toLocaleDateString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                }
+                              )
+                            : "N/A"}
                         </StyledTableCell>
                         <StyledTableCell>
                           {row?.product?.product_name || "N/A"}

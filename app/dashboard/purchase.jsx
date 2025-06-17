@@ -12,7 +12,12 @@ import {
   TableRow,
   Paper,
   Skeleton,
+  Button,
+  Box,
 } from "@mui/material";
+import { FaDownload } from "react-icons/fa6";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 import Buttons from "../../components/buttons";
 import SearchInput from "../../components/generic/searchInput";
@@ -167,6 +172,90 @@ const Purchase = () => {
     router.push("/purchase_details");
   };
 
+  // PDF Download Function
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+
+    // Add title
+    doc.setFontSize(18);
+    doc.setFont(undefined, "bold");
+    doc.text("Purchase Report", 14, 22);
+
+    // Add date range if available
+    if (startDate && endDate) {
+      doc.setFontSize(12);
+      doc.setFont(undefined, "normal");
+      doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 32);
+    }
+
+    // Add generation date
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 40);
+
+    // Prepare table data
+    const tableColumns = [
+      "Sr No",
+      "Purchase By",
+      "Purchase Date",
+      "Product",
+      "Party",
+      "Weight",
+      "Amount",
+    ];
+
+    const tableRows = filteredData.map((row) => [
+      row.id || "",
+      row.user?.name || "",
+      row.date || "",
+      row.product?.product_name || "",
+      row.party?.person_name || "",
+      row.net_weight || "",
+      row.total_amount || "",
+    ]);
+
+    // Add table
+    doc.autoTable({
+      head: [tableColumns],
+      body: tableRows,
+      startY: 50,
+      styles: {
+        fontSize: 8,
+        cellPadding: 3,
+      },
+      headStyles: {
+        fillColor: [63, 81, 181],
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      margin: { top: 50, left: 14, right: 14 },
+    });
+
+    // Add footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        doc.internal.pageSize.width - 30,
+        doc.internal.pageSize.height - 10
+      );
+    }
+
+    // Generate filename
+    const dateRange =
+      startDate && endDate
+        ? `_${startDate}_to_${endDate}`
+        : `_${format(new Date(), "yyyy-MM-dd")}`;
+    const filename = `Purchase_Report${dateRange}.pdf`;
+
+    // Save the PDF
+    doc.save(filename);
+  };
+
   return (
     <div className={styles.container}>
       {/* <SearchInput  /> */}
@@ -180,64 +269,84 @@ const Purchase = () => {
       )}
 
       {permissions.canViewPurchase && (
-        <TableContainer
-          sx={{
-            maxHeight: "400px",
-            overflow: "auto",
-          }}
-          component={Paper}
-          className={styles.tableSection}
-        >
-          <Table
+        <>
+          {/* PDF Download Button */}
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<FaDownload  />}
+              onClick={downloadPDF}
+              disabled={loading || filteredData.length === 0}
+              sx={{
+                backgroundColor: "#1976d2",
+                "&:hover": {
+                  backgroundColor: "#1565c0",
+                },
+              }}
+            >
+              Download PDF
+            </Button>
+          </Box>
+
+          <TableContainer
             sx={{
-              minWidth: 650,
-              position: "relative", // Important for proper alignment
-              borderCollapse: "separate",
+              maxHeight: "400px",
+              overflow: "auto",
             }}
+            component={Paper}
+            className={styles.tableSection}
           >
-            <TableHead>
-              <TableRow>
-                <TableCell>Sr No</TableCell>
-                <TableCell>Purchase By</TableCell>
-                <TableCell>Purchase Date</TableCell>
-                <TableCell>Product</TableCell>
-                <TableCell>Party</TableCell>
-                <TableCell>Weight</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell>Action</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading
-                ? Array.from(new Array(5)).map((_, index) => (
-                    <TableRow key={index}>
-                      {Array.from(new Array(6)).map((_, cellIndex) => (
-                        <TableCell key={cellIndex}>
-                          <Skeleton />
+            <Table
+              sx={{
+                minWidth: 650,
+                position: "relative", // Important for proper alignment
+                borderCollapse: "separate",
+              }}
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell>Sr No</TableCell>
+                  <TableCell>Purchase By</TableCell>
+                  <TableCell>Purchase Date</TableCell>
+                  <TableCell>Product</TableCell>
+                  <TableCell>Party</TableCell>
+                  <TableCell>Weight</TableCell>
+                  <TableCell>Amount</TableCell>
+                  <TableCell>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading
+                  ? Array.from(new Array(5)).map((_, index) => (
+                      <TableRow key={index}>
+                        {Array.from(new Array(8)).map((_, cellIndex) => (
+                          <TableCell key={cellIndex}>
+                            <Skeleton />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  : filteredData.map((row, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{row.id}</TableCell>
+                        <TableCell>{row.user?.name}</TableCell>
+                        <TableCell>{row.date}</TableCell>
+                        <TableCell>{row.product?.product_name}</TableCell>
+                        <TableCell>{row.party?.person_name}</TableCell>
+                        <TableCell>{row.net_weight}</TableCell>
+                        <TableCell>{row.total_amount}</TableCell>
+                        <TableCell
+                          onClick={() => handleViewDetails(row)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          View Details
                         </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                : filteredData.map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{row.id}</TableCell>
-                      <TableCell>{row.user?.name}</TableCell>
-                      <TableCell>{row.date}</TableCell>
-                      <TableCell>{row.product?.product_name}</TableCell>
-                      <TableCell>{row.party?.person_name}</TableCell>
-                      <TableCell>{row.net_weight}</TableCell>
-                      <TableCell>{row.total_amount}</TableCell>
-                      <TableCell
-                        onClick={() => handleViewDetails(row)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        View Details
-                      </TableCell>
-                    </TableRow>
-                  ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                      </TableRow>
+                    ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
       )}
     </div>
   );
