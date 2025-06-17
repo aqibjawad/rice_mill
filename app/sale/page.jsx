@@ -12,8 +12,6 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import { saleBook } from "../../networkApi/Constants";
-import APICall from "../../networkApi/APICall";
 import { useRouter } from "next/navigation";
 import Buttons from "@/components/buttons";
 import {
@@ -23,16 +21,12 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
+import { useGetsalesBookQuery } from "@/src/store/salesApi";
 
 const Page = () => {
-  const api = new APICall();
   const router = useRouter();
 
-  const [tableData, setTableData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
@@ -43,17 +37,48 @@ const Page = () => {
     hasAccess: false,
   });
 
+  // Set default date range (current day) when component mounts
+  useEffect(() => {
+    const now = new Date();
+    const dayStartDate = startOfDay(now);
+    const dayEndDate = endOfDay(now);
+
+    const formattedStartDate = format(dayStartDate, "yyyy-MM-dd");
+    const formattedEndDate = format(dayEndDate, "yyyy-MM-dd");
+
+    setStartDate(formattedStartDate);
+    setEndDate(formattedEndDate);
+  }, []);
+
+  // Redux query hook - only runs when dates are set and user has permissions
+  const {
+    data: salesData = [],
+    error: apiError,
+    isLoading,
+    refetch,
+  } = useGetsalesBookQuery(
+    {
+      startDate,
+      endDate,
+    },
+    {
+      skip: !startDate || !endDate || !permissions.canViewSales, // Skip query if no dates or no permissions
+    }
+  );
+
   useEffect(() => {
     checkPermissions();
   }, []);
 
+  // Debug: Log the API response
   useEffect(() => {
-    if (permissions.canViewSales) {
-      fetchData();
-    } else {
-      setLoading(false);
-    }
-  }, [permissions.canViewSales]);
+    console.log("API Response - salesData:", salesData);
+    console.log("API Response - isLoading:", isLoading);
+    console.log("API Response - error:", apiError);
+    console.log("Start Date:", startDate);
+    console.log("End Date:", endDate);
+    console.log("Permissions:", permissions);
+  }, [salesData, isLoading, apiError, startDate, endDate, permissions]);
 
   const checkPermissions = () => {
     try {
@@ -111,65 +136,71 @@ const Page = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [startDate, endDate]);
-
-  const fetchData = async () => {
-    setLoading(true);
-
-    const queryParams = [];
-
-    if (startDate && endDate) {
-      queryParams.push(`start_date=${startDate}`);
-      queryParams.push(`end_date=${endDate}`);
-    } else {
-      const now = new Date();
-      const monthStartDate = startOfDay(now);
-      const monthEndDate = endOfDay(now);
-
-      const formattedStartDate = format(monthStartDate, "yyyy-MM-dd");
-      const formattedEndDate = format(monthEndDate, "yyyy-MM-dd");
-
-      queryParams.push(`start_date=${formattedStartDate}`);
-      queryParams.push(`end_date=${formattedEndDate}`);
-    }
-    const queryString = queryParams.join("&");
-
-    try {
-      const response = await api.getDataWithToken(`${saleBook}?${queryString}`);
-      const data = response.data || [];
-
-      if (Array.isArray(data)) {
-        // Add additional validation to ensure buyer info exists
-        const validData = data.filter((row) => row.party || row.buyer);
-        setTableData(validData);
-
-        if (validData.length === 0) {
-          setError("No valid sale records found");
-        }
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-      setError(error.message || "Failed to fetch sale data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleViewDetails = (row) => {
     localStorage.setItem("saleBookId", row.id);
     router.push("/invoice");
   };
 
-  const filteredData = tableData.filter((row) => {
-    const buyerName = row.party?.person_name || row.buyer?.person_name || "";
-    return buyerName.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  // Fixed: Process and filter data - handle different API response structures
+  const processedData = React.useMemo(() => {
+    console.log("Processing salesData:", salesData);
+
+    // Handle different possible API response structures
+    let dataArray = [];
+
+    if (Array.isArray(salesData)) {
+      dataArray = salesData;
+    } else if (salesData && Array.isArray(salesData.data)) {
+      dataArray = salesData.data;
+    } else if (salesData && typeof salesData === "object") {
+      // If salesData is an object, try to find an array property
+      const possibleArrayKeys = ["results", "items", "records", "sales"];
+      for (const key of possibleArrayKeys) {
+        if (Array.isArray(salesData[key])) {
+          dataArray = salesData[key];
+          break;
+        }
+      }
+    }
+
+    console.log("Extracted dataArray:", dataArray);
+
+    if (!Array.isArray(dataArray) || dataArray.length === 0) {
+      console.log("No valid data array found");
+      return [];
+    }
+
+    // Filter out invalid entries and apply search
+    const validData = dataArray.filter((row) => {
+      // More flexible validation - accept rows with either party, buyer, or any meaningful data
+      return row && (row.party || row.buyer || row.id || row.ref_no);
+    });
+
+    console.log("Valid data after filtering:", validData);
+
+    const filteredData = validData.filter((row) => {
+      if (!searchTerm) return true; // If no search term, return all
+
+      const buyerName = row.party?.person_name || row.buyer?.person_name || "";
+      const refNo = row.ref_no || "";
+      const salesBy = row.user?.name || "";
+
+      // Search in multiple fields
+      const searchText = searchTerm.toLowerCase();
+      return (
+        buyerName.toLowerCase().includes(searchText) ||
+        refNo.toLowerCase().includes(searchText) ||
+        salesBy.toLowerCase().includes(searchText)
+      );
+    });
+
+    console.log("Final filtered data:", filteredData);
+    return filteredData;
+  }, [salesData, searchTerm]);
 
   const handleDateChange = (start, end) => {
+    console.log("Date change triggered:", start, end);
+
     if (start === "this-month") {
       const now = new Date();
       const monthStartDate = startOfMonth(now);
@@ -178,13 +209,38 @@ const Page = () => {
       const formattedStartDate = format(monthStartDate, "yyyy-MM-dd");
       const formattedEndDate = format(monthEndDate, "yyyy-MM-dd");
 
+      console.log("Setting month dates:", formattedStartDate, formattedEndDate);
       setStartDate(formattedStartDate);
       setEndDate(formattedEndDate);
     } else {
+      console.log("Setting custom dates:", start, end);
       setStartDate(start);
       setEndDate(end);
     }
   };
+
+  // Handle error display
+  const getErrorMessage = () => {
+    if (apiError) {
+      if (apiError.status) {
+        return `API Error ${apiError.status}: ${
+          apiError.data?.message || "Failed to fetch data"
+        }`;
+      }
+      return apiError.message || "Failed to fetch sale data";
+    }
+    return null;
+  };
+
+  // Debug render info
+  console.log("Render info:", {
+    isLoading,
+    hasError: !!apiError,
+    dataLength: processedData.length,
+    canViewSales: permissions.canViewSales,
+    startDate,
+    endDate,
+  });
 
   return (
     <div className={styles.pageContainer}>
@@ -223,10 +279,10 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {loading ? (
+                {isLoading ? (
                   [...Array(8)].map((_, index) => (
                     <TableRow key={index}>
-                      {[...Array(5)].map((_, cellIndex) => (
+                      {[...Array(6)].map((_, cellIndex) => (
                         <TableCell key={cellIndex}>
                           <Skeleton
                             animation="wave"
@@ -240,39 +296,58 @@ const Page = () => {
                       ))}
                     </TableRow>
                   ))
-                ) : error ? (
+                ) : getErrorMessage() ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       style={{ textAlign: "center", color: "red" }}
                     >
-                      {error}
+                      {getErrorMessage()}
+                      <br />
+                      <button
+                        onClick={() => refetch()}
+                        style={{
+                          marginTop: "8px",
+                          padding: "4px 8px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Retry
+                      </button>
                     </TableCell>
                   </TableRow>
-                ) : filteredData.length === 0 ? (
+                ) : processedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} style={{ textAlign: "center" }}>
-                      No data available
+                    <TableCell colSnop={6} style={{ textAlign: "center" }}>
+                      {salesData && Object.keys(salesData).length > 0
+                        ? "No matching data found"
+                        : "No data available"}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredData.map((row, index) => (
+                  processedData.map((row, index) => (
                     <TableRow
                       onClick={() => handleViewDetails(row)}
-                      key={row.id}
+                      key={row.id || index}
                       hover
                       sx={{ cursor: "pointer" }}
                     >
                       <TableCell>{index + 1}</TableCell>
-                      <TableCell>{row?.user?.name || ""}</TableCell>
-                      <TableCell>{row?.date || ""}</TableCell>
-                      <TableCell>{row.ref_no}</TableCell>
+                      <TableCell>{row?.user?.name || "N/A"}</TableCell>
                       <TableCell>
-                        {row.party?.person_name ||
-                          row.buyer?.person_name ||
+                        {row?.date
+                          ? format(new Date(row.date), "dd-MM-yyyy")
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell>{row?.ref_no || "N/A"}</TableCell>
+                      <TableCell>
+                        {row?.party?.person_name ||
+                          row?.buyer?.person_name ||
                           "N/A"}
                       </TableCell>
-                      <TableCell>{row.total_amount}</TableCell>
+                      <TableCell>
+                        {row?.total_amount ? `Rs. ${row.total_amount}` : "N/A"}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
