@@ -3,6 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { salesApi } from "./salesApi";
 import { purchaseBookApi } from "./purchaseApi";
 import { investorsApi } from "./investorsApi";
+import { partyApi } from "./partyApi";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     [salesApi.reducerPath]: salesApi.reducer,
     [purchaseBookApi.reducerPath]: purchaseBookApi.reducer,
     [investorsApi.reducerPath]: investorsApi.reducer,
+    [partyApi.reducerPath]: partyApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -34,12 +36,14 @@ export const store = configureStore({
           "salesApi",
           "purchaseBookApi",
           "investorsApi",
+          "partyApi",
         ],
       },
     }).concat(
       salesApi.middleware,
       purchaseBookApi.middleware,
-      investorsApi.middleware
+      investorsApi.middleware,
+      partyApi.middleware
     ),
   devTools: process.env.NODE_ENV !== "production",
 });

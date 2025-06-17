@@ -18,8 +18,7 @@ import {
   styled,
 } from "@mui/material";
 import AddBuyer from "../../components/stock/addBuyer";
-import { party } from "../../networkApi/Constants";
-import APICall from "@/networkApi/APICall";
+import { useGetpartiesQuery } from "@/src/store/partyApi"; // Import the Redux hook
 import Swal from "sweetalert2";
 import { FaPlus } from "react-icons/fa";
 
@@ -74,16 +73,19 @@ const AddButton = styled(Button)(({ theme }) => ({
 }));
 
 const Page = () => {
-  const api = new APICall();
   const router = useRouter();
 
+  // Redux RTK Query hook
+  const {
+    data: apiResponse,
+    error: apiError,
+    isLoading,
+    refetch,
+  } = useGetpartiesQuery();
+
   const [open, setOpen] = useState(false);
-  const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [filteredData, setFilteredData] = useState([]);
 
   // Permission states
@@ -93,17 +95,24 @@ const Page = () => {
     hasAccess: false,
   });
 
+  // Extract table data from Redux response
+  const tableData = apiResponse?.data || [];
+  const error = apiError?.message || null;
+
   useEffect(() => {
     checkPermissions();
   }, []);
 
   useEffect(() => {
-    if (permissions.canViewParty) {
-      fetchData();
+    if (searchQuery.trim() === "") {
+      setFilteredData(tableData);
     } else {
-      setLoading(false);
+      const filtered = tableData.filter((item) =>
+        item.person_name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredData(filtered);
     }
-  }, [permissions.canViewParty]);
+  }, [searchQuery, tableData]);
 
   const checkPermissions = () => {
     try {
@@ -155,53 +164,27 @@ const Page = () => {
   };
 
   const handleOpen = () => setOpen(true);
+
   const handleClose = () => {
     setOpen(false);
     setEditingData(null);
-    fetchData();
+    // Use refetch instead of fetchData
+    refetch();
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredData(tableData);
-    } else {
-      const filtered = tableData.filter((item) =>
-        item.person_name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredData(filtered);
-    }
-  }, [searchQuery, tableData]);
 
   const handleSearch = (value) => {
     setSearchQuery(value);
-  };
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await api.getDataWithToken(party);
-      const data = response.data;
-
-      if (Array.isArray(data)) {
-        setTableData(data);
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleViewDetails = (id) => {
     localStorage.setItem("partyId", id);
     router.push("/partyLedger");
   };
+
+  // Show error message if API call fails
+  if (apiError) {
+    console.error("Party API Error:", apiError);
+  }
 
   return (
     <div>
@@ -263,7 +246,7 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {loading
+                {isLoading
                   ? [...Array(5)].map((_, index) => (
                       <StyledTableRow key={index}>
                         <StyledTableCell>
@@ -333,6 +316,15 @@ const Page = () => {
             </Table>
           </TableContainer>
         )}
+
+        {/* Show error message if needed */}
+        {error && !isLoading && (
+          <Box sx={{ mt: 2, p: 2, bgcolor: "error.light", borderRadius: 1 }}>
+            <Box sx={{ color: "error.contrastText" }}>
+              Error loading parties: {error}
+            </Box>
+          </Box>
+        )}
       </Box>
 
       {permissions.canAddParty && (
@@ -342,7 +334,6 @@ const Page = () => {
           editData={editingData}
         />
       )}
-      
     </div>
   );
 };
