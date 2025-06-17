@@ -1,4 +1,4 @@
-// src/store/inventoryApi.js
+// src/store/receivesApi.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { apiPrefix } from "@/networkApi/Constants";
 import User from "@/networkApi/user";
@@ -14,242 +14,167 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-export const inventoryApi = createApi({
-  reducerPath: "inventoryApi",
+export const receivesApi = createApi({
+  reducerPath: "receivesApi",
   baseQuery: baseQuery,
-  tagTypes: ["stock", "receives", "inventory"],
+  tagTypes: ["receivedPartyAmount", "companyProductStock"],
+  initialState: {
+    data: [],
+    loading: false,
+    error: null,
+  },
   endpoints: (builder) => ({
-    // ============ COMPANY PRODUCT STOCK APIs ============
-    getCompanyProductStock: builder.query({
-      query: () => ({
-        url: "/company_product_stock",
-      }),
-      providesTags: ["stock", "inventory"],
-      transformResponse: (response) => {
-        console.log("Stock API Response:", response);
-        
-        if (response?.data) {
-          return {
-            data: Array.isArray(response.data) ? response.data : [],
-            total: response.total || response.data.length,
-            lastPage: response.last_page || Math.ceil((response.total || 0) / (response.per_page || 50)),
-            currentPage: response.current_page || 1,
-            perPage: response.per_page || 50
-          };
-        }
-        
-        return {
-          data: Array.isArray(response) ? response : [],
-          total: Array.isArray(response) ? response.length : 0,
-          lastPage: 1,
-          currentPage: 1,
-          perPage: 50
-        };
-      },
-      transformErrorResponse: (response) => {
-        console.error("Stock API Error:", response);
-        return {
-          status: response.status,
-          message: response.data?.message || "Stock fetch failed",
-          errors: response.data?.errors || {}
-        };
-      },
-    }),
 
-    getCompanyProductStockById: builder.query({
-      query: (id) => `/company_product_stock/${id}`,
-      providesTags: (result, error, id) => [{ type: "stock", id }],
-      transformResponse: (response) => response?.data || response,
-    }),
-
-    createCompanyProductStock: builder.mutation({
-      query: (newStock) => ({
-        url: "/company_product_stock",
-        method: "POST",
-        body: newStock,
-      }),
-      invalidatesTags: ["stock", "inventory"],
-      transformResponse: (response) => response?.data || response,
-    }),
-
-    updateCompanyProductStock: builder.mutation({
-      query: ({ id, ...patch }) => ({
-        url: `/company_product_stock/${id}`,
-        method: "PUT",
-        body: patch,
-      }),
-      invalidatesTags: (result, error, { id }) => [
-        "stock",
-        "inventory",
-        { type: "stock", id }
-      ],
-      transformResponse: (response) => response?.data || response,
-    }),
-
-    deleteCompanyProductStock: builder.mutation({
-      query: (id) => ({
-        url: `/company_product_stock/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: (result, error, id) => [
-        "stock",
-        "inventory",
-        { type: "stock", id }
-      ],
-    }),
-
-    // ============ RECEIVED PARTY AMOUNT APIs ============
+    // New API 1: Received Party Amount
     getReceivedPartyAmount: builder.query({
-      query: ({ startDate, endDate }) => {
-        const params = {};
-        if (startDate) params.start_date = startDate;
-        if (endDate) params.end_date = endDate;
+      query: ({ startDate, endDate, ...params }) => {
+        const queryParams = new URLSearchParams();
+        
+        if (startDate) queryParams.append('start_date', startDate);
+        if (endDate) queryParams.append('end_date', endDate);
+        
+        // Add any additional parameters
+        Object.keys(params).forEach(key => {
+          if (params[key] !== undefined && params[key] !== null) {
+            queryParams.append(key, params[key]);
+          }
+        });
 
+        const queryString = queryParams.toString();
         return {
-          url: "/received_party_amount",
-          params,
+          url: `/received_party_amount${queryString ? `?${queryString}` : ''}`,
         };
       },
-      providesTags: ["receives", "inventory"],
+      providesTags: ["receivedPartyAmount"],
       transformResponse: (response) => {
-        console.log("Receives API Response:", response);
-        
+        console.log("Received Party Amount API Response:", response);
         if (response?.data) {
           return {
-            data: Array.isArray(response.data) ? response.data : [],
+            data: response.data,
             total: response.total || response.data.length,
-            lastPage: response.last_page || Math.ceil((response.total || 0) / (response.per_page || 50)),
-            currentPage: response.current_page || 1,
-            perPage: response.per_page || 50
+            startDate: response.start_date,
+            endDate: response.end_date,
           };
         }
-        
         return {
           data: Array.isArray(response) ? response : [],
           total: Array.isArray(response) ? response.length : 0,
-          lastPage: 1,
-          currentPage: 1,
-          perPage: 50
         };
       },
       transformErrorResponse: (response) => {
-        console.error("Receives API Error:", response);
-        return {
-          status: response.status,
-          message: response.data?.message || "Receives fetch failed",
-          errors: response.data?.errors || {}
-        };
+        console.error("Received Party Amount API Error:", response);
+        return response;
       },
     }),
 
-    getReceivedPartyAmountById: builder.query({
-      query: (id) => `/received_party_amount/${id}`,
-      providesTags: (result, error, id) => [{ type: "receives", id }],
-      transformResponse: (response) => response?.data || response,
-    }),
+    // New API 2: Company Product Stock
+    getCompanyProductStock: builder.query({
+      query: ({ startDate, endDate, ...params }) => {
+        const queryParams = new URLSearchParams();
+        
+        if (startDate) queryParams.append('start_date', startDate);
+        if (endDate) queryParams.append('end_date', endDate);
+        
+        // Add any additional parameters
+        Object.keys(params).forEach(key => {
+          if (params[key] !== undefined && params[key] !== null) {
+            queryParams.append(key, params[key]);
+          }
+        });
 
-    createReceivedPartyAmount: builder.mutation({
-      query: (newReceive) => ({
-        url: "/received_party_amount",
-        method: "POST",
-        body: newReceive,
-      }),
-      invalidatesTags: ["receives", "inventory", "stock"],
-      transformResponse: (response) => response?.data || response,
-    }),
-
-    updateReceivedPartyAmount: builder.mutation({
-      query: ({ id, ...patch }) => ({
-        url: `/received_party_amount/${id}`,
-        method: "PUT",
-        body: patch,
-      }),
-      invalidatesTags: (result, error, { id }) => [
-        "receives",
-        "inventory",
-        "stock",
-        { type: "receives", id }
-      ],
-      transformResponse: (response) => response?.data || response,
-    }),
-
-    deleteReceivedPartyAmount: builder.mutation({
-      query: (id) => ({
-        url: `/received_party_amount/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: (result, error, id) => [
-        "receives",
-        "inventory",
-        "stock",
-        { type: "receives", id }
-      ],
-    }),
-
-    // ============ COMBINED SUMMARY APIs ============
-    getInventorySummary: builder.query({
-      query: ({ startDate, endDate }) => {
-        const params = {};
-        if (startDate) params.start_date = startDate;
-        if (endDate) params.end_date = endDate;
-
+        const queryString = queryParams.toString();
         return {
-          url: "/inventory/summary",
-          params,
+          url: `/company_product_stock${queryString ? `?${queryString}` : ''}`,
         };
       },
-      providesTags: ["inventory"],
-      transformResponse: (response) => response?.data || response,
-    }),
-
-    getStockSummary: builder.query({
-      query: () => ({
-        url: "/company_product_stock/summary",
-      }),
-      providesTags: ["stock", "inventory"],
-      transformResponse: (response) => response?.data || response,
-    }),
-
-    getReceivesSummary: builder.query({
-      query: ({ startDate, endDate }) => {
-        const params = {};
-        if (startDate) params.start_date = startDate;
-        if (endDate) params.end_date = endDate;
-
+      providesTags: ["companyProductStock"],
+      transformResponse: (response) => {
+        console.log("Company Product Stock API Response:", response);
+        if (response?.data) {
+          return {
+            data: response.data,
+            total: response.total || response.data.length,
+            startDate: response.start_date,
+            endDate: response.end_date,
+          };
+        }
         return {
-          url: "/received_party_amount/summary",
-          params,
+          data: Array.isArray(response) ? response : [],
+          total: Array.isArray(response) ? response.length : 0,
         };
       },
-      providesTags: ["receives", "inventory"],
-      transformResponse: (response) => response?.data || response,
+      transformErrorResponse: (response) => {
+        console.error("Company Product Stock API Error:", response);
+        return response;
+      },
+    }),
+
+    // Combined query for both APIs - returns merged data
+    getCombinedData: builder.query({
+      queryFn: async ({ startDate, endDate, ...params }, api, extraOptions, baseQuery) => {
+        try {
+          // Call both APIs simultaneously
+          const [receivedPartyResult, companyStockResult] = await Promise.all([
+            baseQuery({
+              url: `/received_party_amount?${new URLSearchParams({
+                ...(startDate && { start_date: startDate }),
+                ...(endDate && { end_date: endDate }),
+                ...params
+              }).toString()}`
+            }),
+            baseQuery({
+              url: `/company_product_stock?${new URLSearchParams({
+                ...(startDate && { start_date: startDate }),
+                ...(endDate && { end_date: endDate }),
+                ...params
+              }).toString()}`
+            })
+          ]);
+
+          // Check for errors
+          if (receivedPartyResult.error) {
+            return { error: receivedPartyResult.error };
+          }
+          if (companyStockResult.error) {
+            return { error: companyStockResult.error };
+          }
+
+          // Combine the data
+          const receivedPartyData = receivedPartyResult.data?.data || receivedPartyResult.data || [];
+          const companyStockData = companyStockResult.data?.data || companyStockResult.data || [];
+
+          return {
+            data: {
+              receivedPartyAmount: {
+                data: Array.isArray(receivedPartyData) ? receivedPartyData : [],
+                total: receivedPartyData.length || 0,
+              },
+              companyProductStock: {
+                data: Array.isArray(companyStockData) ? companyStockData : [],
+                total: companyStockData.length || 0,
+              },
+              combined: [...receivedPartyData, ...companyStockData],
+              totalCombined: (receivedPartyData.length || 0) + (companyStockData.length || 0),
+              startDate,
+              endDate,
+            }
+          };
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: error.message } };
+        }
+      },
+      providesTags: ["receivedPartyAmount", "companyProductStock"],
     }),
   }),
 });
 
-// Export hooks for both APIs
 export const {
-  // ===== COMPANY PRODUCT STOCK HOOKS =====
-  useGetCompanyProductStockQuery,
-  useLazyGetCompanyProductStockQuery,
-  useGetCompanyProductStockByIdQuery,
-  useCreateCompanyProductStockMutation,
-  useUpdateCompanyProductStockMutation,
-  useDeleteCompanyProductStockMutation,
-  useGetStockSummaryQuery,
-
-  // ===== RECEIVED PARTY AMOUNT HOOKS =====
+  
+  // New individual hooks
   useGetReceivedPartyAmountQuery,
-  useLazyGetReceivedPartyAmountQuery,
-  useGetReceivedPartyAmountByIdQuery,
-  useCreateReceivedPartyAmountMutation,
-  useUpdateReceivedPartyAmountMutation,
-  useDeleteReceivedPartyAmountMutation,
-  useGetReceivesSummaryQuery,
-
-  // ===== COMBINED INVENTORY HOOKS =====
-  useGetInventorySummaryQuery,
-} = inventoryApi;
-
-// Export the API for store configuration
-export default inventoryApi;
+  useGetCompanyProductStockQuery,
+  
+  // Combined hook for both APIs
+  useGetCombinedDataQuery,
+  
+} = receivesApi;
