@@ -7,6 +7,7 @@ import { partyApi } from "./partyApi";
 import { expenseApi } from "./expenseApi";
 import { banksApi } from "./banksApi";
 import { productsApi } from "./productsApi";
+import { usersApi } from "./usersApi";
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     [expenseApi.reducerPath]: expenseApi.reducer,
     [banksApi.reducerPath]: banksApi.reducer,
     [productsApi.reducerPath]: productsApi.reducer,
+    [usersApi.reducerPath]: usersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -46,6 +48,7 @@ export const store = configureStore({
           "expenseApi",
           "banksApi",
           "productsApi",
+          "usersApi",
         ],
       },
     }).concat(
@@ -55,7 +58,8 @@ export const store = configureStore({
       partyApi.middleware,
       expenseApi.middleware,
       banksApi.middleware,
-      productsApi.middleware
+      productsApi.middleware,
+      usersApi.middleware
     ),
   devTools: process.env.NODE_ENV !== "production",
 });
