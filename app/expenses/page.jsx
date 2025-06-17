@@ -234,9 +234,6 @@ const Page = () => {
               <Typography variant="h6" fontWeight="bold">
                 Total Expenses: {totalExpenses.toFixed(2)}
               </Typography>
-              <Typography variant="body2" color="textSecondary">
-                ({filteredTableData.length} categories, excluding Product Expense)
-              </Typography>
             </Card>
 
             <TableContainer component={Paper}>

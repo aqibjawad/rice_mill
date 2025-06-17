@@ -18,12 +18,12 @@ import {
   tableCellClasses,
   styled,
 } from "@mui/material";
-import { products } from "../../networkApi/Constants";
 import { MdDelete, MdEdit } from "react-icons/md";
 import AddProduct from "../../components/stock/addProduct";
-import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
 import Link from "next/link";
+// Import Redux hooks and API
+import { useGetproductsQuery } from "../../src/store/productsApi";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -50,11 +50,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const Page = () => {
-  const api = new APICall();
   const [open, setOpen] = useState(false);
-  const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [editingData, setEditingData] = useState(null);
 
   // Permission states
@@ -64,26 +60,31 @@ const Page = () => {
     hasAccess: false,
   });
 
+  // Redux Query Hook - only call if user has view permission
+  const {
+    data: productsData,
+    error,
+    isLoading,
+    refetch,
+  } = useGetproductsQuery(undefined, {
+    skip: !permissions.canViewProducts, // Skip query if no view permission
+  });
+
+  // Extract table data from Redux response
+  const tableData = productsData?.data || [];
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     setEditingData(null);
     if (permissions.canViewProducts) {
-      fetchData(); // Refresh the data after closing the modal
+      refetch(); // Refresh data using Redux refetch
     }
   };
-  
+
   useEffect(() => {
     checkPermissions();
   }, []);
-
-  useEffect(() => {
-    if (permissions.canViewProducts) {
-      fetchData();
-    } else {
-      setLoading(false);
-    }
-  }, [permissions.canViewProducts]);
 
   const checkPermissions = () => {
     try {
@@ -144,28 +145,6 @@ const Page = () => {
     }
   };
 
-  const fetchData = async () => {
-    if (!permissions.canViewProducts) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await api.getDataWithToken(products);
-      const data = response.data;
-
-      if (Array.isArray(data)) {
-        setTableData(data);
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDelete = async (id) => {
     if (!permissions.canAddProducts) {
       Swal.fire({
@@ -178,11 +157,15 @@ const Page = () => {
     }
 
     try {
-      await api.deleteDataWithToken(`${products}/${id}`, {
+      // You'll need to create a delete mutation in your productsApi
+      // For now, using the original API call method
+      const api = new (await import("../../networkApi/APICall")).default();
+      await api.deleteDataWithToken(`/product/${id}`, {
         method: "DELETE",
       });
 
-      setTableData((prevData) => prevData.filter((item) => item.id !== id));
+      // Refetch data after successful delete
+      refetch();
 
       Swal.fire({
         title: "Deleted!",
@@ -266,14 +249,11 @@ const Page = () => {
                   <StyledTableCell>Product Name</StyledTableCell>
                   <StyledTableCell>Weight in Stock</StyledTableCell>
                   <StyledTableCell>Balance</StyledTableCell>
-                  {permissions.canAddProducts && (
-                    <StyledTableCell>Action</StyledTableCell>
-                  )}
                   <StyledTableCell>View</StyledTableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {loading ? (
+                {isLoading ? (
                   [...Array(5)].map((_, index) => (
                     <StyledTableRow key={index}>
                       <StyledTableCell>
@@ -288,11 +268,6 @@ const Page = () => {
                       <StyledTableCell>
                         <Skeleton variant="text" width={150} />
                       </StyledTableCell>
-                      {permissions.canAddProducts && (
-                        <StyledTableCell>
-                          <Skeleton variant="text" width={150} />
-                        </StyledTableCell>
-                      )}
                       <StyledTableCell>
                         <Skeleton variant="text" width={150} />
                       </StyledTableCell>
@@ -304,7 +279,7 @@ const Page = () => {
                       colSpan={permissions.canAddProducts ? 6 : 5}
                       style={{ textAlign: "center" }}
                     >
-                      Error: {error}
+                      Error: {error.message || "Failed to load products"}
                     </StyledTableCell>
                   </StyledTableRow>
                 ) : tableData.length === 0 ? (
@@ -329,17 +304,6 @@ const Page = () => {
                         <StyledTableCell>
                           {stock.balance || "N/A"}
                         </StyledTableCell>
-                        {permissions.canAddProducts && (
-                          <StyledTableCell>
-                            <IconButton
-                              onClick={() => handleDelete(row.id)}
-                              color="error"
-                              disabled={!permissions.canAddProducts}
-                            >
-                              <MdDelete />
-                            </IconButton>
-                          </StyledTableCell>
-                        )}
                         <StyledTableCell>
                           {permissions.canViewProducts ? (
                             <Link href={`/productDetails/?id=${row.id}`}>
