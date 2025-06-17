@@ -18,15 +18,17 @@ import {
   tableCellClasses,
   styled,
   Button,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { FaPlus } from "react-icons/fa";
 import AddInvestor from "../../components/stock/addInvestor";
-import { investors } from "../../networkApi/Constants";
 import { useRouter } from "next/navigation";
 import { FaMoneyBillWave, FaUniversity } from "react-icons/fa";
-
-import APICall from "@/networkApi/APICall";
 import Link from "next/link";
+
+// Import Redux RTK Query hook
+import { useGetinvestorsQuery } from "../../src/store/investorsApi";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -63,12 +65,16 @@ const TotalCard = styled(Card)(({ theme }) => ({
 }));
 
 const Page = () => {
-  const api = new APICall();
   const router = useRouter();
 
-  const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Redux RTK Query hooks
+  const {
+    data: investorsData,
+    error: apiError,
+    isLoading,
+    refetch,
+  } = useGetinvestorsQuery();
+
   const [editingData, setEditingData] = useState(null);
   const [open, setOpen] = useState(false);
 
@@ -82,14 +88,6 @@ const Page = () => {
   useEffect(() => {
     checkPermissions();
   }, []);
-
-  useEffect(() => {
-    if (permissions.canViewInvestor) {
-      fetchData();
-    } else {
-      setLoading(false);
-    }
-  }, [permissions.canViewInvestor]);
 
   const checkPermissions = () => {
     try {
@@ -148,30 +146,12 @@ const Page = () => {
   const handleClose = () => {
     setOpen(false);
     setEditingData(null);
-    fetchData();
+    // Refetch data after closing modal (in case data was added/updated)
+    refetch();
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await api.getDataWithToken(investors);
-      const data = response.data;
-
-      if (Array.isArray(data)) {
-        setTableData(data);
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Extract table data from Redux response
+  const tableData = investorsData?.data || [];
 
   // Calculate total balance
   const totalBalance = tableData.reduce(
@@ -191,6 +171,38 @@ const Page = () => {
     marginRight: theme.spacing(2),
   }));
 
+  // Show loading state
+  if (isLoading && permissions.canViewInvestor) {
+    return (
+      <Box
+        sx={{
+          p: 3,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
+
+  // Show error state
+  if (apiError && permissions.canViewInvestor) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Error loading investors:{" "}
+          {apiError?.data?.message || apiError?.message || "Unknown error"}
+        </Alert>
+        <Button variant="contained" onClick={refetch}>
+          Retry
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <div>
       <Box sx={{ p: 3 }}>
@@ -207,6 +219,7 @@ const Page = () => {
             </AddButton>
           )}
         </div>
+
         {permissions.canViewInvestor && (
           <>
             {/* Summary Cards */}
@@ -224,7 +237,7 @@ const Page = () => {
                       variant="h4"
                       sx={{ mt: 2, color: "success.main" }}
                     >
-                      {totalBalance}
+                      {totalBalance.toLocaleString()}
                     </Typography>
                   </CardContent>
                 </TotalCard>
@@ -245,39 +258,59 @@ const Page = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {tableData.map((row, index) => (
-                    <StyledTableRow key={row.id}>
-                      <StyledTableCell>{index + 1}</StyledTableCell>
-                      <StyledTableCell>{row.person_name}</StyledTableCell>
-                      <StyledTableCell>
-                        {row.customer?.contact || "N/A"}
-                      </StyledTableCell>
-                      <StyledTableCell>{row.firm_name}</StyledTableCell>
-                      <StyledTableCell
-                        sx={{
-                          color:
-                            parseFloat(row.balance) < 0
-                              ? "error.main"
-                              : "success.main",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {row.current_balance}
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Link href={`${`/investor_ledger/?id=${row.id}`}`}>
-                          View Details
-                        </Link>
+                  {tableData.length === 0 ? (
+                    <StyledTableRow>
+                      <StyledTableCell colSpan={6} align="center">
+                        <Typography variant="body1" sx={{ py: 4 }}>
+                          No investors found
+                        </Typography>
                       </StyledTableCell>
                     </StyledTableRow>
-                  ))}
+                  ) : (
+                    tableData.map((row, index) => (
+                      <StyledTableRow key={row.id}>
+                        <StyledTableCell>{index + 1}</StyledTableCell>
+                        <StyledTableCell>{row.person_name}</StyledTableCell>
+                        <StyledTableCell>
+                          {row.customer?.contact || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>{row.firm_name}</StyledTableCell>
+                        <StyledTableCell
+                          sx={{
+                            color:
+                              parseFloat(row.current_balance || 0) < 0
+                                ? "error.main"
+                                : "success.main",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {parseFloat(
+                            row.current_balance || 0
+                          ).toLocaleString()}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Link href={`/investor_ledger/?id=${row.id}`}>
+                            View Details
+                          </Link>
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
           </>
         )}
+
+        {!permissions.hasAccess && (
+          <Box sx={{ textAlign: "center", mt: 4 }}>
+            <Alert severity="warning">
+              You don't have permission to view investors data.
+            </Alert>
+          </Box>
+        )}
       </Box>
-      
+
       {permissions.canAddInvestor && (
         <AddInvestor
           open={open}

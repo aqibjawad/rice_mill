@@ -2,12 +2,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { salesApi } from "./salesApi";
 import { purchaseBookApi } from "./purchaseApi";
+import { investorsApi } from "./investorsApi";
 
 export const store = configureStore({
   reducer: {
     // API slices
     [salesApi.reducerPath]: salesApi.reducer,
     [purchaseBookApi.reducerPath]: purchaseBookApi.reducer,
+    [investorsApi.reducerPath]: investorsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -31,9 +33,14 @@ export const store = configureStore({
           // Ignore RTK Query cache states
           "salesApi",
           "purchaseBookApi",
+          "investorsApi",
         ],
       },
-    }).concat(salesApi.middleware, purchaseBookApi.middleware),
+    }).concat(
+      salesApi.middleware,
+      purchaseBookApi.middleware,
+      investorsApi.middleware
+    ),
   devTools: process.env.NODE_ENV !== "production",
 });
 

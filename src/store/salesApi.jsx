@@ -43,14 +43,11 @@ export const salesApi = createApi({
   endpoints: (builder) => ({
     // Get sales book with date filters
     getsalesBook: builder.query({
-      query: ({ startDate, endDate, page = 1, limit = 50, search = "" }) => {
+      query: ({ startDate, endDate }) => {
         const params = new URLSearchParams();
         
         if (startDate) params.append('start_date', startDate);
         if (endDate) params.append('end_date', endDate);
-        if (page) params.append('page', page.toString());
-        if (limit) params.append('limit', limit.toString());
-        if (search && search.trim()) params.append('search', search.trim());
         
         console.log('Sales Book API Call:', {
           url: "/sale_book",
@@ -137,112 +134,6 @@ export const salesApi = createApi({
         };
       },
     }),
-
-    // Create new sales book entry
-    createsalesBook: builder.mutation({
-      query: (newSalesBook) => {
-        console.log("Creating sales book entry:", newSalesBook);
-        return {
-          url: "/sale_book",
-          method: "POST",
-          body: newSalesBook,
-        };
-      },
-      invalidatesTags: [
-        "salesBook", 
-        { type: "salesBook", id: "LIST" }
-      ],
-      transformResponse: (response) => {
-        console.log("Create Sales Book Response:", response);
-        return response?.data || response;
-      },
-      transformErrorResponse: (response) => {
-        console.error("Create Sales Book Error:", response);
-        return {
-          status: response?.status || 'UNKNOWN_ERROR',
-          message: response?.data?.message || 'Failed to create sales book entry',
-          errors: response?.data?.errors || null,
-          originalError: response
-        };
-      },
-    }),
-
-    // Update sales book entry
-    updatesalesBook: builder.mutation({
-      query: ({ id, ...patch }) => {
-        console.log(`Updating sales book ${id}:`, patch);
-        return {
-          url: `/sale_book/${id}`,
-          method: "PUT",
-          body: patch,
-        };
-      },
-      invalidatesTags: (result, error, { id }) => [
-        "salesBook",
-        { type: "salesBook", id: "LIST" },
-        { type: "salesBook", id },
-      ],
-      transformResponse: (response) => {
-        console.log("Update Sales Book Response:", response);
-        return response?.data || response;
-      },
-      transformErrorResponse: (response) => {
-        console.error("Update Sales Book Error:", response);
-        return {
-          status: response?.status || 'UNKNOWN_ERROR',
-          message: response?.data?.message || 'Failed to update sales book entry',
-          errors: response?.data?.errors || null,
-          originalError: response
-        };
-      },
-    }),
-
-    // Delete sales book entry
-    deletesalesBook: builder.mutation({
-      query: (id) => {
-        console.log(`Deleting sales book entry: ${id}`);
-        return {
-          url: `/sale_book/${id}`,
-          method: "DELETE",
-        };
-      },
-      invalidatesTags: (result, error, id) => [
-        "salesBook",
-        { type: "salesBook", id: "LIST" },
-        { type: "salesBook", id },
-      ],
-      transformResponse: (response) => {
-        console.log("Delete Sales Book Response:", response);
-        return response?.data || response || { success: true };
-      },
-      transformErrorResponse: (response) => {
-        console.error("Delete Sales Book Error:", response);
-        return {
-          status: response?.status || 'UNKNOWN_ERROR',
-          message: response?.data?.message || 'Failed to delete sales book entry',
-          originalError: response
-        };
-      },
-    }),
-
-    // Get sales book summary/stats
-    getsalesBookSummary: builder.query({
-      query: ({ startDate, endDate }) => {
-        const params = new URLSearchParams();
-        if (startDate) params.append('start_date', startDate);
-        if (endDate) params.append('end_date', endDate);
-        
-        return {
-          url: "/sale_book/summary",
-          params: Object.fromEntries(params),
-        };
-      },
-      providesTags: ["salesBook"],
-      transformResponse: (response) => {
-        console.log("Sales Book Summary Response:", response);
-        return response?.data || response;
-      },
-    }),
   }),
 });
 
@@ -252,10 +143,6 @@ export const {
   useLazyGetsalesBookQuery,
   useGetsalesBookByIdQuery,
   useLazyGetsalesBookByIdQuery,
-  useCreatesalesBookMutation,
-  useUpdatesalesBookMutation,
-  useDeletesalesBookMutation,
-  useGetsalesBookSummaryQuery,
   useLazyGetsalesBookSummaryQuery,
 } = salesApi;
 
