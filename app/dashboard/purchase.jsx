@@ -1,8 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import styles from "../../styles/purchase.module.css";
-import APICall from "../../networkApi/APICall";
-import { purchaseBook } from "@/networkApi/Constants";
+import {
+  useGetpurchaseBookQuery,
+  useLazyGetpurchaseBookQuery,
+  useGetpurchaseBookSummaryQuery,
+} from "../../src/store/purchaseApi"; // Make sure this path is correct
 import {
   Table,
   TableBody,
@@ -14,6 +17,8 @@ import {
   Skeleton,
   Button,
   Box,
+  Alert,
+  Typography,
 } from "@mui/material";
 import { FaDownload } from "react-icons/fa6";
 import jsPDF from "jspdf";
@@ -27,14 +32,19 @@ import { format } from "date-fns";
 
 const Purchase = () => {
   const router = useRouter();
-  const api = new APICall();
 
-  const [tableData, setTableData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  // Local state for filters and search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState(() => {
+    // Default to current date
+    return format(new Date(), "yyyy-MM-dd");
+  });
+  const [endDate, setEndDate] = useState(() => {
+    // Default to current date
+    return format(new Date(), "yyyy-MM-dd");
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageLimit] = useState(50);
 
   // Permission states
   const [permissions, setPermissions] = useState({
@@ -43,17 +53,47 @@ const Purchase = () => {
     hasAccess: false,
   });
 
+  // Prepare query parameters
+  const queryParams = useMemo(
+    () => ({
+      startDate,
+      endDate,
+      page: currentPage,
+      limit: pageLimit,
+      search: searchTerm,
+    }),
+    [startDate, endDate, currentPage, pageLimit, searchTerm]
+  );
+
+  // RTK Query hooks
+  const {
+    data: purchaseData,
+    error,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetpurchaseBookQuery(queryParams, {
+    skip: !permissions.canViewPurchase, // Skip query if no permission
+    refetchOnMountOrArgChange: true,
+  });
+
+  // Lazy query for manual fetching if needed
+  const [triggerFetch] = useLazyGetpurchaseBookQuery();
+
+  // Summary query (optional) - handle if endpoint doesn't exist
+  const { data: summaryData, error: summaryError } = useGetpurchaseBookSummaryQuery(
+    { startDate, endDate },
+    { skip: !permissions.canViewPurchase }
+  );
+
+  // Extract data from Redux response
+  const tableData = purchaseData?.data || [];
+  const totalRecords = purchaseData?.total || 0;
+  const totalPages = purchaseData?.lastPage || 1;
+
   useEffect(() => {
     checkPermissions();
   }, []);
-
-  useEffect(() => {
-    if (permissions.canViewPurchase) {
-      fetchData();
-    } else {
-      setLoading(false);
-    }
-  }, [permissions.canViewPurchase]);
 
   const checkPermissions = () => {
     try {
@@ -107,69 +147,24 @@ const Purchase = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [startDate, endDate]);
-
   const handleDateChange = (start, end) => {
     setStartDate(start);
     setEndDate(end);
+    setCurrentPage(1); // Reset to first page when date changes
   };
 
-  const fetchData = async () => {
-    try {
-      // setLoading(true);
-      if (!permissions.canViewPurchase) {
-        setLoading(false);
-        return;
-      }
-
-      const queryParams = [];
-
-      if (startDate && endDate) {
-        queryParams.push(`start_date=${startDate}`);
-        queryParams.push(`end_date=${endDate}`);
-      } else {
-        const currentDate = format(new Date(), "yyyy-MM-dd");
-        queryParams.push(`start_date=${currentDate}`);
-        queryParams.push(`end_date=${currentDate}`);
-      }
-      const queryString = queryParams.join("&");
-
-      const response = await api.getDataWithToken(
-        `${purchaseBook}?${queryString}`
-      );
-
-      if (Array.isArray(response.data)) {
-        setTableData(response.data);
-        setFilteredData(response.data);
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSearch = (searchTerm) => {
-    if (!searchTerm) {
-      setFilteredData(tableData);
-      return;
-    }
-
-    const filtered = tableData.filter((item) => {
-      const productName = item.product?.product_name?.toLowerCase() || "";
-      return productName.includes(searchTerm.toLowerCase());
-    });
-
-    setFilteredData(filtered);
+  const handleSearch = (newSearchTerm) => {
+    setSearchTerm(newSearchTerm);
+    setCurrentPage(1); // Reset to first page when search changes
   };
 
   const handleViewDetails = (row) => {
     localStorage.setItem("purchaseBookId", row.id);
     router.push("/purchase_details");
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
   };
 
   // PDF Download Function
@@ -188,9 +183,16 @@ const Purchase = () => {
       doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 32);
     }
 
-    // Add generation date
+    // Add search term if available
+    if (searchTerm) {
+      doc.setFontSize(10);
+      doc.text(`Search: ${searchTerm}`, 14, 38);
+    }
+
+    // Add generation date and total records
     doc.setFontSize(10);
-    doc.text(`Generated on: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 40);
+    doc.text(`Generated on: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 44);
+    doc.text(`Total Records: ${totalRecords}`, 14, 50);
 
     // Prepare table data
     const tableColumns = [
@@ -203,7 +205,7 @@ const Purchase = () => {
       "Amount",
     ];
 
-    const tableRows = filteredData.map((row) => [
+    const tableRows = tableData.map((row) => [
       row.id || "",
       row.user?.name || "",
       row.date || "",
@@ -217,7 +219,7 @@ const Purchase = () => {
     doc.autoTable({
       head: [tableColumns],
       body: tableRows,
-      startY: 50,
+      startY: 56,
       styles: {
         fontSize: 8,
         cellPadding: 3,
@@ -230,7 +232,7 @@ const Purchase = () => {
       alternateRowStyles: {
         fillColor: [245, 245, 245],
       },
-      margin: { top: 50, left: 14, right: 14 },
+      margin: { top: 56, left: 14, right: 14 },
     });
 
     // Add footer
@@ -250,15 +252,49 @@ const Purchase = () => {
       startDate && endDate
         ? `_${startDate}_to_${endDate}`
         : `_${format(new Date(), "yyyy-MM-dd")}`;
-    const filename = `Purchase_Report${dateRange}.pdf`;
+    const searchSuffix = searchTerm
+      ? `_${searchTerm.replace(/\s+/g, "_")}`
+      : "";
+    const filename = `Purchase_Report${dateRange}${searchSuffix}.pdf`;
 
     // Save the PDF
     doc.save(filename);
   };
 
+  // Handle error state
+  if (error && !isLoading) {
+    return (
+      <div className={styles.container}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          <Typography variant="h6">Error Loading Purchase Data</Typography>
+          <Typography variant="body2">
+            {error?.message || error?.data?.message ||
+              "Failed to load purchase data. Please try again."}
+          </Typography>
+          <Button variant="outlined" onClick={() => refetch()} sx={{ mt: 1 }}>
+            Retry
+          </Button>
+        </Alert>
+      </div>
+    );
+  }
+
+  // Handle no permission
+  if (!permissions.hasAccess) {
+    return (
+      <div className={styles.container}>
+        <Alert severity="warning">
+          <Typography variant="h6">Access Denied</Typography>
+          <Typography variant="body2">
+            You don't have permission to view purchase data.
+          </Typography>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
-      {/* <SearchInput  /> */}
       {permissions.canAddPurchase && (
         <Buttons
           leftSectionText="Purchase"
@@ -270,13 +306,39 @@ const Purchase = () => {
 
       {permissions.canViewPurchase && (
         <>
-          {/* PDF Download Button */}
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          {/* Summary Section (if summary API exists and returns data) */}
+          {summaryData && !summaryError && (
+            <Box
+              sx={{ mb: 2, p: 2, backgroundColor: "#f5f5f5", borderRadius: 1 }}
+            >
+              <Typography variant="h6">Summary</Typography>
+              {/* Add summary display here based on your summaryData structure */}
+              <Typography variant="body2">
+                Total Records: {totalRecords}
+              </Typography>
+            </Box>
+          )}
+
+          {/* Data Info and PDF Download */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            <Typography variant="body2" color="textSecondary">
+              {isLoading || isFetching
+                ? "Loading..."
+                : `Showing ${tableData.length} of ${totalRecords} records`}
+            </Typography>
+
             <Button
               variant="contained"
-              startIcon={<FaDownload  />}
+              startIcon={<FaDownload />}
               onClick={downloadPDF}
-              disabled={loading || filteredData.length === 0}
+              disabled={isLoading || isFetching || tableData.length === 0}
               sx={{
                 backgroundColor: "#1976d2",
                 "&:hover": {
@@ -299,7 +361,7 @@ const Purchase = () => {
             <Table
               sx={{
                 minWidth: 650,
-                position: "relative", // Important for proper alignment
+                position: "relative",
                 borderCollapse: "separate",
               }}
             >
@@ -316,36 +378,73 @@ const Purchase = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {loading
-                  ? Array.from(new Array(5)).map((_, index) => (
-                      <TableRow key={index}>
-                        {Array.from(new Array(8)).map((_, cellIndex) => (
-                          <TableCell key={cellIndex}>
-                            <Skeleton />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  : filteredData.map((row, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{row.id}</TableCell>
-                        <TableCell>{row.user?.name}</TableCell>
-                        <TableCell>{row.date}</TableCell>
-                        <TableCell>{row.product?.product_name}</TableCell>
-                        <TableCell>{row.party?.person_name}</TableCell>
-                        <TableCell>{row.net_weight}</TableCell>
-                        <TableCell>{row.total_amount}</TableCell>
-                        <TableCell
-                          onClick={() => handleViewDetails(row)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          View Details
+                {isLoading || isFetching ? (
+                  Array.from(new Array(5)).map((_, index) => (
+                    <TableRow key={index}>
+                      {Array.from(new Array(8)).map((_, cellIndex) => (
+                        <TableCell key={cellIndex}>
+                          <Skeleton />
                         </TableCell>
-                      </TableRow>
-                    ))}
+                      ))}
+                    </TableRow>
+                  ))
+                ) : tableData.length > 0 ? (
+                  tableData.map((row, index) => (
+                    <TableRow key={row.id || index}>
+                      <TableCell>{row.id}</TableCell>
+                      <TableCell>{row.user?.name || "N/A"}</TableCell>
+                      <TableCell>{row.date || "N/A"}</TableCell>
+                      <TableCell>
+                        {row.product?.product_name || "N/A"}
+                      </TableCell>
+                      <TableCell>{row.party?.person_name || "N/A"}</TableCell>
+                      <TableCell>{row.net_weight || "N/A"}</TableCell>
+                      <TableCell>{row.total_amount || "N/A"}</TableCell>
+                      <TableCell
+                        onClick={() => handleViewDetails(row)}
+                        style={{
+                          cursor: "pointer",
+                          color: "#1976d2",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        View Details
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center">
+                      <Typography variant="body2" color="textSecondary">
+                        No purchase records found
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Pagination could be added here */}
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Button
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Previous
+              </Button>
+              <Typography sx={{ mx: 2, alignSelf: 'center' }}>
+                Page {currentPage} of {totalPages}
+              </Typography>
+              <Button
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next
+              </Button>
+            </Box>
+          )}
         </>
       )}
     </div>
