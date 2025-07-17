@@ -48,17 +48,34 @@ const StyledTableCell = styled(TableCell)({
   },
 });
 
+const getParamFromUrl = (url, param) => {
+  const searchParams = new URLSearchParams(url.split("?")[1]);
+  return searchParams.get(param);
+};
+
 const CombinedTable = () => {
   const api = new APICall();
   const [combinedData, setCombinedData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [seasonId, setSeasonId] = useState(null);
 
   useEffect(() => {
+    const currentUrl = window.location.href;
+    const urlId = getParamFromUrl(currentUrl, "season_id");
+    setSeasonId(urlId);
+  }, []);
+
+  useEffect(() => {
+    if (!seasonId) return; // Wait until seasonId is available
+
     const fetchAllData = async () => {
       try {
+        // Construct the debitTrial URL with season_id parameter
+        const debitTrialUrl = `${debitTrial}?season_id=${seasonId}`;
+
         const [debitResponse, investorsResponse, productsResponse] =
           await Promise.all([
-            api.getDataWithToken(`${debitTrial}`),
+            api.getDataWithToken(debitTrialUrl),
             api.getDataWithToken(`${investors}`),
             api.getDataWithToken(`${products}`),
           ]);
@@ -108,7 +125,7 @@ const CombinedTable = () => {
     };
 
     fetchAllData();
-  }, []);
+  }, [seasonId]); // Add seasonId as dependency
 
   const renderAmount = (item) => {
     if (item.is_cash) {

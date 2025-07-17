@@ -26,7 +26,7 @@ import { useGetexpenseCategoriesQuery } from "@/src/store/expenseApi";
 const Page = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  
+
   // Date filter states
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -48,7 +48,7 @@ const Page = () => {
     data: expenseData,
     error,
     isLoading,
-    refetch
+    refetch,
   } = useGetexpenseCategoriesQuery(undefined, {
     skip: !permissions.canViewExpense, // Only fetch if user has view permission
   });
@@ -145,9 +145,7 @@ const Page = () => {
           </Grid>
         </Grid>
         <Card style={{ marginTop: 20, marginBottom: 20, padding: 15 }}>
-          <Typography variant="h6">
-            Loading expenses...
-          </Typography>
+          <Typography variant="h6">Loading expenses...</Typography>
         </Card>
       </div>
     );
@@ -166,11 +164,11 @@ const Page = () => {
         </Grid>
         <Card style={{ marginTop: 20, marginBottom: 20, padding: 15 }}>
           <Typography variant="h6" color="error">
-            Error loading expenses: {error.message || 'Something went wrong'}
+            Error loading expenses: {error.message || "Something went wrong"}
           </Typography>
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             onClick={() => refetch()}
             style={{ marginTop: 10 }}
           >
@@ -192,6 +190,10 @@ const Page = () => {
     );
   }
 
+  const handleAddExpenseClick = () => {
+    router.push("/addExpenses"); // Redirect to add expenses page
+  };
+
   return (
     <>
       <div style={{ padding: 20 }}>
@@ -208,12 +210,16 @@ const Page = () => {
                   variant="contained"
                   color="primary"
                   style={{ marginRight: 10 }}
-                  onClick={handleOpenExpense}
+                  onClick={handleAddExpenseClick}
                 >
                   Add Expense
                 </Button>
               )}
-              <Button variant="contained" color="secondary">
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleOpenExpense}
+              >
                 Expense Categories
               </Button>
             </Grid>
@@ -261,7 +267,9 @@ const Page = () => {
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{row.expense_category}</TableCell>
                         <TableCell>
-                          {parseFloat(row.expenses_sum_total_amount || 0).toFixed(2)}
+                          {parseFloat(
+                            row.expenses_sum_total_amount || 0
+                          ).toFixed(2)}
                         </TableCell>
                         <TableCell>
                           <Button
