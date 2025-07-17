@@ -46,6 +46,7 @@ export const endpoints = {
   
   // Master Data
   banks: apiPrefix + "/bank",
+  seasons: apiPrefix + "/season_summary",
   products: apiPrefix + "/product",
   customers: apiPrefix + "/customer",
   packings: apiPrefix + "/packing",
@@ -84,6 +85,7 @@ export const endpoints = {
 
 // Legacy exports for backward compatibility
 export const banks = endpoints.banks;
+export const seasons = endpoints.seasons;
 export const products = endpoints.products;
 export const customers = endpoints.customers;
 export const packings = endpoints.packings;
