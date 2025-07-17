@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/addSale.module.css";
 import DropDown from "@/components/generic/dropdown";
+import DropDown3 from "@/components/generic/dropdown3";
 import InputWithTitle from "@/components/generic/InputWithTitle";
-import { party, products, saleBook } from "../../networkApi/Constants";
+import { party, products, saleBook, seasons } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
@@ -36,6 +37,7 @@ const Page = () => {
   const initialFormData = {
     id: "",
     buyer_id: "",
+    season_id: "",
     pro_id: "",
     weight: "",
     truck_no: "",
@@ -50,12 +52,14 @@ const Page = () => {
 
   const initialDropdownValues = {
     buyer_id: null,
+    season_id: null,
     pro_id: null,
   };
 
   // States
   const [formData, setFormData] = useState(initialFormData);
   const [productList, setProducts] = useState([]);
+  const [seasonsList, setSeasons] = useState([]);
   const [supplierList, setSuppliers] = useState([]);
   const [refList, setRef] = useState({ id: "", next_ref_no: "" });
   const [cartData, setCartData] = useState([]);
@@ -63,6 +67,7 @@ const Page = () => {
   const [error, setError] = useState("");
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingSeasons, setLoadingSeasons] = useState(true);
   const [saleData, setSaleDetails] = useState([]);
   const [billTotal, setBilTotal] = useState("");
   const [loadingSubmit, setLoadingSubmit] = useState(false);
@@ -76,6 +81,8 @@ const Page = () => {
   const [weight, setWeight] = useState("");
   const [munds, setMunds] = useState("");
   const [kgs, setKgs] = useState("");
+  // Add state for selected season name
+  const [selectedSeasonName, setSelectedSeasonName] = useState("");
 
   // Reset function
   const resetAllStates = () => {
@@ -83,6 +90,8 @@ const Page = () => {
       ...initialFormData,
       truck_no: prevFormData.truck_no,
       reference_no: prevFormData.reference_no,
+      // Keep season_id when resetting
+      season_id: prevFormData.season_id,
     }));
     setWeight("");
     setMunds("");
@@ -92,6 +101,11 @@ const Page = () => {
     setNetWeight(0);
     setCombinedTotal(0);
     setTotalAmount(0);
+    // Reset product dropdown only
+    setDropdownValues((prev) => ({
+      ...prev,
+      pro_id: null,
+    }));
   };
 
   // Initial data fetching
@@ -99,6 +113,7 @@ const Page = () => {
     fetchSuppliers();
     fetchProducts();
     fetchRef();
+    fetchSeasons();
   }, []);
 
   const fetchRef = async () => {
@@ -114,6 +129,38 @@ const Page = () => {
     } catch (error) {
       console.error("Error fetching reference number:", error);
       setError("Failed to fetch reference number. Please try again.");
+    }
+  };
+
+  const fetchSeasons = async () => {
+    try {
+      setLoadingSeasons(true);
+      const response = await api.getDataWithToken(seasons);
+      const filteredProducts = response.data.map((item, index) => ({
+        label: item.name,
+        index: index,
+        id: item.id,
+      }));
+      setSeasons(filteredProducts);
+
+      // Auto-select the last season
+      if (filteredProducts.length > 0) {
+        const lastSeason = filteredProducts[filteredProducts.length - 1];
+        setDropdownValues((prev) => ({
+          ...prev,
+          season_id: lastSeason,
+        }));
+        setFormData((prev) => ({
+          ...prev,
+          season_id: lastSeason.id,
+        }));
+        setSelectedSeasonName(lastSeason.label);
+      }
+    } catch (error) {
+      console.error("Error fetching seasons:", error);
+      setError("Failed to fetch seasons. Please try again.");
+    } finally {
+      setLoadingSeasons(false);
     }
   };
 
@@ -175,6 +222,11 @@ const Page = () => {
       ...prev,
       [name]: selectedOption ? selectedOption.id : "",
     }));
+
+    // Store selected season name for display in bill
+    if (name === "season_id" && selectedOption) {
+      setSelectedSeasonName(selectedOption.label);
+    }
   };
 
   // Calculations
@@ -230,6 +282,7 @@ const Page = () => {
       const response = await api.postFormDataWithToken(`${saleBook}/add_item`, {
         ...formData,
         weight: weight,
+        season_id: formData.season_id, // Season ID will be included in API call
       });
 
       setSaleDetails(response.data.details);
@@ -241,6 +294,7 @@ const Page = () => {
           product_name: response.data.product_name,
           weight: response.data.weight,
           total_amount: response.data.total_amount,
+          season_name: selectedSeasonName, // Add season name to cart data
         },
       ]);
       setCurrentRefId(response.data.id);
@@ -276,6 +330,7 @@ const Page = () => {
     try {
       const response = await api.postFormDataWithToken(`${saleBook}`, {
         sale_book_id: currentRefId,
+        season_id: formData.season_id, // Add season_id to the sale_book API call
       });
 
       Swal.fire({
@@ -295,6 +350,8 @@ const Page = () => {
       setCurrentRefId("");
       setSaleDetails([]);
       setBilTotal("");
+      setSelectedSeasonName("");
+      setDropdownValues(initialDropdownValues);
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
@@ -324,7 +381,7 @@ const Page = () => {
           <CardContent>
             <Grid container spacing={2}>
               {/* Party Selection */}
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 {loadingSuppliers ? (
                   <Skeleton variant="rectangular" height={56} />
                 ) : (
@@ -337,6 +394,32 @@ const Page = () => {
                   />
                 )}
               </Grid>
+
+              <Grid item xs={6}>
+                {loadingSeasons ? (
+                  <Skeleton variant="rectangular" height={56} />
+                ) : (
+                  <DropDown3
+                    title="Select Season"
+                    options={seasonsList}
+                    onChange={handleDropdownChange}
+                    value={dropdownValues.season_id}
+                    name="season_id"
+                  />
+                )}
+              </Grid>
+
+              {/* Season Display */}
+              {selectedSeasonName && (
+                <Grid item xs={12}>
+                  <Typography
+                    variant="body2"
+                    sx={{ p: 1, bgcolor: "grey.100", borderRadius: 1 }}
+                  >
+                    Selected Season: <strong>{selectedSeasonName}</strong>
+                  </Typography>
+                </Grid>
+              )}
 
               {/* Truck and Reference Numbers */}
               <Grid item xs={12} sm={6} md={4}>
@@ -499,16 +582,6 @@ const Page = () => {
                         />
                       </Grid>
 
-                      {/* Description */}
-                      {/* <Grid item xs={12}>
-                        <InputWithTitle
-                          title="Enter Description"
-                          name="product_description"
-                          value={formData.product_description}
-                          onChange={handleInputChange}
-                        />
-                      </Grid> */}
-
                       {/* Submit Button */}
                       <Grid item xs={12}>
                         <button
@@ -554,6 +627,22 @@ const Page = () => {
             }}
           />
           <CardContent>
+            {/* Season Display in Bill Summary */}
+            {selectedSeasonName && (
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 2,
+                  p: 1,
+                  bgcolor: "primary.light",
+                  color: "white",
+                  borderRadius: 1,
+                }}
+              >
+                Season: {selectedSeasonName}
+              </Typography>
+            )}
+
             <TableContainer component={Paper} variant="outlined">
               <Table>
                 <TableHead>

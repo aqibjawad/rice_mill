@@ -14,6 +14,7 @@ import {
   party,
   products,
   banks,
+  seasons,
 } from "../../networkApi/Constants";
 
 import {
@@ -25,6 +26,7 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
+import DropDown3 from "@/components/generic/dropdown3";
 
 const MUND_TO_KG = 40;
 
@@ -34,6 +36,7 @@ const AddPurchaseContent = () => {
 
   const [formData, setFormData] = useState({
     sup_id: "",
+    season_id: "",
     date: "",
     pro_id: "",
     quantity: "",
@@ -68,11 +71,13 @@ const AddPurchaseContent = () => {
   });
 
   const [productList, setProducts] = useState([]);
+  const [seasonsList, setSeasons] = useState([]);
   const [supplierList, setSuppliers] = useState([]);
   const [bank, setBank] = useState([]);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("cash");
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
+  const [loadingSeasons, setLoadingSeasons] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingBanks, setLoadingBanks] = useState(true);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
@@ -91,6 +96,7 @@ const AddPurchaseContent = () => {
     fetchSuppliers();
     fetchProducts();
     fetchBanks();
+    fetchSeasons();
   }, []);
 
   const calculateMunds = (weight) => {
@@ -166,6 +172,38 @@ const AddPurchaseContent = () => {
     }
   };
 
+  const fetchSeasons = async () => {
+    try {
+      setLoadingSeasons(true);
+      const response = await api.getDataWithToken(seasons);
+      const filteredProducts = response.data.map((item, index) => ({
+        label: item.name,
+        index: index,
+        id: item.id,
+      }));
+      setSeasons(filteredProducts);
+
+      // Auto-select the last season
+      if (filteredProducts.length > 0) {
+        const lastSeason = filteredProducts[filteredProducts.length - 1];
+        setDropdownValues((prev) => ({
+          ...prev,
+          season_id: lastSeason,
+        }));
+        setFormData((prev) => ({
+          ...prev,
+          season_id: lastSeason.id,
+        }));
+        setSelectedSeasonName(lastSeason.label);
+      }
+    } catch (error) {
+      console.error("Error fetching seasons:", error);
+      setError("Failed to fetch seasons. Please try again.");
+    } finally {
+      setLoadingSeasons(false);
+    }
+  };
+
   const fetchBanks = async () => {
     try {
       const response = await api.getDataWithToken(banks);
@@ -238,14 +276,6 @@ const AddPurchaseContent = () => {
     }
   };
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setFormData((prevState) => ({
-      ...prevState,
-      payment_type: tab,
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoadingSubmit(true);
@@ -298,6 +328,20 @@ const AddPurchaseContent = () => {
               onChange={handleDropdownChange}
               value={dropdownValues.sup_id}
               name="sup_id"
+            />
+          )}
+        </Grid>
+
+        <Grid className="mt-10" item xs={12} lg={4} sm={4}>
+          {loadingSeasons ? (
+            <Skeleton variant="rectangular" height={56} />
+          ) : (
+            <DropDown3
+              title="Select Season"
+              options={seasonsList}
+              onChange={handleDropdownChange}
+              value={dropdownValues.season_id}
+              name="season_id"
             />
           )}
         </Grid>
