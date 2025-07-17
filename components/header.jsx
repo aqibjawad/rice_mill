@@ -37,6 +37,7 @@ const Header = () => {
     { href: "/companyLedger/", icon: <FaMoneyBill />, label: "Ledger", parent: "Ledger" },
     { href: "/bankCheque/", icon: <FaArrowRight />, label: "Banks", parent: "Banks" },
     { href: "/product/", icon: <FaShoppingCart />, label: "Products", parent: "Products" },
+    { href: "/seasonSummary/", icon: <FaShoppingCart />, label: "Seasons", parent: "Seasons" },
     { href: "/user/", icon: <FaShoppingCart />, label: "User", parent: "User" },
     // { href: "/packing/", icon: <FaBox />, label: "Packing", parent: "Packing" },
     // { href: "/stock/", icon: <FaBoxes />, label: "Stock", parent: "Stock" },

@@ -18,8 +18,8 @@ import {
   Alert,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useGetbanksQuery } from "@/src/store/banksApi";
-import { AddBank } from "@/components/stock/addBank";
+import { useGetSeasonsQuery } from "@/src/store/seasonApi";
+import { AddSeason } from "../../components/stock/addSeason";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -48,9 +48,9 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const Page = () => {
   const router = useRouter();
 
-  const [openBank, setOpenBank] = useState(false);
-  const handleOpenBank = () => setOpenBank(true);
-  const handleCloseBank = () => setOpenBank(false);
+  const [openSeason, setopenSeason] = useState(false);
+  const handleopenSeason = () => setopenSeason(true);
+  const handleCloseSeason = () => setopenSeason(false);
 
   // Permission states
   const [permissions, setPermissions] = useState({
@@ -65,7 +65,7 @@ const Page = () => {
     error: banksError,
     isLoading: banksLoading,
     refetch: refetchBanks
-  } = useGetbanksQuery(undefined, {
+  } = useGetSeasonsQuery(undefined, {
     skip: !permissions.canViewBanks, // Skip query if no view permission
   });
 
@@ -125,17 +125,6 @@ const Page = () => {
     }
   };
 
-  // Handle viewing bank details
-  const handleViewDetails = (id) => {
-    if (!permissions.canViewBanks) {
-      console.warn("No permission to view bank details");
-      return;
-    }
-    
-    localStorage.setItem("selectedRowId", id);
-    router.push("/bankDetails");
-  };
-
   const handleViewLedger = (id) => {
     if (!permissions.canViewBanks) {
       console.warn("No permission to view bank ledger");
@@ -143,13 +132,13 @@ const Page = () => {
     }
     
     localStorage.setItem("selectedRowId", id);
-    router.push("/bankLedger");
+    router.push("/seasonSummaryDetails");
   };
 
   // Handle Add Bank with permission check
-  const handleOpenBankWithPermission = () => {
+  const handleopenSeasonWithPermission = () => {
     if (permissions.canAddBanks) {
-      handleOpenBank();
+      handleopenSeason();
     } else {
       console.warn("No permission to add banks");
     }
@@ -158,7 +147,7 @@ const Page = () => {
   // Handle successful bank addition - refetch data
   const handleBankAdded = () => {
     refetchBanks();
-    handleCloseBank();
+    handleCloseSeason();
   };
 
   // Show access denied message if user has no permissions
@@ -183,7 +172,7 @@ const Page = () => {
         >
           {/* Left Section */}
           <Grid item xs={12} md={4} lg={6}>
-            <Box sx={{ fontSize: "24px", fontWeight: 600 }}>Banks</Box>
+            <Box sx={{ fontSize: "24px", fontWeight: 600 }}>Seasons</Box>
           </Grid>
 
           {/* Right Section - Show Add button only if user has Add Banks permission */}
@@ -207,7 +196,7 @@ const Page = () => {
                       textTransform: "none",
                       height: "40px",
                     }}
-                    onClick={handleOpenBankWithPermission}
+                    onClick={handleopenSeasonWithPermission}
                   >
                     + Add
                   </Button>
@@ -239,9 +228,12 @@ const Page = () => {
                 <TableHead>
                   <TableRow>
                     <StyledTableCell>Sr No</StyledTableCell>
-                    <StyledTableCell>Bank Name</StyledTableCell>
-                    <StyledTableCell>Total Balance</StyledTableCell>
-                    <StyledTableCell>View Ledger</StyledTableCell>
+                    <StyledTableCell>Season Name</StyledTableCell>
+                    <StyledTableCell>Purchase Amount</StyledTableCell>
+                    <StyledTableCell>Sale Amount</StyledTableCell>
+                    <StyledTableCell>Expense Amount</StyledTableCell>
+                    <StyledTableCell>Description</StyledTableCell>
+                    <StyledTableCell>View Details</StyledTableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -281,8 +273,11 @@ const Page = () => {
                     : tableData.map((row, index) => (
                         <StyledTableRow key={row.id}>
                           <StyledTableCell>{index + 1}</StyledTableCell>
-                          <StyledTableCell>{row.bank_name}</StyledTableCell>
-                          <StyledTableCell>{row.balance || "N/A"}</StyledTableCell>
+                          <StyledTableCell>{row.name}</StyledTableCell>
+                          <StyledTableCell>{row.purchase_amount}</StyledTableCell>
+                          <StyledTableCell>{row.sale_amount}</StyledTableCell>
+                          <StyledTableCell>{row.expense_amount}</StyledTableCell>
+                          <StyledTableCell>{row.description || "-"}</StyledTableCell>
                           <StyledTableCell>
                             <Button 
                               onClick={() => handleViewLedger(row.id)}
@@ -290,7 +285,7 @@ const Page = () => {
                               variant="outlined"
                               size="small"
                             >
-                              View Ledger
+                              View Details
                             </Button>
                           </StyledTableCell>
                         </StyledTableRow>
@@ -304,10 +299,10 @@ const Page = () => {
 
       {/* Only render AddBank modal if user has add permission */}
       {permissions.canAddBanks && (
-        <AddBank 
-          openBank={openBank} 
-          handleCloseBank={handleCloseBank}
-          onBankAdded={handleBankAdded} // Pass callback to refresh data after adding
+        <AddSeason 
+          openSeason={openSeason} 
+          handleCloseSeason={handleCloseSeason}
+          onSeasonAdded={handleBankAdded} // Pass callback to refresh data after adding
         />
       )}
     </>

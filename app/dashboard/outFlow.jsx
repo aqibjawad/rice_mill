@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/ledger1.module.css";
-import { expense, getSupplierPaidAmounts } from "../../networkApi/Constants";
 import {
   format,
   startOfMonth,
@@ -26,22 +25,17 @@ import {
   Box,
   Chip,
   Button,
+  Alert,
 } from "@mui/material";
 import { FaMoneyBillWave, FaUniversity } from "react-icons/fa";
 
 import Buttons from "../../components/buttons";
-import APICall from "../../networkApi/APICall";
+// Import Redux hooks
+import { useGetCombinedDataQuery } from "../../src/store/paymentsApi";
 
 const Page = () => {
-  const api = new APICall();
-
-  const [tableData, setTableData] = useState([]);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-
   const [cashTotal, setCashTotal] = useState(0);
   const [chequeOnlineTotal, setChequeOnlineTotal] = useState(0);
 
@@ -51,6 +45,33 @@ const Page = () => {
     canViewPayments: false,
     hasAccess: false,
   });
+
+  // Set default date range
+  useEffect(() => {
+    const now = new Date();
+    const monthStartDate = startOfDay(now);
+    const monthEndDate = endOfDay(now);
+
+    setStartDate(format(monthStartDate, "yyyy-MM-dd"));
+    setEndDate(format(monthEndDate, "yyyy-MM-dd"));
+  }, []);
+
+  // Redux API call with parameters
+  const {
+    data: combinedData,
+    error,
+    isLoading,
+    refetch,
+  } = useGetCombinedDataQuery(
+    {
+      startDate,
+      endDate,
+    },
+    {
+      skip: !startDate || !endDate, // Skip query if dates are not set
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   useEffect(() => {
     checkPermissions();
@@ -63,7 +84,6 @@ const Page = () => {
       if (storedPermissions) {
         const parsedPermissions = JSON.parse(storedPermissions);
 
-        // Find Payments module permissions
         let canAddPayments = false;
         let canViewPayments = false;
 
@@ -90,7 +110,6 @@ const Page = () => {
           hasAccess: canAddPayments || canViewPayments,
         });
       } else {
-        // No permissions found - default behavior
         setPermissions({
           canAddPayments: true,
           canViewPayments: true,
@@ -99,7 +118,6 @@ const Page = () => {
       }
     } catch (error) {
       console.error("Error parsing permissions:", error);
-      // Default to showing all on error
       setPermissions({
         canAddPayments: true,
         canViewPayments: true,
@@ -108,52 +126,12 @@ const Page = () => {
     }
   };
 
+  // Calculate totals when data changes
   useEffect(() => {
-    fetchData();
-  }, [startDate, endDate]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const queryParams = [];
-
-      if (startDate && endDate) {
-        queryParams.push(`start_date=${startDate}`);
-        queryParams.push(`end_date=${endDate}`);
-      } else {
-        const now = new Date();
-        const monthStartDate = startOfDay(now);
-        const monthEndDate = endOfDay(now);
-
-        const formattedStartDate = format(monthStartDate, "yyyy-MM-dd");
-        const formattedEndDate = format(monthEndDate, "yyyy-MM-dd");
-
-        queryParams.push(`start_date=${formattedStartDate}`);
-        queryParams.push(`end_date=${formattedEndDate}`);
-      }
-      const queryString = queryParams.join("&");
-
-      const [expenseResponse, supplierResponse] = await Promise.all([
-        api.getDataWithToken(`${expense}?${queryString}`),
-        api.getDataWithToken(`${getSupplierPaidAmounts}?${queryString}`),
-      ]);
-
-      const expenseData = expenseResponse.data;
-      const supplierData = supplierResponse.data;
-
-      if (Array.isArray(expenseData) && Array.isArray(supplierData)) {
-        const combinedData = [...expenseData, ...supplierData];
-        setTableData(combinedData);
-        calculateTotals(combinedData);
-      } else {
-        throw new Error("Fetched data is not in array format");
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
+    if (combinedData?.combined) {
+      calculateTotals(combinedData.combined);
     }
-  };
+  }, [combinedData]);
 
   const calculateTotals = (data) => {
     let cashSum = 0;
@@ -188,6 +166,9 @@ const Page = () => {
     }
   };
 
+  // Get table data from combined response
+  const tableData = combinedData?.combined || [];
+
   return (
     <Box sx={{ p: 3 }}>
       {permissions.canAddPayments && (
@@ -202,6 +183,27 @@ const Page = () => {
 
       {permissions.canViewPayments && (
         <>
+          {/* Error handling */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              Error loading data: {error.message || "Something went wrong"}
+              <Button onClick={refetch} sx={{ ml: 2 }}>
+                Retry
+              </Button>
+            </Alert>
+          )}
+
+          {/* Data Summary */}
+          {combinedData && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.secondary">
+                Total Records: {combinedData.totalCombined} | Expense Records:{" "}
+                {combinedData.ExpenseAmount?.total || 0} | Paid Party Records:{" "}
+                {combinedData.PaidPartyAmount?.total || 0}
+              </Typography>
+            </Box>
+          )}
+
           {/* Summary Cards */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} md={6}>
@@ -209,10 +211,16 @@ const Page = () => {
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                     <FaUniversity color="#1976d2" size={24} />
-                    <Typography variant="h6">Cash Total</Typography>
+                    <Typography variant="h6" sx={{ ml: 1 }}>
+                      Cash Total
+                    </Typography>
                   </Box>
                   <Typography variant="h4" color="success.main">
-                    {cashTotal.toFixed(2)}
+                    {isLoading ? (
+                      <Skeleton width={100} />
+                    ) : (
+                      cashTotal.toFixed(2)
+                    )}
                   </Typography>
                 </CardContent>
               </Card>
@@ -222,10 +230,16 @@ const Page = () => {
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                     <FaMoneyBillWave color="#2e7d32" size={24} />
-                    <Typography variant="h6">Online Total</Typography>
+                    <Typography variant="h6" sx={{ ml: 1 }}>
+                      Online Total
+                    </Typography>
                   </Box>
                   <Typography variant="h4" color="primary.main">
-                    {chequeOnlineTotal.toFixed(2)}
+                    {isLoading ? (
+                      <Skeleton width={100} />
+                    ) : (
+                      chequeOnlineTotal.toFixed(2)
+                    )}
                   </Typography>
                 </CardContent>
               </Card>
@@ -250,10 +264,10 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {loading
+                {isLoading
                   ? [...Array(5)].map((_, index) => (
                       <TableRow key={index}>
-                        {[...Array(8)].map((_, cellIndex) => (
+                        {[...Array(10)].map((_, cellIndex) => (
                           <TableCell key={cellIndex}>
                             <Skeleton animation="wave" />
                           </TableCell>
@@ -265,18 +279,20 @@ const Page = () => {
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{row.user?.name || "Admin"}</TableCell>
                         <TableCell>
-                          {new Date(row?.created_at).toLocaleDateString(
-                            "en-GB",
-                            {
-                              day: "2-digit",
-                              month: "short", // use 'long' for full month name or '2-digit' for numbers
-                              year: "numeric",
-                            }
-                          )}
+                          {row?.created_at
+                            ? new Date(row.created_at).toLocaleDateString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                }
+                              )
+                            : "N/A"}
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={row.payment_type}
+                            label={row.payment_type || "N/A"}
                             size="small"
                             sx={{
                               backgroundColor:
@@ -297,7 +313,7 @@ const Page = () => {
                         <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
                         <TableCell>{row.cheque_no || "N/A"}</TableCell>
                         <TableCell>
-                          {row.cr_amount || row.cash_amount}
+                          {row.cr_amount || row.cash_amount || "0"}
                         </TableCell>
                         <TableCell sx={{ color: "success.main" }}>
                           {row.balance || "Expense"}
@@ -307,6 +323,15 @@ const Page = () => {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* No data message */}
+          {!isLoading && tableData.length === 0 && (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <Typography variant="h6" color="text.secondary">
+                No payment records found for the selected date range
+              </Typography>
+            </Box>
+          )}
         </>
       )}
     </Box>

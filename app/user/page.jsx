@@ -25,8 +25,10 @@ import APICall from "@/networkApi/APICall";
 import { FaPlus, FaEdit } from "react-icons/fa";
 
 import SearchInput from "@/components/generic/searchInput";
-
 import { useRouter } from "next/navigation";
+
+// Import Redux hooks
+import { useGetusersQuery } from "@/src/store/usersApi";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -88,25 +90,30 @@ const Page = () => {
   const api = new APICall();
   const router = useRouter();
 
-  const [open, setOpen] = useState(false);
-  const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editingData, setEditingData] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  // Redux RTK Query hook
+  const {
+    data: usersResponse,
+    error: usersError,
+    isLoading,
+    refetch,
+  } = useGetusersQuery();
 
+  const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState([]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // Extract users data from Redux response
+  const tableData = usersResponse?.data || [];
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
-      setFilteredData(tableData);
+      // Filter out user with ID 1 (same as original logic)
+      const filtered = tableData.filter((item) => item.id !== 1);
+      setFilteredData(filtered);
     } else {
-      const filtered = tableData.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      const filtered = tableData.filter(
+        (item) =>
+          item.id !== 1 && // Keep the ID 1 filter
+          item.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredData(filtered);
     }
@@ -147,47 +154,34 @@ const Page = () => {
     try {
       const newStatus = currentStatus === "active" ? "deactivate" : "active";
 
-      // Update local state immediately for better UX
-      setTableData((prevData) =>
-        prevData.map((item) =>
-          item.id === id ? { ...item, status: newStatus } : item
-        )
-      );
-
+      // Use the original API call for status update since it's not a query operation
       const response = await api.postFormDataWithToken(`${user}/${id}/status`, {
         newStatus,
       });
+
+      // Refetch the users data after successful status update
+      refetch();
     } catch (error) {
       console.error("Error updating user status:", error);
-
-      // Revert the change if API call fails
-      setTableData((prevData) =>
-        prevData.map((item) =>
-          item.id === id ? { ...item, status: currentStatus } : item
-        )
-      );
+      // You could show a toast notification here instead of console.error
     }
   };
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await api.getDataWithToken(user);
-      const data = response.data;
-
-      if (Array.isArray(data)) {
-        // Filter out user with ID 1 and set table data
-        const filteredData = data.filter((item) => item.id !== 1);
-        setTableData(filteredData);
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Handle Redux error state
+  if (usersError) {
+    return (
+      <div>
+        <Box sx={{ p: 3 }}>
+          <div>
+            Error loading users: {usersError.message || "Unknown error"}
+          </div>
+          <Button onClick={() => refetch()} variant="contained" sx={{ mt: 2 }}>
+            Retry
+          </Button>
+        </Box>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -247,7 +241,7 @@ const Page = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {loading
+              {isLoading
                 ? [...Array(5)].map((_, index) => (
                     <StyledTableRow key={index}>
                       <StyledTableCell>
