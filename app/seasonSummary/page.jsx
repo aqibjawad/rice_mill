@@ -150,6 +150,29 @@ const Page = () => {
     handleCloseSeason();
   };
 
+  // Calculate Profit/Loss: Sale - Expense - Purchase
+  const calculateProfitLoss = (saleAmount, expenseAmount, purchaseAmount) => {
+    const sale = parseFloat(saleAmount) || 0;
+    const expense = parseFloat(expenseAmount) || 0;
+    const purchase = parseFloat(purchaseAmount) || 0;
+    
+    const profitLoss = sale - expense - purchase;
+    return profitLoss;
+  };
+
+  // Format profit/loss display with color coding
+  const formatProfitLoss = (profitLoss) => {
+    const formatted = profitLoss.toFixed(2);
+    const color = profitLoss >= 0 ? 'green' : 'red';
+    const prefix = profitLoss >= 0 ? '+' : '';
+    
+    return (
+      <span style={{ color, fontWeight: 'bold' }}>
+        {prefix}{formatted}
+      </span>
+    );
+  };
+
   // Show access denied message if user has no permissions
   if (!permissions.hasAccess) {
     return (
@@ -232,8 +255,7 @@ const Page = () => {
                     <StyledTableCell>Purchase Amount</StyledTableCell>
                     <StyledTableCell>Sale Amount</StyledTableCell>
                     <StyledTableCell>Expense Amount</StyledTableCell>
-                    <StyledTableCell>Description</StyledTableCell>
-                    <StyledTableCell>View Details</StyledTableCell>
+                    <StyledTableCell>Profit/Loss</StyledTableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -250,6 +272,15 @@ const Page = () => {
                             <Skeleton variant="text" width={100} />
                           </StyledTableCell>
                           <StyledTableCell>
+                            <Skeleton variant="text" width={100} />
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            <Skeleton variant="text" width={100} />
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            <Skeleton variant="text" width={100} />
+                          </StyledTableCell>
+                          <StyledTableCell>
                             <Skeleton variant="text" width={150} />
                           </StyledTableCell>
                         </StyledTableRow>
@@ -257,7 +288,7 @@ const Page = () => {
                     : error && !tableData.length
                     ? (
                         <StyledTableRow>
-                          <StyledTableCell colSpan={4} style={{ textAlign: 'center' }}>
+                          <StyledTableCell colSpan={7} style={{ textAlign: 'center' }}>
                             Unable to load banks data. Please try again.
                           </StyledTableCell>
                         </StyledTableRow>
@@ -265,31 +296,31 @@ const Page = () => {
                     : tableData.length === 0
                     ? (
                         <StyledTableRow>
-                          <StyledTableCell colSpan={4} style={{ textAlign: 'center' }}>
+                          <StyledTableCell colSpan={7} style={{ textAlign: 'center' }}>
                             No banks data available
                           </StyledTableCell>
                         </StyledTableRow>
                       )
-                    : tableData.map((row, index) => (
-                        <StyledTableRow key={row.id}>
-                          <StyledTableCell>{index + 1}</StyledTableCell>
-                          <StyledTableCell>{row.name}</StyledTableCell>
-                          <StyledTableCell>{row.purchase_amount}</StyledTableCell>
-                          <StyledTableCell>{row.sale_amount}</StyledTableCell>
-                          <StyledTableCell>{row.expense_amount}</StyledTableCell>
-                          <StyledTableCell>{row.description || "-"}</StyledTableCell>
-                          <StyledTableCell>
-                            <Button 
-                              onClick={() => handleViewLedger(row.id)}
-                              disabled={!permissions.canViewBanks}
-                              variant="outlined"
-                              size="small"
-                            >
-                              View Details
-                            </Button>
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      ))}
+                    : tableData.map((row, index) => {
+                        const profitLoss = calculateProfitLoss(
+                          row.sale_amount, 
+                          row.expense_amount, 
+                          row.purchase_amount
+                        );
+                        
+                        return (
+                          <StyledTableRow key={row.id}>
+                            <StyledTableCell>{index + 1}</StyledTableCell>
+                            <StyledTableCell>{row.name}</StyledTableCell>
+                            <StyledTableCell>{row.purchase_amount}</StyledTableCell>
+                            <StyledTableCell>{row.sale_amount}</StyledTableCell>
+                            <StyledTableCell>{row.expense_amount}</StyledTableCell>
+                            <StyledTableCell>
+                              {formatProfitLoss(profitLoss)}
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        );
+                      })}
                 </TableBody>
               </Table>
             </TableContainer>

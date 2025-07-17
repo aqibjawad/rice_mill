@@ -410,7 +410,7 @@ const Page = () => {
               </Grid>
 
               {/* Season Display */}
-              {selectedSeasonName && (
+              {/* {selectedSeasonName && (
                 <Grid item xs={12}>
                   <Typography
                     variant="body2"
@@ -419,7 +419,7 @@ const Page = () => {
                     Selected Season: <strong>{selectedSeasonName}</strong>
                   </Typography>
                 </Grid>
-              )}
+              )} */}
 
               {/* Truck and Reference Numbers */}
               <Grid item xs={12} sm={6} md={4}>
