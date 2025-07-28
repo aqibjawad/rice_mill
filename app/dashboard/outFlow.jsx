@@ -139,8 +139,15 @@ const Page = () => {
 
     data.forEach((row) => {
       if (row.payment_type === "cash") {
+        // For cash payments, use cash_amount
         cashSum += parseFloat(row.cash_amount || 0);
-      } else if (["cheque", "online"].includes(row.payment_type)) {
+      } else if (row.payment_type === "cheque") {
+        // For cheque payments from expense API, use cheque_amount
+        // For cheque payments from paid_party API, use cr_amount
+        const chequeAmount = row.cheque_amount || row.cr_amount || 0;
+        chequeOnlineSum += parseFloat(chequeAmount);
+      } else if (row.payment_type === "online") {
+        // For online payments, use cr_amount (from paid_party API)
         chequeOnlineSum += parseFloat(row.cr_amount || 0);
       }
     });
@@ -194,7 +201,7 @@ const Page = () => {
           )}
 
           {/* Data Summary */}
-          {combinedData && (
+          {/* {combinedData && (
             <Box sx={{ mb: 3 }}>
               <Typography variant="body2" color="text.secondary">
                 Total Records: {combinedData.totalCombined} | Expense Records:{" "}
@@ -202,7 +209,7 @@ const Page = () => {
                 {combinedData.PaidPartyAmount?.total || 0}
               </Typography>
             </Box>
-          )}
+          )} */}
 
           {/* Summary Cards */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
@@ -231,7 +238,7 @@ const Page = () => {
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                     <FaMoneyBillWave color="#2e7d32" size={24} />
                     <Typography variant="h6" sx={{ ml: 1 }}>
-                      Online Total
+                      Cheque/Online Total
                     </Typography>
                   </Box>
                   <Typography variant="h4" color="primary.main">
@@ -298,22 +305,34 @@ const Page = () => {
                               backgroundColor:
                                 row.payment_type === "cash"
                                   ? "#e8f5e9"
+                                  : row.payment_type === "cheque"
+                                  ? "#fff3e0"
                                   : "#e3f2fd",
                               color:
                                 row.payment_type === "cash"
                                   ? "#2e7d32"
+                                  : row.payment_type === "cheque"
+                                  ? "#f57c00"
                                   : "#1976d2",
                             }}
                           />
                         </TableCell>
                         <TableCell>
-                          {row.customer?.person_name || "N/A"}
+                          {row.customer?.person_name ||
+                            row.expense_category?.expense_category ||
+                            "N/A"}
                         </TableCell>
                         <TableCell>{row.description || "N/A"}</TableCell>
                         <TableCell>{row.bank?.bank_name || "N/A"}</TableCell>
-                        <TableCell>{row.cheque_no || "N/A"}</TableCell>
                         <TableCell>
-                          {row.cr_amount || row.cash_amount || "0"}
+                          {row.cheque_no || row.transection_id || "N/A"}
+                        </TableCell>
+                        <TableCell>
+                          {row.payment_type === "cash"
+                            ? row.cash_amount
+                            : row.payment_type === "cheque"
+                            ? row.cheque_amount || row.cr_amount || "0"
+                            : row.cr_amount || "0"}
                         </TableCell>
                         <TableCell sx={{ color: "success.main" }}>
                           {row.balance || "Expense"}

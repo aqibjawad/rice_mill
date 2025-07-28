@@ -9,8 +9,14 @@ import TextField from "@mui/material/TextField";
 import Skeleton from "@mui/material/Skeleton";
 import Grid from "@mui/material/Grid";
 import DropDown from "@/components/generic/dropdown";
+import DropDown3 from "@/components/generic/dropdown3"; // Added missing import
 import AddExpense from "../../components/stock/addExpense";
-import { banks, expenseCat, expense } from "../../networkApi/Constants";
+import {
+  banks,
+  expenseCat,
+  expense,
+  seasons,
+} from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
@@ -30,10 +36,12 @@ const ExpensePayments = () => {
     cheque_amount: "",
     transection_id: "",
     bank_tax: "",
+    season_id: "", // Added missing season_id
   });
 
   const [tableBankData, setTableBankData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingSeasons, setLoadingSeasons] = useState(false); // Added missing state
   const [activeTab, setActiveTab] = useState("cash");
 
   const [error, setError] = useState(null);
@@ -42,12 +50,20 @@ const ExpensePayments = () => {
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [selectedExpenseCategory, setSelectedExpenseCategory] = useState(null);
 
+  const [seasonsList, setSeasons] = useState([]);
+  const [dropdownValues, setDropdownValues] = useState({
+    // Added missing state
+    season_id: null,
+  });
+  const [selectedSeasonName, setSelectedSeasonName] = useState(""); // Added missing state
+
   const handleOpenExpense = () => setOpenExpense(true);
   const handleCloseExpense = () => setOpenExpense(false);
 
   useEffect(() => {
     fetchBankData();
     fetchExpenseData();
+    fetchSeasons();
   }, []);
 
   const fetchBankData = async () => {
@@ -91,6 +107,38 @@ const ExpensePayments = () => {
     }
   };
 
+  const fetchSeasons = async () => {
+    try {
+      setLoadingSeasons(true);
+      const response = await api.getDataWithToken(seasons);
+      const filteredProducts = response.data.map((item, index) => ({
+        label: item.name,
+        index: index,
+        id: item.id,
+      }));
+      setSeasons(filteredProducts);
+
+      // Auto-select the last season
+      if (filteredProducts.length > 0) {
+        const lastSeason = filteredProducts[filteredProducts.length - 1];
+        setDropdownValues((prev) => ({
+          ...prev,
+          season_id: lastSeason,
+        }));
+        setFormData((prev) => ({
+          ...prev,
+          season_id: lastSeason.id,
+        }));
+        setSelectedSeasonName(lastSeason.label);
+      }
+    } catch (error) {
+      console.error("Error fetching seasons:", error);
+      setError("Failed to fetch seasons. Please try again.");
+    } finally {
+      setLoadingSeasons(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -108,6 +156,14 @@ const ExpensePayments = () => {
   };
 
   const handleDropdownChange = (name, selectedOption) => {
+    if (name === "season_id") {
+      setDropdownValues((prev) => ({
+        ...prev,
+        season_id: selectedOption,
+      }));
+      setSelectedSeasonName(selectedOption.label);
+    }
+
     setFormData((prevState) => ({
       ...prevState,
       [name]: selectedOption.id,
@@ -231,6 +287,20 @@ const ExpensePayments = () => {
                 }
                 name="expense_category_id"
               />
+
+              <Grid className="mt-10" item xs={12} lg={4} sm={4}>
+                {loadingSeasons ? (
+                  <Skeleton variant="rectangular" height={56} />
+                ) : (
+                  <DropDown3
+                    title="Select Season"
+                    options={seasonsList}
+                    onChange={handleDropdownChange}
+                    value={dropdownValues.season_id}
+                    name="season_id"
+                  />
+                )}
+              </Grid>
             </>
           )}
         </Grid>
@@ -261,9 +331,9 @@ const ExpensePayments = () => {
           </button>
           <button
             className={`${styles.tabPaymentButton} ${
-              activeTab === "tab2" ? styles.active : ""
+              activeTab === "cheque" ? styles.active : ""
             }`}
-            onClick={() => handleTabClick("tab2")}
+            onClick={() => handleTabClick("cheque")}
           >
             Cheque
           </button>
@@ -279,7 +349,7 @@ const ExpensePayments = () => {
         </div>
 
         <div className={styles.tabPaymentContent}>
-          {activeTab === "tab2" && (
+          {activeTab === "cheque" && (
             <Grid container spacing={2} className="mt-5">
               <Grid className="mt-5" item xs={12} md={4}>
                 <Autocomplete
@@ -356,7 +426,7 @@ const ExpensePayments = () => {
                   title="Transaction Number"
                   type="text"
                   placeholder="Transaction Number"
-                  name="transection_id" // Changed from "cheque_no" to "transection_id"
+                  name="transection_id"
                   value={formData.transection_id}
                   onChange={handleInputChange}
                 />

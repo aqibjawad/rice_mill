@@ -13,7 +13,7 @@ import {
   purchaseBook,
   party,
   products,
-  banks,
+  banks, 
   seasons,
 } from "../../networkApi/Constants";
 
@@ -42,6 +42,8 @@ const AddPurchaseContent = () => {
     quantity: "",
     bardaana_type: "",
     bardaana_quantity: "",
+    bardaana_given: "", // New field - Bardaana dia kitna
+    bardaana_kept: "", // New field - Hmny rakha kitna
     truckNumber: "",
     freight: "",
     price_mann: "",
@@ -84,12 +86,13 @@ const AddPurchaseContent = () => {
   const [munds, setMunds] = useState("");
   const [kgs, setKgs] = useState("");
   const [totalAmount, setTotalAmounts] = useState(0);
-  const [selectedBardaanaId, setSelectedBardaanaId] = useState(1);
+  const [selectedBardaanaId, setSelectedBardaanaId] = useState(null);
 
   const bardaanaList = [
     { id: 1, label: "add" },
     { id: 2, label: "return" },
-    { id: 3, label: "paid" },
+    { id: 3, label: "paid in cash" },
+    { id: 4, label: "paid in ledger" },
   ];
 
   useEffect(() => {
@@ -267,6 +270,8 @@ const AddPurchaseContent = () => {
           ...prev,
           [name]: selectedOption.label,
         }));
+        // Set the selected bardaana ID to show/hide conditional fields
+        setSelectedBardaanaId(selectedOption.id);
       } else if (["sup_id", "pro_id", "bank_id"].includes(name)) {
         setFormData((prev) => ({
           ...prev,
@@ -371,7 +376,7 @@ const AddPurchaseContent = () => {
           )}
         </Grid>
 
-        <Grid style={{ marginTop: "4rem" }} item xs={12} sm={4}>
+        <Grid style={{ marginTop: "2.5rem" }} item xs={12} sm={4}>
           <DropDown
             title="Select Bardaana"
             options={bardaanaList}
@@ -381,7 +386,80 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        <Grid className="mt-10" item xs={12} sm={4}>
+        {/* Show these fields when "add" is selected in bardaana dropdown */}
+        {selectedBardaanaId === 1 && (
+          <>
+            <Grid className="mt-5" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bardaana Quantity"}
+                placeholder={"Enter Bardaana Quantity"}
+                name="bardaana_quantity"
+                value={formData.bardaana_quantity}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid className="mt-5" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bardaana Kept"}
+                placeholder={"Enter Bardaana Kept"}
+                name="bardaana_kept"
+                value={formData.bardaana_kept}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </>
+        )}
+
+        {selectedBardaanaId === 3 && (
+          <>
+            <Grid className="mt-5" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bardaana Quantity"}
+                placeholder={"Enter Bardaana Quantity"}
+                name="bardaana_quantity"
+                value={formData.bardaana_quantity}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid className="mt-5" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bardaana Amount"}
+                placeholder={"Enter Bardaana Amount"}
+                name="bardaana_quantity"
+                value={formData.bardaana_quantity}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </>
+        )}
+
+        {selectedBardaanaId === 4 && (
+          <>
+            <Grid className="mt-5" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bardaana Quantity"}
+                placeholder={"Enter Bardaana Quantity"}
+                name="bardaana_quantity"
+                value={formData.bardaana_quantity}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid className="mt-5" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bardaana Amount"}
+                placeholder={"Enter Bardaana Amount"}
+                name="bardaana_quantity"
+                value={formData.bardaana_quantity}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </>
+        )}
+
+        <Grid className="mt-3" item xs={12} sm={4}>
           <InputWithTitle
             title={"Truck Number"}
             placeholder={"Enter Truck Number"}
@@ -441,18 +519,6 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        {selectedBardaanaId === 1 && (
-          <Grid className="mt-5" item xs={12} sm={4}>
-            <InputWithTitle
-              title={"Bardaana Quantity"}
-              placeholder={"Enter Bardaana Quantity"}
-              name="bardaana_quantity"
-              value={formData.bardaana_quantity}
-              onChange={handleInputChange}
-            />
-          </Grid>
-        )}
-
         <Grid className="mt-5" item xs={12} sm={4}>
           <InputWithTitle
             title={"Weight Per Bag"}
@@ -507,211 +573,6 @@ const AddPurchaseContent = () => {
         <Grid className="mt-10" item lg={4} xs={6}>
           <InputWithTitle title={"Amount"} value={totalAmount} readOnly />
         </Grid>
-
-        {/* <Grid className="mt-10" item xs={12} sm={4}>
-          <InputWithTitle
-            title={"Description"}
-            placeholder={"Enter description"}
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            type="text"
-          />
-        </Grid> */}
-
-        {/* <Grid className="mt-6" item xs={12} lg={12} md={12} sm={12}>
-          <Tabs activeTab={activeTab} setActiveTab={handleTabChange} />
-        </Grid>
-
-        {activeTab === "cash" && (
-          <Grid className="mt-10" item lg={6} xs={12} sm={4}>
-            <InputWithTitle
-              title={"Cash Amount"}
-              placeholder={"Cash Amount"}
-              name="cash_amount"
-              value={formData.cash_amount}
-              onChange={handleInputChange}
-            />
-          </Grid>
-        )}
-
-        {activeTab === "both" && (
-          <Grid className="mt-10" item lg={4} xs={12} sm={4}>
-            <InputWithTitle
-              title={"Cash Amount"}
-              placeholder={"Cash Amount"}
-              name="cash_amount"
-              value={formData.cash_amount}
-              onChange={handleInputChange}
-            />
-          </Grid>
-        )}
-
-        {activeTab === "cheque" && (
-          <>
-            <Grid style={{ marginTop: "4rem" }} item xs={12} sm={4}>
-              {loadingBanks ? (
-                <Skeleton variant="rectangular" width="100%" height={56} />
-              ) : (
-                <DropDown
-                  title="Select Banks"
-                  options={bank}
-                  onChange={handleDropdownChange}
-                  value={dropdownValues.bank_id}
-                  name="bank_id"
-                />
-              )}
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Cheque Number"}
-                placeholder={"Cheque Number"}
-                name="cheque_no"
-                value={formData.cheque_no}
-                onChange={handleInputChange}
-              />
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Cheque Date"}
-                placeholder={"Cheque Date"}
-                name="cheque_date"
-                value={formData.cheque_date}
-                onChange={handleInputChange}
-                type={"date"}
-              />
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Cheque Amount"}
-                placeholder={"Cheque Amount"}
-                name="cheque_amount"
-                value={formData.cheque_amount}
-                onChange={handleInputChange}
-              />
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Bank Tax"}
-                placeholder={"Bank Tax"}
-                name="bank_tax"
-                value={formData.bank_tax}
-                onChange={handleInputChange}
-              />
-            </Grid>
-          </>
-        )}
-
-        {activeTab === "both" && (
-          <>
-            <Grid style={{ marginTop: "4rem" }} item xs={12} sm={4}>
-              {loadingBanks ? (
-                <Skeleton variant="rectangular" width="100%" height={56} />
-              ) : (
-                <DropDown
-                  title="Select Banks"
-                  options={bank}
-                  onChange={handleDropdownChange}
-                  value={dropdownValues.bank_id}
-                  name="bank_id"
-                />
-              )}
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Cheque Number"}
-                placeholder={"Cheque Number"}
-                name="cheque_no"
-                value={formData.cheque_no}
-                onChange={handleInputChange}
-              />
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Cheque Amount"}
-                placeholder={"Cheque Amount"}
-                name="cheque_amount"
-                value={formData.cheque_amount}
-                onChange={handleInputChange}
-              />
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Cheque Date"}
-                placeholder={"Cheque Date"}
-                name="cheque_date"
-                value={formData.cheque_date}
-                onChange={handleInputChange}
-                type={"date"}
-              />
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Bank Tax"}
-                placeholder={"Bank Tax"}
-                name="bank_tax"
-                value={formData.bank_tax}
-                onChange={handleInputChange}
-              />
-            </Grid>
-          </>
-        )}
-
-        {activeTab === "online" && (
-          <>
-            <Grid style={{ marginTop: "4rem" }} item xs={12} sm={4}>
-              {loadingBanks ? (
-                <Skeleton variant="rectangular" width="100%" height={56} />
-              ) : (
-                <DropDown
-                  title="Select Banks"
-                  options={bank}
-                  onChange={handleDropdownChange}
-                  value={dropdownValues.bank_id}
-                  name="bank_id"
-                />
-              )}
-            </Grid>
-
-            <Grid className="mt-10" item lg={4} xs={12} sm={4}>
-              <InputWithTitle
-                title={"Transaction Amount"}
-                placeholder={"Transaction Amount"}
-                name="cash_amount"
-                value={formData.cash_amount}
-                onChange={handleInputChange}
-              />
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Transaction Number"}
-                placeholder={"Transaction Number"}
-                name="transection_id"
-                value={formData.transection_id}
-                onChange={handleInputChange}
-              />
-            </Grid>
-
-            <Grid className="mt-10" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Bank Tax"}
-                placeholder={"Bank Tax"}
-                name="bank_tax"
-                value={formData.bank_tax}
-                onChange={handleInputChange}
-              />
-            </Grid>
-          </>
-        )} */}
       </Grid>
 
       <div className={styles.button_container}>

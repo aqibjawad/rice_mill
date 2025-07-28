@@ -170,10 +170,24 @@ const Page = () => {
     setEndDate(end);
   };
 
+  // Helper function to get the correct amount based on payment type
+  const getAmountByPaymentType = (row) => {
+    switch (row.payment_type) {
+      case "cash":
+        return parseFloat(row.cash_amount || 0);
+      case "cheque":
+        return parseFloat(row.cheque_amount || 0);
+      case "online":
+        return parseFloat(row.cash_amount || 0); // Online payments use cash_amount field
+      default:
+        return parseFloat(row.dr_amount || 0); // Fallback to dr_amount
+    }
+  };
+
   const calculateCashTotal = () => {
     const cashTotal = receivesData
       .filter((row) => row.payment_type === "cash")
-      .reduce((sum, row) => sum + parseFloat(row.cash_amount || 0), 0);
+      .reduce((sum, row) => sum + getAmountByPaymentType(row), 0);
 
     const productCashTotal = receivesProData
       .filter((row) => {
@@ -199,7 +213,7 @@ const Page = () => {
   const calculateOnlineTotal = () => {
     const onlineTotal = receivesData
       .filter((row) => row.payment_type === "online")
-      .reduce((sum, row) => sum + parseFloat(row.cash_amount || 0), 0);
+      .reduce((sum, row) => sum + getAmountByPaymentType(row), 0);
 
     const productOnlineTotal = receivesProData
       .filter((row) => {
@@ -213,11 +227,27 @@ const Page = () => {
     return (onlineTotal + productOnlineTotal).toFixed(2);
   };
 
+  const calculateChequeTotal = () => {
+    const chequeTotal = receivesData
+      .filter((row) => row.payment_type === "cheque")
+      .reduce((sum, row) => sum + getAmountByPaymentType(row), 0);
+
+    return chequeTotal.toFixed(2);
+  };
+
   const getPaymentTypeChip = (type) => {
+    const chipProps = {
+      cash: { color: "success", label: "Cash" },
+      online: { color: "primary", label: "Online" },
+      cheque: { color: "warning", label: "Cheque" },
+    };
+
+    const props = chipProps[type] || { color: "default", label: type };
+
     return (
       <Chip
-        label={type}
-        color={type === "cash" ? "success" : "primary"}
+        label={props.label}
+        color={props.color}
         size="small"
         variant="outlined"
       />
@@ -261,12 +291,15 @@ const Page = () => {
     doc.setFont(undefined, "normal");
     doc.text(`Cash Total: ${calculateCashTotal()}`, 14, 65);
     doc.text(`Online Total: ${calculateOnlineTotal()}`, 14, 72);
+    doc.text(`Cheque Total: ${calculateChequeTotal()}`, 14, 79);
     doc.text(
       `Grand Total: ${(
-        parseFloat(calculateCashTotal()) + parseFloat(calculateOnlineTotal())
+        parseFloat(calculateCashTotal()) +
+        parseFloat(calculateOnlineTotal()) +
+        parseFloat(calculateChequeTotal())
       ).toFixed(2)}`,
       14,
-      79
+      86
     );
 
     const tableColumns = [
@@ -298,7 +331,7 @@ const Page = () => {
         row.description || "N/A",
         row.bank?.bank_name || "N/A",
         row.cheque_no || "N/A",
-        parseFloat(row.cash_amount || 0).toFixed(2),
+        getAmountByPaymentType(row).toFixed(2), // Fixed amount display
         parseFloat(row.balance || 0).toFixed(2),
       ]);
     });
@@ -329,7 +362,7 @@ const Page = () => {
     doc.autoTable({
       head: [tableColumns],
       body: tableRows,
-      startY: 90,
+      startY: 95, // Adjusted for additional summary line
       styles: {
         fontSize: 7,
         cellPadding: 2,
@@ -347,7 +380,7 @@ const Page = () => {
         8: { halign: "right" }, // Amount
         9: { halign: "right" }, // Balance
       },
-      margin: { top: 90, left: 14, right: 14 },
+      margin: { top: 95, left: 14, right: 14 },
       didParseCell: function (data) {
         // Color negative balances red
         if (data.column.index === 9 && parseFloat(data.cell.text[0]) < 0) {
@@ -424,14 +457,22 @@ const Page = () => {
                 title: "Cash Total",
                 icon: FaMoneyBillWave,
                 color: "success.main",
+                value: calculateCashTotal(),
               },
               {
                 title: "Online Total",
                 icon: FaUniversity,
                 color: "primary.main",
+                value: calculateOnlineTotal(),
+              },
+              {
+                title: "Cheque Total",
+                icon: FaUniversity,
+                color: "warning.main",
+                value: calculateChequeTotal(),
               },
             ].map((card, index) => (
-              <Grid item xs={12} md={6} key={index}>
+              <Grid item xs={12} md={4} key={index}>
                 <TotalCard>
                   <CardContent>
                     <Box display="flex" alignItems="center" gap={1}>
@@ -441,9 +482,7 @@ const Page = () => {
                       </Typography>
                     </Box>
                     <Typography variant="h4" sx={{ mt: 2, color: card.color }}>
-                      {card.title === "Cash Total"
-                        ? calculateCashTotal()
-                        : calculateOnlineTotal()}
+                      {card.value}
                     </Typography>
                   </CardContent>
                 </TotalCard>
@@ -456,25 +495,20 @@ const Page = () => {
             <Table sx={{ minWidth: 700 }}>
               <TableHead>
                 <TableRow>
-                  {[
-                    "Sr No",
-                    "Reciever Name",
-                    "Payment Type",
-                    "Recieves Date",
-                    "Person / Product",
-                    "Description",
-                    "Bank",
-                    "Cheque No",
-                    "Amount",
-                    "Balance",
-                  ].map((head, index) => (
-                    <StyledTableCell
-                      key={index}
-                      align={index >= 6 ? "right" : "left"}
-                    >
-                      {head}
-                    </StyledTableCell>
-                  ))}
+                  <StyledTableCell align="center">Sr No</StyledTableCell>
+                  <StyledTableCell align="left">Reciever Name</StyledTableCell>
+                  <StyledTableCell align="center">Payment Type</StyledTableCell>
+                  <StyledTableCell align="center">
+                    Recieves Date
+                  </StyledTableCell>
+                  <StyledTableCell align="left">
+                    Person / Product
+                  </StyledTableCell>
+                  <StyledTableCell align="left">Description</StyledTableCell>
+                  <StyledTableCell align="left">Bank</StyledTableCell>
+                  <StyledTableCell align="center">Cheque No</StyledTableCell>
+                  <StyledTableCell align="right">Amount</StyledTableCell>
+                  <StyledTableCell align="right">Balance</StyledTableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -482,34 +516,36 @@ const Page = () => {
                   {/* Regular payment data */}
                   {receivesData.map((row, index) => (
                     <StyledTableRow key={`payment-${row.id}`}>
-                      <StyledTableCell>{index + 1}</StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="center">
+                        {index + 1}
+                      </StyledTableCell>
+                      <StyledTableCell align="left">
                         {row.user?.name || "Admin"}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="center">
                         {getPaymentTypeChip(row.payment_type)}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="center">
                         {new Date(row?.created_at).toLocaleDateString("en-GB", {
                           day: "2-digit",
-                          month: "short", // use 'long' for full month name or '2-digit' for numbers
+                          month: "short",
                           year: "numeric",
                         })}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="left">
                         {row.customer?.person_name || "N/A"}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="left">
                         {row.description || "N/A"}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="left">
                         {row.bank?.bank_name || "N/A"}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="center">
                         {row.cheque_no || "N/A"}
                       </StyledTableCell>
                       <StyledTableCell align="right">
-                        {parseFloat(row.cash_amount).toFixed(2)}
+                        {getAmountByPaymentType(row).toFixed(2)}
                       </StyledTableCell>
                       <StyledTableCell
                         align="right"
@@ -529,17 +565,16 @@ const Page = () => {
                   {/* Product data */}
                   {receivesProData.map((row, index) => (
                     <StyledTableRow key={`product-${row.id}`}>
-                      <StyledTableCell>
+                      <StyledTableCell align="center">
                         {receivesData.length + index + 1}
                       </StyledTableCell>
-                      <StyledTableCell>
-                        {row?.user?.name}{" "}
-                        {/* Changed from receivesProData?.user?.name */}
+                      <StyledTableCell align="left">
+                        {row?.user?.name}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="center">
                         {getProductPaymentTypeDisplay(row)}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="center">
                         {row?.created_at
                           ? new Date(row.created_at).toLocaleDateString(
                               "en-GB",
@@ -551,18 +586,18 @@ const Page = () => {
                             )
                           : "N/A"}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="left">
                         {row?.product?.product_name || "N/A"}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="left">
                         {row.description || "N/A"}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="left">
                         {row.linkable_type === "App\\Models\\BankLedger"
                           ? "Bank Entry"
                           : "N/A"}
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell align="center">
                         {row.linkable?.cheque_no || "N/A"}
                       </StyledTableCell>
                       <StyledTableCell align="right">
