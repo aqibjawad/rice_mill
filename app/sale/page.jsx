@@ -282,7 +282,7 @@ const Page = () => {
                   <TableCell>Buyer Name</TableCell>
                   <TableCell>Total Amount</TableCell>
                   <TableCell>Print Invoice</TableCell>
-                  <TableCell>Print Gateway</TableCell>
+                  <TableCell>Gate Pass</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -358,7 +358,7 @@ const Page = () => {
                         Print Invoice
                       </TableCell>
                       <TableCell onClick={() => handleViewGateway(row)}>
-                        Print Gatepath
+                        Print Gate Pass
                       </TableCell>
                     </TableRow>
                   ))
