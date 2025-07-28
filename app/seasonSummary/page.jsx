@@ -18,8 +18,9 @@ import {
   Alert,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useGetSeasonsQuery } from "@/src/store/seasonApi";
 import { AddSeason } from "../../components/stock/addSeason";
+import { seasons } from "@/networkApi/Constants";
+import APICall from "../../networkApi/APICall";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -47,71 +48,92 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const Page = () => {
   const router = useRouter();
+  const api = new APICall();
 
   const [openSeason, setopenSeason] = useState(false);
   const handleopenSeason = () => setopenSeason(true);
   const handleCloseSeason = () => setopenSeason(false);
 
-  // Permission states
+  // Local state for seasons data
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Permission states - Initialize with null to indicate loading state
   const [permissions, setPermissions] = useState({
-    canAddBanks: false,
-    canViewBanks: false,
-    hasAccess: false
+    canAddBanks: null,
+    canViewBanks: null,
+    hasAccess: null,
+    isLoading: true, // Add loading state for permissions
   });
-
-  // Redux Query Hook - only call if user has view permission
-  const {
-    data: banksResponse,
-    error: banksError,
-    isLoading: banksLoading,
-    refetch: refetchBanks
-  } = useGetSeasonsQuery(undefined, {
-    skip: !permissions.canViewBanks, // Skip query if no view permission
-  });
-
-  // Extract data from the response
-  const tableData = banksResponse?.data || [];
-  const loading = banksLoading;
-  const error = banksError?.data?.message || banksError?.error || (banksError ? "Failed to fetch banks data" : null);
 
   useEffect(() => {
     checkPermissions();
+    fetchData();
   }, []);
+
+  // Load seasons data from imported seasons
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.getDataWithToken(seasons);
+      const data = response.data;
+      if (Array.isArray(data)) {
+        setTableData(data);
+      } else {
+        throw new Error("Fetched data is not an array");
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Refetch function to reload data
+  const refetchSeasons = () => {
+    fetchData();
+  };
 
   const checkPermissions = () => {
     try {
       const storedPermissions = localStorage.getItem("permissions");
-      
+
       if (storedPermissions) {
         const parsedPermissions = JSON.parse(storedPermissions);
-        
+
         // Find Banks module permissions
         let canAddBanks = false;
         let canViewBanks = false;
-        
-        if (parsedPermissions.modules && Array.isArray(parsedPermissions.modules)) {
+
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
           const banksModule = parsedPermissions.modules.find(
-            module => module.parent === "Banks" || module.name === "Banks"
+            (module) => module.parent === "Banks" || module.name === "Banks"
           );
-          
+
           if (banksModule && banksModule.permissions) {
             canAddBanks = banksModule.permissions.includes("Add Banks");
             canViewBanks = banksModule.permissions.includes("View Banks");
           }
         }
-        
+
         setPermissions({
           canAddBanks,
           canViewBanks,
-          hasAccess: canAddBanks || canViewBanks
+          hasAccess: canAddBanks || canViewBanks,
+          isLoading: false, // Permissions loaded
         });
-        
       } else {
         // No permissions found - default behavior
         setPermissions({
           canAddBanks: true,
           canViewBanks: true,
-          hasAccess: true
+          hasAccess: true,
+          isLoading: false, // Permissions loaded
         });
       }
     } catch (error) {
@@ -120,7 +142,8 @@ const Page = () => {
       setPermissions({
         canAddBanks: true,
         canViewBanks: true,
-        hasAccess: true
+        hasAccess: true,
+        isLoading: false, // Permissions loaded even on error
       });
     }
   };
@@ -130,7 +153,7 @@ const Page = () => {
       console.warn("No permission to view bank ledger");
       return;
     }
-    
+
     localStorage.setItem("selectedRowId", id);
     router.push("/seasonSummaryDetails");
   };
@@ -146,34 +169,47 @@ const Page = () => {
 
   // Handle successful bank addition - refetch data
   const handleBankAdded = () => {
-    refetchBanks();
     handleCloseSeason();
+    refetchSeasons(); // Refresh data after adding a season
   };
 
-  // Calculate Profit/Loss: Sale - Expense - Purchase
   const calculateProfitLoss = (saleAmount, expenseAmount, purchaseAmount) => {
     const sale = parseFloat(saleAmount) || 0;
     const expense = parseFloat(expenseAmount) || 0;
     const purchase = parseFloat(purchaseAmount) || 0;
-    
+
     const profitLoss = sale - expense - purchase;
     return profitLoss;
   };
 
-  // Format profit/loss display with color coding
   const formatProfitLoss = (profitLoss) => {
     const formatted = profitLoss.toFixed(2);
-    const color = profitLoss >= 0 ? 'green' : 'red';
-    const prefix = profitLoss >= 0 ? '+' : '';
-    
+    const color = profitLoss >= 0 ? "green" : "red";
+    const prefix = profitLoss >= 0 ? "+" : "";
+
     return (
-      <span style={{ color, fontWeight: 'bold' }}>
-        {prefix}{formatted}
+      <span style={{ color, fontWeight: "bold" }}>
+        {prefix}
+        {formatted}
       </span>
     );
   };
 
-  // Show access denied message if user has no permissions
+  // Show loading while permissions are being checked
+  if (permissions.isLoading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Skeleton variant="text" width={200} height={40} />
+        <Skeleton
+          variant="rectangular"
+          width="100%"
+          height={400}
+          sx={{ mt: 2 }}
+        />
+      </Box>
+    );
+  }
+
   if (!permissions.hasAccess) {
     return (
       <Box sx={{ p: 3 }}>
@@ -235,10 +271,10 @@ const Page = () => {
             {/* Show error alert if there's an API error */}
             {error && (
               <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-                Error loading banks data: {error}
-                <Button 
-                  size="small" 
-                  onClick={() => refetchBanks()} 
+                Error loading seasons data: {error}
+                <Button
+                  size="small"
+                  onClick={() => refetchSeasons()}
                   sx={{ ml: 2 }}
                 >
                   Retry
@@ -259,68 +295,73 @@ const Page = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {loading
-                    ? [...Array(5)].map((_, index) => (
-                        <StyledTableRow key={index}>
+                  {loading ? (
+                    [...Array(5)].map((_, index) => (
+                      <StyledTableRow key={index}>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={30} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={120} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={100} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={100} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={100} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={100} />
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    ))
+                  ) : error && !tableData.length ? (
+                    <StyledTableRow>
+                      <StyledTableCell
+                        colSpan={6}
+                        style={{ textAlign: "center" }}
+                      >
+                        Unable to load seasons data. Please try again.
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ) : tableData.length === 0 ? (
+                    <StyledTableRow>
+                      <StyledTableCell
+                        colSpan={6}
+                        style={{ textAlign: "center" }}
+                      >
+                        No seasons data available
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ) : (
+                    tableData.map((row, index) => {
+                      const profitLoss = calculateProfitLoss(
+                        row.sale_amount,
+                        row.expense_amount,
+                        row.purchase_amount
+                      );
+
+                      return (
+                        <StyledTableRow key={row.id}>
+                          <StyledTableCell>{index + 1}</StyledTableCell>
+                          <StyledTableCell>{row.name}</StyledTableCell>
                           <StyledTableCell>
-                            <Skeleton variant="text" width={30} />
+                            {row.purchase_amount}
+                          </StyledTableCell>
+                          <StyledTableCell>{row.sale_amount}</StyledTableCell>
+                          <StyledTableCell>
+                            {row.expense_amount}
                           </StyledTableCell>
                           <StyledTableCell>
-                            <Skeleton variant="text" width={120} />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant="text" width={100} />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant="text" width={100} />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant="text" width={100} />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant="text" width={100} />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant="text" width={150} />
+                            {formatProfitLoss(profitLoss)}
                           </StyledTableCell>
                         </StyledTableRow>
-                      ))
-                    : error && !tableData.length
-                    ? (
-                        <StyledTableRow>
-                          <StyledTableCell colSpan={7} style={{ textAlign: 'center' }}>
-                            Unable to load banks data. Please try again.
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      )
-                    : tableData.length === 0
-                    ? (
-                        <StyledTableRow>
-                          <StyledTableCell colSpan={7} style={{ textAlign: 'center' }}>
-                            No banks data available
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      )
-                    : tableData.map((row, index) => {
-                        const profitLoss = calculateProfitLoss(
-                          row.sale_amount, 
-                          row.expense_amount, 
-                          row.purchase_amount
-                        );
-                        
-                        return (
-                          <StyledTableRow key={row.id}>
-                            <StyledTableCell>{index + 1}</StyledTableCell>
-                            <StyledTableCell>{row.name}</StyledTableCell>
-                            <StyledTableCell>{row.purchase_amount}</StyledTableCell>
-                            <StyledTableCell>{row.sale_amount}</StyledTableCell>
-                            <StyledTableCell>{row.expense_amount}</StyledTableCell>
-                            <StyledTableCell>
-                              {formatProfitLoss(profitLoss)}
-                            </StyledTableCell>
-                          </StyledTableRow>
-                        );
-                      })}
+                      );
+                    })
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -330,8 +371,8 @@ const Page = () => {
 
       {/* Only render AddBank modal if user has add permission */}
       {permissions.canAddBanks && (
-        <AddSeason 
-          openSeason={openSeason} 
+        <AddSeason
+          openSeason={openSeason}
           handleCloseSeason={handleCloseSeason}
           onSeasonAdded={handleBankAdded} // Pass callback to refresh data after adding
         />

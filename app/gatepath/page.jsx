@@ -16,19 +16,13 @@ import {
 import { getLocalStorage, saleBook } from "../../networkApi/Constants";
 import APICall from "../../networkApi/APICall";
 
-const Invoice = () => {
+const Gateway = () => {
   const api = new APICall();
   const [salesBook, setSaleBook] = useState([]);
   const [rowData, setRowData] = useState();
   const [isPrinting, setIsPrinting] = useState(false);
 
-  console.log(salesBook);
-
   const saleBookId = getLocalStorage("saleBookId");
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   useEffect(() => {
     fetchSaleBook();
@@ -59,18 +53,6 @@ const Invoice = () => {
     }
   };
 
-  const calculateTotalAmount = () => {
-    const total = salesBook.reduce(
-      (total, row) => total + parseFloat(row.total_amount),
-      0
-    );
-    return total.toLocaleString("en-IN", {
-      maximumFractionDigits: 2,
-      style: "currency",
-      currency: "PKR",
-    });
-  };
-
   return (
     <>
       <div className={styles.invoiceContainer}>
@@ -82,7 +64,6 @@ const Invoice = () => {
               0300-7971654, 0300 5061234
             </div>
           </Grid>
-
           <Grid item xs={12} lg={6} sm={6}>
             <div className="flex">
               <div className="flex-grow"></div>
@@ -96,6 +77,7 @@ const Invoice = () => {
             </div>
           </Grid>
         </Grid>
+        <div style={{textAlign:"center", fontSize:"20px", fontWeight:"bold", color:"#5E6470"}}> Gate Pass </div>
 
         <div className="mt-10">
           <Grid container spacing={2}>
@@ -110,7 +92,7 @@ const Invoice = () => {
               <div className={styles.buyerName}> {rowData?.ref_no} </div>
               <div style={{ marginTop: "1rem" }} className={styles.issueDate}>
                 {" "}
-                Sales By:  {rowData?.user?.name || "N/A"}
+                Sales By: {rowData?.user?.name || "N/A"}
               </div>
             </Grid>
 
@@ -155,28 +137,10 @@ const Invoice = () => {
                     Sr No
                   </TableCell>
                   <TableCell style={{ width: "15%", padding: "8px 4px" }}>
-                    Name
-                  </TableCell>
-                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
-                    Bardaana Deduction
-                  </TableCell>
-                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
-                    Khoot
-                  </TableCell>
-                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
-                    Weight
+                    Product Name
                   </TableCell>
                   <TableCell style={{ width: "15%", padding: "8px 4px" }}>
                     Bardaana Quantity
-                  </TableCell>
-                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
-                    Silai
-                  </TableCell>
-                  <TableCell style={{ width: "15%", padding: "8px 4px" }}>
-                    Rate
-                  </TableCell>
-                  <TableCell style={{ width: "12%", padding: "8px 4px" }}>
-                    Total Amount
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -192,48 +156,15 @@ const Invoice = () => {
                     <TableCell
                       style={{ padding: "8px 4px" }}
                     >{`${item.bardaana_deduction}`}</TableCell>
-                    <TableCell
-                      style={{ padding: "8px 4px" }}
-                    >{`${item.khoot}`}</TableCell>
-                    <TableCell
-                      style={{ padding: "8px 4px" }}
-                    >{`${item.net_weight}`}</TableCell>
-                    <TableCell
-                      style={{ padding: "8px 4px" }}
-                    >{`${item.bardaana_quantity}`}</TableCell>
-                    <TableCell
-                      style={{ padding: "8px 4px" }}
-                    >{`${item.salai_amt_per_bag}`}</TableCell>
-                    <TableCell style={{ padding: "8px 4px" }}>
-                      {item.price_mann}
-                    </TableCell>
-                    <TableCell style={{ padding: "8px 4px" }}>
-                      {item.total_amount}
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
-
-          <div
-            style={{
-              width: "95%",
-              margin: "0 auto",
-            }}
-          >
-            <div className={styles.tableTotalRow}>
-              Total:{" "}
-              <span className={styles.amountDue}>
-                {" "}
-                {calculateTotalAmount()}{" "}
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     </>
   );
 };
 
-export default Invoice;
+export default Gateway;

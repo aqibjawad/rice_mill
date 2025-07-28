@@ -9,6 +9,7 @@ export default function RootLayoutClient({ children }) {
   const isTrial = pathname === "/trialBalance/";
   const isPurchaseDetails = pathname === "/purchase_details/";
   const isSale = pathname === "/invoice/";
+  const isGatepath = pathname === "/gatepath/";
 
   const LayoutWithSidebar = ({ children }) => (
     <div className="layout-container">
@@ -31,7 +32,7 @@ export default function RootLayoutClient({ children }) {
       </div>
     </div>
   );
-  if (isHomePage || isTrial || isPurchaseDetails || isSale) {
+  if (isHomePage || isTrial || isPurchaseDetails || isSale || isGatepath) {
     return <LayoutWithoutSidebar>{children}</LayoutWithoutSidebar>;
   } else {
     return <LayoutWithSidebar>{children}</LayoutWithSidebar>;

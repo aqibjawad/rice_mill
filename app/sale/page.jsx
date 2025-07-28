@@ -141,6 +141,11 @@ const Page = () => {
     router.push("/invoice");
   };
 
+  const handleViewGateway = (row) => {
+    localStorage.setItem("saleBookId", row.id);
+    router.push("/gatepath");
+  };
+
   // Fixed: Process and filter data - handle different API response structures
   const processedData = React.useMemo(() => {
     console.log("Processing salesData:", salesData);
@@ -276,6 +281,8 @@ const Page = () => {
                   <TableCell>Reference No</TableCell>
                   <TableCell>Buyer Name</TableCell>
                   <TableCell>Total Amount</TableCell>
+                  <TableCell>Print Invoice</TableCell>
+                  <TableCell>Print Gateway</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -327,7 +334,6 @@ const Page = () => {
                 ) : (
                   processedData.map((row, index) => (
                     <TableRow
-                      onClick={() => handleViewDetails(row)}
                       key={row.id || index}
                       hover
                       sx={{ cursor: "pointer" }}
@@ -347,6 +353,12 @@ const Page = () => {
                       </TableCell>
                       <TableCell>
                         {row?.total_amount ? `Rs. ${row.total_amount}` : "N/A"}
+                      </TableCell>
+                      <TableCell onClick={() => handleViewDetails(row)}>
+                        Print Invoice
+                      </TableCell>
+                      <TableCell onClick={() => handleViewGateway(row)}>
+                        Print Gatepath
                       </TableCell>
                     </TableRow>
                   ))
