@@ -21,6 +21,7 @@ const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [allowedMenuItems, setAllowedMenuItems] = useState([]);
   const [isTrialBalanceModalOpen, setIsTrialBalanceModalOpen] = useState(false);
@@ -103,7 +104,9 @@ const Header = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      const width = window.innerWidth;
+      setIsMobile(width <= 768);
+      setIsTablet(width > 768 && width <= 1024);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -215,7 +218,7 @@ const Header = () => {
         <img className={styles.logo} src="/logo.png" alt="Logo" />
       </div>
 
-      {/* Hamburger Icon with Dropdown */}
+      {/* Mobile Hamburger Icon with Dropdown */}
       {isMobile && (
         <div className={styles.hamburgerDropdown}>
           <div
@@ -234,9 +237,9 @@ const Header = () => {
         </div>
       )}
 
-      {/* Desktop Navbar */}
+      {/* Tablet/Desktop Navbar - Scrollable for tablet */}
       {!isMobile && (
-        <nav className={styles.navbar}>
+        <nav className={`${styles.navbar} ${isTablet ? styles.scrollableNav : ''}`}>
           {allowedMenuItems.map((item, index) => renderMenuItem(item, index))}
         </nav>
       )}

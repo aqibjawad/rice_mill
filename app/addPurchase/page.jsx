@@ -356,13 +356,19 @@ const AddPurchaseContent = () => {
     try {
       const payload = { ...formData, bardaana_amount: 0 };
       const response = await api.postDataWithToken(purchaseBook, payload);
+
       if (response.status === "success") {
+        // Extract ID from response and save to localStorage
+        const purchaseId = response.data.id;
+        localStorage.setItem("purchase_id", purchaseId);
+
         Swal.fire({
           icon: "success",
           title: "Success",
           text: "Data has been added successfully!",
         }).then(() => {
-          router.push("/purchase/");
+          // Redirect to purchase_details page
+          router.push("/purchase_details/");
         });
       } else if (response.error?.status === "error") {
         Swal.fire({

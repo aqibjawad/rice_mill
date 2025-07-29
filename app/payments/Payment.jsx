@@ -60,6 +60,7 @@ const Page = () => {
   const [tablePartyData, setPartyData] = useState([]);
   const [responseData, setResponseData] = useState();
   const [isSelf, setIsSelf] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   // Permission states
   const [permissions, setPermissions] = useState({
@@ -100,7 +101,7 @@ const Page = () => {
         if (parsedPermissions === null || parsedPermissions === "null") {
           setPermissions({
             canAddParty: true,
-            canAddInvestor: true,  
+            canAddInvestor: true,
             canAddProduct: true,
             hasAccess: true,
           });
@@ -112,16 +113,22 @@ const Page = () => {
         let canAddInvestor = false;
         let canAddProduct = false;
 
-        if (parsedPermissions.modules && Array.isArray(parsedPermissions.modules)) {
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
           const PaymentsModule = parsedPermissions.modules.find(
-            (module) => module.parent === "Payments" || module.name === "Payments"
+            (module) =>
+              module.parent === "Payments" || module.name === "Payments"
           );
 
           if (PaymentsModule && PaymentsModule.permissions) {
             // Check for exact permission names
             canAddParty = PaymentsModule.permissions.includes("Payment Party");
-            canAddInvestor = PaymentsModule.permissions.includes("Payment Investor");
-            canAddProduct = PaymentsModule.permissions.includes("Payment Product");
+            canAddInvestor =
+              PaymentsModule.permissions.includes("Payment Investor");
+            canAddProduct =
+              PaymentsModule.permissions.includes("Payment Product");
           }
         }
 
@@ -132,7 +139,11 @@ const Page = () => {
           hasAccess: canAddParty || canAddInvestor || canAddProduct,
         });
 
-        console.log("Permissions set:", { canAddParty, canAddInvestor, canAddProduct });
+        console.log("Permissions set:", {
+          canAddParty,
+          canAddInvestor,
+          canAddProduct,
+        });
       } else {
         // No permissions found in localStorage - give full access
         setPermissions({
@@ -141,7 +152,9 @@ const Page = () => {
           canAddProduct: true,
           hasAccess: true,
         });
-        console.log("No permissions found in localStorage - granting full access");
+        console.log(
+          "No permissions found in localStorage - granting full access"
+        );
       }
     } catch (error) {
       console.error("Error parsing permissions:", error);
@@ -157,7 +170,7 @@ const Page = () => {
 
   const loadDataBasedOnPermissions = async () => {
     setLoading(true);
-    
+
     // Always load bank data for cheque and online payments
     await fetchBankData();
 
@@ -165,32 +178,32 @@ const Page = () => {
     const promises = [];
 
     if (permissions.canAddParty) {
-      setLoadingStates(prev => ({ ...prev, parties: true }));
+      setLoadingStates((prev) => ({ ...prev, parties: true }));
       promises.push(fetchPartyData());
     }
 
     if (permissions.canAddInvestor) {
-      setLoadingStates(prev => ({ ...prev, investors: true }));
+      setLoadingStates((prev) => ({ ...prev, investors: true }));
       promises.push(fetchInvestorsData());
     }
 
     if (permissions.canAddProduct) {
-      setLoadingStates(prev => ({ ...prev, products: true }));
+      setLoadingStates((prev) => ({ ...prev, products: true }));
       promises.push(fetchProductData());
     }
 
     // Wait for all API calls to complete
     await Promise.allSettled(promises);
-    
+
     setLoading(false);
   };
 
   const fetchPartyData = async () => {
     try {
-      setLoadingStates(prev => ({ ...prev, parties: true }));
+      setLoadingStates((prev) => ({ ...prev, parties: true }));
       const response = await api.getDataWithToken(party);
       const data = response.data;
-      
+
       if (Array.isArray(data)) {
         const formattedData = data.map((parties) => ({
           label: `${parties.person_name} (Party)`,
@@ -210,16 +223,16 @@ const Page = () => {
       console.error("Error fetching party data:", error.message);
       Swal.fire("Error", "Failed to fetch party data", "error");
     } finally {
-      setLoadingStates(prev => ({ ...prev, parties: false }));
+      setLoadingStates((prev) => ({ ...prev, parties: false }));
     }
   };
 
   const fetchInvestorsData = async () => {
     try {
-      setLoadingStates(prev => ({ ...prev, investors: true }));
+      setLoadingStates((prev) => ({ ...prev, investors: true }));
       const response = await api.getDataWithToken(investors);
       const data = response.data;
-      
+
       if (Array.isArray(data)) {
         const formattedData = data.map((investor) => ({
           label: `${investor.person_name} (Investor)`,
@@ -239,16 +252,16 @@ const Page = () => {
       console.error("Error fetching investor data:", error.message);
       Swal.fire("Error", "Failed to fetch investor data", "error");
     } finally {
-      setLoadingStates(prev => ({ ...prev, investors: false }));
+      setLoadingStates((prev) => ({ ...prev, investors: false }));
     }
   };
 
   const fetchProductData = async () => {
     try {
-      setLoadingStates(prev => ({ ...prev, products: true }));
+      setLoadingStates((prev) => ({ ...prev, products: true }));
       const response = await api.getDataWithToken(products);
       const data = response.data;
-      
+
       if (Array.isArray(data)) {
         const formattedData = data.map((product) => ({
           label: `${product.product_name} (Product)`,
@@ -268,16 +281,16 @@ const Page = () => {
       console.error("Error fetching product data:", error.message);
       Swal.fire("Error", "Failed to fetch product data", "error");
     } finally {
-      setLoadingStates(prev => ({ ...prev, products: false }));
+      setLoadingStates((prev) => ({ ...prev, products: false }));
     }
   };
 
   const fetchBankData = async () => {
     try {
-      setLoadingStates(prev => ({ ...prev, banks: true }));
+      setLoadingStates((prev) => ({ ...prev, banks: true }));
       const response = await api.getDataWithToken(banks);
       const data = response.data;
-      
+
       if (Array.isArray(data)) {
         const formattedData = data.map((bank) => ({
           label: bank.bank_name,
@@ -289,7 +302,7 @@ const Page = () => {
       console.error("Error fetching bank data:", error.message);
       Swal.fire("Error", "Failed to fetch bank data", "error");
     } finally {
-      setLoadingStates(prev => ({ ...prev, banks: false }));
+      setLoadingStates((prev) => ({ ...prev, banks: false }));
     }
   };
 
@@ -350,8 +363,157 @@ const Page = () => {
     }));
   };
 
+  const validateForm = () => {
+    const errors = {};
+
+    // Common validations
+    if (!formData.description.trim()) {
+      errors.description = "Description is required";
+    } else if (formData.description.trim().length < 3) {
+      errors.description = "Description must be at least 3 characters long";
+    }
+
+    if (!formData.payment_type) {
+      errors.payment_type = "Payment type is required";
+    }
+
+    // Cash payment validations
+    if (formData.payment_type === "cash") {
+      if (!formData.cash_amount) {
+        errors.cash_amount = "Cash amount is required";
+      } else if (
+        isNaN(formData.cash_amount) ||
+        parseFloat(formData.cash_amount) <= 0
+      ) {
+        errors.cash_amount = "Cash amount must be a positive number";
+      } else if (parseFloat(formData.cash_amount) > 1000000) {
+        errors.cash_amount = "Cash amount cannot exceed 1,000,000";
+      }
+    }
+
+    // Bank payment validations
+    if (formData.payment_type === "bank") {
+      if (!formData.bank_id) {
+        errors.bank_id = "Bank selection is required";
+      }
+
+      if (!formData.cash_amount) {
+        errors.cash_amount = "Amount is required for bank payment";
+      } else if (
+        isNaN(formData.cash_amount) ||
+        parseFloat(formData.cash_amount) <= 0
+      ) {
+        errors.cash_amount = "Amount must be a positive number";
+      }
+    }
+
+    // Cheque payment validations
+    if (formData.payment_type === "cheque") {
+      if (!formData.bank_id) {
+        errors.bank_id = "Bank selection is required for cheque";
+      }
+
+      if (!formData.cheque_no.trim()) {
+        errors.cheque_no = "Cheque number is required";
+      } else if (formData.cheque_no.trim().length < 3) {
+        errors.cheque_no = "Cheque number must be at least 3 characters";
+      }
+
+      if (!formData.cheque_date) {
+        errors.cheque_date = "Cheque date is required";
+      } else {
+        const chequeDate = new Date(formData.cheque_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (chequeDate < today) {
+          errors.cheque_date = "Cheque date cannot be in the past";
+        }
+      }
+
+      if (!formData.cheque_amount) {
+        errors.cheque_amount = "Cheque amount is required";
+      } else if (
+        isNaN(formData.cheque_amount) ||
+        parseFloat(formData.cheque_amount) <= 0
+      ) {
+        errors.cheque_amount = "Cheque amount must be a positive number";
+      }
+    }
+
+    // Online payment validations
+    if (formData.payment_type === "online") {
+      if (!formData.bank_id) {
+        errors.bank_id = "Bank selection is required for online payment";
+      }
+
+      if (!formData.transection_id.trim()) {
+        errors.transection_id = "Transaction ID is required";
+      } else if (formData.transection_id.trim().length < 5) {
+        errors.transection_id = "Transaction ID must be at least 5 characters";
+      }
+
+      if (!formData.cash_amount) {
+        errors.cash_amount = "Amount is required for online payment";
+      } else if (
+        isNaN(formData.cash_amount) ||
+        parseFloat(formData.cash_amount) <= 0
+      ) {
+        errors.cash_amount = "Amount must be a positive number";
+      }
+    }
+
+    // Customer selection validations (when not self payment)
+    if (!isSelf) {
+      const hasParty = formData.party_id;
+      const hasInvestor = formData.investor_id;
+      const hasProduct = formData.product_id;
+
+      if (!hasParty && !hasInvestor && !hasProduct) {
+        errors.customer_selection =
+          "Please select a party, investor, or product";
+      }
+
+      // Ensure only one customer type is selected
+      const selectedCount = [hasParty, hasInvestor, hasProduct].filter(
+        Boolean
+      ).length;
+      if (selectedCount > 1) {
+        errors.customer_selection = "Please select only one customer type";
+      }
+    } else {
+      // Self payment specific validations
+      if (!formData.bank_id) {
+        errors.bank_id = "Bank selection is required for self payment";
+      }
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Clear previous errors
+    setFormErrors({});
+
+    // Validate form
+    const errors = validateForm();
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+
+      // Show validation error alert
+      Swal.fire({
+        title: "Validation Error",
+        text: "Please fix the errors in the form before submitting",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+
+      return; // Stop submission if there are errors
+    }
+
     setLoadingSubmit(true);
 
     try {
@@ -372,8 +534,10 @@ const Page = () => {
         const selectedItem = tablePartyData.find(
           (item) =>
             (item.customer_type === "party" && item.id === formData.party_id) ||
-            (item.customer_type === "investor" && item.id === formData.investor_id) ||
-            (item.customer_type === "product" && item.id === formData.product_id)
+            (item.customer_type === "investor" &&
+              item.id === formData.investor_id) ||
+            (item.customer_type === "product" &&
+              item.id === formData.product_id)
         );
 
         if (selectedItem) {
@@ -394,7 +558,10 @@ const Page = () => {
                   ? -Math.abs(formData.cash_amount)
                   : "",
               };
-              response = await api.postDataWithToken(investorLedger, requestData);
+              response = await api.postDataWithToken(
+                investorLedger,
+                requestData
+              );
               break;
 
             case "product":
@@ -403,7 +570,10 @@ const Page = () => {
                 product_id: formData.product_id,
                 cash_amount: formData.cash_amount,
               };
-              response = await api.postDataWithToken(companyProduct, requestData);
+              response = await api.postDataWithToken(
+                companyProduct,
+                requestData
+              );
               break;
 
             default:
@@ -415,6 +585,22 @@ const Page = () => {
       }
 
       if (response?.status === "success") {
+        // Clear form and errors on success
+        setFormData({
+          party_id: "",
+          sup_id: "",
+          product_id: "",
+          payment_type: "cash",
+          description: "",
+          cash_amount: "",
+          bank_id: "",
+          cheque_no: "",
+          cheque_date: "",
+          cheque_amount: "",
+          transection_id: "",
+        });
+        setFormErrors({});
+
         setResponseData(response);
         Swal.fire({
           title: "Success",
@@ -511,7 +697,10 @@ const Page = () => {
         <Grid container spacing={3}>
           {!isSelf && (
             <Grid item xs={12} md={6}>
-              {loading || loadingStates.parties || loadingStates.investors || loadingStates.products ? (
+              {loading ||
+              loadingStates.parties ||
+              loadingStates.investors ||
+              loadingStates.products ? (
                 <Skeleton variant="rectangular" height={56} />
               ) : (
                 <DropDown
@@ -529,7 +718,9 @@ const Page = () => {
                 />
               )}
               {tablePartyData.length === 0 && !loading && (
-                <Box sx={{ mt: 1, color: 'text.secondary', fontSize: '0.875rem' }}>
+                <Box
+                  sx={{ mt: 1, color: "text.secondary", fontSize: "0.875rem" }}
+                >
                   No data available based on your permissions
                 </Box>
               )}

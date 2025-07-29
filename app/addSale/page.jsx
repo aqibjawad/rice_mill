@@ -274,6 +274,52 @@ const Page = () => {
     setCombinedTotal(total);
   }, [silaiTotal, totalsAmounts]);
 
+  const validateFormData = (formData, weight) => {
+  const errors = [];
+
+  // Required field validations
+  if (!formData.buyer_id) {
+    errors.push("Buyer is required");
+  }
+
+  if (!formData.season_id) {
+    errors.push("Season is required");
+  }
+
+  if (!formData.pro_id) {
+    errors.push("Product is required");
+  }
+
+  if (!weight) {
+    errors.push("Weight is required");
+  }
+
+  if (!formData.truck_no) {
+    errors.push("Truck number is required");
+  }
+
+  if (formData.price_mann) {
+    errors.push("Price per mann must be a valid positive number");
+  }
+
+  if (formData.bardaana_deduction) {
+    errors.push("Bardaana deduction must be a valid positive number");
+  }
+
+  if (formData.khoot) {
+    errors.push("Khoot must be a valid positive number");
+  }
+
+  if (formData.bardaana_quantity) {
+    errors.push("Bardaana quantity must be a valid positive number");
+  }
+
+  if (formData.salai_amt_per_bag) {
+    errors.push("Salai amount per bag requiredr");
+  }
+  return errors;
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoadingSubmit(true);
