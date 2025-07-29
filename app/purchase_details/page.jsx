@@ -175,7 +175,7 @@ const Page = () => {
                   <TableCell>
                     <strong> Khoot:</strong>
                   </TableCell>
-                  <TableCell> Moisture Deduction </TableCell>
+                  <TableCell> {salesBook?.khoot} </TableCell>
                 </TableRow>
 
                 <TableRow>

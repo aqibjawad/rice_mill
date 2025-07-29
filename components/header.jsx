@@ -97,6 +97,12 @@ const Header = () => {
       label: "Seasons",
       parent: "Seasons",
     },
+    {
+      href: "/seasonSummary/",
+      icon: <FaShoppingCart />,
+      label: "Bardaana List",
+      parent: "Seasons",
+    },
     { href: "/user/", icon: <FaShoppingCart />, label: "User", parent: "User" },
     // { href: "/packing/", icon: <FaBox />, label: "Packing", parent: "Packing" },
     // { href: "/stock/", icon: <FaBoxes />, label: "Stock", parent: "Stock" },
@@ -145,8 +151,6 @@ const Header = () => {
             }
           });
         }
-
-        console.log("Allowed parents from localStorage:", allowedParents);
 
         // Filter menu items: show if parent is null (always show) OR if parent is in allowed permissions
         const filteredMenuItems = allMenuItems.filter(
@@ -239,7 +243,9 @@ const Header = () => {
 
       {/* Tablet/Desktop Navbar - Scrollable for tablet */}
       {!isMobile && (
-        <nav className={`${styles.navbar} ${isTablet ? styles.scrollableNav : ''}`}>
+        <nav
+          className={`${styles.navbar} ${isTablet ? styles.scrollableNav : ""}`}
+        >
           {allowedMenuItems.map((item, index) => renderMenuItem(item, index))}
         </nav>
       )}

@@ -492,6 +492,20 @@ const AddPurchaseContent = () => {
           </>
         )}
 
+        {selectedBardaanaId === 2 && (
+          <>
+            <Grid className="mt-5" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bardaana Quantity"}
+                placeholder={"Enter Bardaana Quantity"}
+                name="bardaana_quantity"
+                value={formData.bardaana_quantity}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </>
+        )}
+
         {selectedBardaanaId === 3 && (
           <>
             <Grid className="mt-5" item xs={12} sm={4}>
@@ -540,7 +554,7 @@ const AddPurchaseContent = () => {
           </>
         )}
 
-        <Grid className="mt-3" item xs={12} sm={4}>
+        <Grid className="mt-8" item xs={12} sm={4}>
           <InputWithTitle
             title={"Truck Number"}
             placeholder={"Enter Truck Number"}

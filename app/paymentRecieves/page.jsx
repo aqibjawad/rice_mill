@@ -446,7 +446,7 @@ const Page = () => {
           cancelButtonText: "Close",
         });
         // router.push("/dashboard");
-        window.location.reload();
+        // window.location.reload();
       } else {
         throw new Error(response?.message || "Failed to submit payment");
       }
