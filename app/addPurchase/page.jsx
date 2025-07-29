@@ -13,7 +13,7 @@ import {
   purchaseBook,
   party,
   products,
-  banks, 
+  banks,
   seasons,
 } from "../../networkApi/Constants";
 
@@ -93,6 +93,11 @@ const AddPurchaseContent = () => {
     { id: 2, label: "return" },
     { id: 3, label: "paid in cash" },
     { id: 4, label: "paid in ledger" },
+  ];
+
+  const bardaanaType = [
+    { id: 1, label: "Bori" },
+    { id: 2, label: "Tora" },
   ];
 
   useEffect(() => {
@@ -281,16 +286,76 @@ const AddPurchaseContent = () => {
     }
   };
 
+  const validateForm = () => {
+    const errors = [];
+
+    // Required field validations
+    if (!formData.sup_id || formData.sup_id === "") {
+      errors.push("Supplier is required");
+    }
+
+    if (!formData.season_id || formData.season_id === "") {
+      errors.push("Season is required");
+    }
+
+    if (!formData.date || formData.date === "") {
+      errors.push("Date is required");
+    }
+
+    if (!formData.pro_id || formData.pro_id === "") {
+      errors.push("Product is required");
+    }
+
+    if (!formData.price_mann || parseFloat(formData.price_mann) <= 0) {
+      errors.push("Price per mann is required and must be greater than 0");
+    }
+
+    if (!formData.net_weight || parseFloat(formData.net_weight) <= 0) {
+      errors.push("Net weight is required and must be greater than 0");
+    }
+
+    if (!formData.final_weight || parseFloat(formData.final_weight) <= 0) {
+      errors.push("Final weight is required and must be greater than 0");
+    }
+
+    if (!formData.khoot) {
+      errors.push("Khoot is required");
+    }
+
+    if (!formData.chungi) {
+      errors.push("chungi is required");
+    }
+
+    if (!formData.bardaana_deduction) {
+      errors.push("bardaana_deduction is required");
+    }
+
+    if (!formData.truckNumber || parseFloat(formData.truckNumber)) {
+      errors.push("truckNumber is required");
+    }
+
+    return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoadingSubmit(true);
 
+    // Validate form before submission
+    const validationErrors = validateForm();
+
+    if (validationErrors.length > 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Validation Error",
+        html: validationErrors.map((error) => `• ${error}`).join("<br>"),
+      });
+      return;
+    }
+
+    setLoadingSubmit(true);
     try {
       const payload = { ...formData, bardaana_amount: 0 };
-
       const response = await api.postDataWithToken(purchaseBook, payload);
-      console.log("API Response:", response); // Debugging
-
       if (response.status === "success") {
         Swal.fire({
           icon: "success",
@@ -386,6 +451,16 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
+        <Grid style={{ marginTop: "2.5rem" }} item xs={12} sm={4}>
+          <DropDown
+            title="Select Bardaana Type"
+            options={bardaanaType}
+            // onChange={handleDropdownChange}
+            // value={dropdownValues.bardaana_type}
+            name="bardaana_type"
+          />
+        </Grid>
+
         {/* Show these fields when "add" is selected in bardaana dropdown */}
         {selectedBardaanaId === 1 && (
           <>
@@ -401,8 +476,8 @@ const AddPurchaseContent = () => {
 
             <Grid className="mt-5" item xs={12} sm={4}>
               <InputWithTitle
-                title={"Bardaana Kept"}
-                placeholder={"Enter Bardaana Kept"}
+                title={"Bardaana Jama"}
+                placeholder={"Enter Bardaana Jama"}
                 name="bardaana_kept"
                 value={formData.bardaana_kept}
                 onChange={handleInputChange}

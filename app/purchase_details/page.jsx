@@ -173,6 +173,13 @@ const Page = () => {
 
                 <TableRow>
                   <TableCell>
+                    <strong> Khoot:</strong>
+                  </TableCell>
+                  <TableCell> Moisture Deduction </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
                     <strong> Transport No:</strong>
                   </TableCell>
                   <TableCell> {saleBook?.truck_no || 0} </TableCell>
