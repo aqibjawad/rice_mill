@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
+import { useRouter } from "next/navigation"; // Add this import
 import {
   Table,
   TableBody,
@@ -48,6 +49,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
   "&:hover": {
     backgroundColor: theme.palette.action.selected,
+    cursor: "pointer", // Add cursor pointer to indicate clickable rows
   },
   "&:last-child td, &:last-child th": {
     border: 0,
@@ -65,6 +67,7 @@ const TotalCard = styled(Card)(({ theme }) => ({
 }));
 
 const Page = () => {
+  const router = useRouter(); // Add navigation hook
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [permissions, setPermissions] = useState({
@@ -168,6 +171,58 @@ const Page = () => {
   const handleDateChange = (start, end) => {
     setStartDate(start);
     setEndDate(end);
+  };
+
+  // Add row click handler
+  const handleRowClick = (rowData, rowType) => {
+    try {
+      // Prepare the data to save
+      const receiptData = {
+        id: rowData.id,
+        type: rowType, // 'payment' or 'product'
+        receiverName:
+          rowType === "payment"
+            ? rowData.user?.name || "Admin"
+            : rowData?.user?.name || "",
+        paymentType:
+          rowType === "payment"
+            ? rowData.payment_type
+            : getProductPaymentTypeDisplay(rowData),
+        date: rowData?.created_at || new Date().toISOString(),
+        personOrProduct:
+          rowType === "payment"
+            ? rowData.customer?.person_name || "N/A"
+            : rowData?.product?.product_name || "N/A",
+        description: rowData.description || "N/A",
+        bank:
+          rowType === "payment"
+            ? rowData.bank?.bank_name || "N/A"
+            : rowData.linkable_type === "App\\Models\\BankLedger"
+            ? "Bank Entry"
+            : "N/A",
+        chequeNo:
+          rowType === "payment"
+            ? rowData.cheque_no || "N/A"
+            : rowData.linkable?.cheque_no || "N/A",
+        amount:
+          rowType === "payment"
+            ? getAmountByPaymentType(rowData)
+            : parseFloat(rowData.total_amount || 0),
+        balance: parseFloat(rowData.balance || 0),
+        rawData: rowData, // Save complete row data for reference
+        timestamp: new Date().toISOString(),
+      };
+
+      // Save to localStorage
+      localStorage.setItem("selectedReceiptData", JSON.stringify(receiptData));
+
+      // router to receipt page
+      router.push("/recieveReciept");
+    } catch (error) {
+      console.error("Error saving receipt data:", error);
+      // Still router even if localStorage fails
+      router.push("/recieveReciept");
+    }
   };
 
   // Helper function to get the correct amount based on payment type
@@ -515,7 +570,10 @@ const Page = () => {
                 <>
                   {/* Regular payment data */}
                   {receivesData.map((row, index) => (
-                    <StyledTableRow key={`payment-${row.id}`}>
+                    <StyledTableRow
+                      key={`payment-${row.id}`}
+                      onClick={() => handleRowClick(row, "payment")}
+                    >
                       <StyledTableCell align="center">
                         {index + 1}
                       </StyledTableCell>
@@ -564,7 +622,10 @@ const Page = () => {
 
                   {/* Product data */}
                   {receivesProData.map((row, index) => (
-                    <StyledTableRow key={`product-${row.id}`}>
+                    <StyledTableRow
+                      key={`product-${row.id}`}
+                      onClick={() => handleRowClick(row, "product")}
+                    >
                       <StyledTableCell align="center">
                         {receivesData.length + index + 1}
                       </StyledTableCell>

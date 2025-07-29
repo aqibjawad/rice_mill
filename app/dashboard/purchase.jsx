@@ -81,10 +81,11 @@ const Purchase = () => {
   const [triggerFetch] = useLazyGetpurchaseBookQuery();
 
   // Summary query (optional) - handle if endpoint doesn't exist
-  const { data: summaryData, error: summaryError } = useGetpurchaseBookSummaryQuery(
-    { startDate, endDate },
-    { skip: !permissions.canViewPurchase }
-  );
+  const { data: summaryData, error: summaryError } =
+    useGetpurchaseBookSummaryQuery(
+      { startDate, endDate },
+      { skip: !permissions.canViewPurchase }
+    );
 
   // Extract data from Redux response
   const tableData = purchaseData?.data || [];
@@ -161,6 +162,11 @@ const Purchase = () => {
   const handleViewDetails = (row) => {
     localStorage.setItem("purchaseBookId", row.id);
     router.push("/purchase_details");
+  };
+
+    const handleBardaanaDetails = (row) => {
+    localStorage.setItem("purchaseBookId", row.id);
+    router.push("/bardaanaGatepass");
   };
 
   const handlePageChange = (newPage) => {
@@ -268,7 +274,8 @@ const Purchase = () => {
         <Alert severity="error" sx={{ mb: 2 }}>
           <Typography variant="h6">Error Loading Purchase Data</Typography>
           <Typography variant="body2">
-            {error?.message || error?.data?.message ||
+            {error?.message ||
+              error?.data?.message ||
               "Failed to load purchase data. Please try again."}
           </Typography>
           <Button variant="outlined" onClick={() => refetch()} sx={{ mt: 1 }}>
@@ -375,6 +382,7 @@ const Purchase = () => {
                   <TableCell>Weight</TableCell>
                   <TableCell>Amount</TableCell>
                   <TableCell>Action</TableCell>
+                  <TableCell>Print</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -410,6 +418,16 @@ const Purchase = () => {
                       >
                         View Details
                       </TableCell>
+                      <TableCell
+                        onClick={() => handleBardaanaDetails(row)}
+                        style={{
+                          cursor: "pointer",
+                          color: "#1976d2",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        Print Bardaana Gate Pass
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
@@ -426,7 +444,7 @@ const Purchase = () => {
           </TableContainer>
 
           {/* Pagination could be added here */}
-          {totalPages > 1 && (
+          {/* {totalPages > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
               <Button
                 disabled={currentPage === 1}
@@ -444,7 +462,7 @@ const Purchase = () => {
                 Next
               </Button>
             </Box>
-          )}
+          )} */}
         </>
       )}
     </div>

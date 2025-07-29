@@ -44,7 +44,7 @@ const AddPurchaseContent = () => {
     bardaana_quantity: "",
     bardaana_given: "", // New field - Bardaana dia kitna
     bardaana_kept: "", // New field - Hmny rakha kitna
-    truckNumber: "",
+    truck_no: "",
     freight: "",
     price_mann: "",
     bank_tax: 0,
@@ -330,8 +330,8 @@ const AddPurchaseContent = () => {
       errors.push("bardaana_deduction is required");
     }
 
-    if (!formData.truckNumber || parseFloat(formData.truckNumber)) {
-      errors.push("truckNumber is required");
+    if (!formData.truck_no || parseFloat(formData.truck_no)) {
+      errors.push("truck_no is required");
     }
 
     return errors;
@@ -558,8 +558,8 @@ const AddPurchaseContent = () => {
           <InputWithTitle
             title={"Truck Number"}
             placeholder={"Enter Truck Number"}
-            name="truckNumber"
-            value={formData.truckNumber}
+            name="truck_no"
+            value={formData.truck_no}
             onChange={handleInputChange}
           />
         </Grid>
