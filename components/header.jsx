@@ -98,7 +98,7 @@ const Header = () => {
       parent: "Seasons",
     },
     {
-      href: "/seasonSummary/",
+      href: "/bardaanaLists/",
       icon: <FaShoppingCart />,
       label: "Bardaana List",
       parent: "Seasons",
