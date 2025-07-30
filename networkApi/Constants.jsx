@@ -8,7 +8,7 @@ const isLocalhost = typeof window !== 'undefined' && window.location.hostname ==
 const ENVIRONMENTS = {
   development: "https://pre-backend-ghulambari.worldcitizenconsultants.com/public",
   staging: "https://pre-backend-ghulambari.worldcitizenconsultants.com/public", 
-  production: "https://backend-ghulambari.worldcitizenconsultants.com"
+  production: "https://www.gbrmchn.com"
 };
 
 // Get current environment
@@ -26,8 +26,8 @@ const getCurrentEnvironment = () => {
 };
 
 // Base URL selection
-// const baseURL = ENVIRONMENTS[getCurrentEnvironment()];
-const baseURL = "https://api.gbrmchn.com";
+const baseURL = ENVIRONMENTS[getCurrentEnvironment()];
+// const baseURL = "https://api.gbrmchn.com";
 export const apiPrefix = baseURL + "/api";
 
 // Log current configuration
@@ -82,6 +82,8 @@ export const endpoints = {
   getSupplierPaidAmounts: apiPrefix + "/paid_party_amount",
   debitTrial: apiPrefix + "/dr/api",
   creditTrial: apiPrefix + "/cr/api",
+
+  bardaanaList: apiPrefix + "/"
 };
 
 // Legacy exports for backward compatibility
@@ -113,6 +115,7 @@ export const debitTrial = endpoints.debitTrial;
 export const creditTrial = endpoints.creditTrial;
 export const selfPayment = endpoints.selfPayment;
 export const companyProduct = endpoints.companyProduct;
+export const bardaanaList = endpoints.bardaanaList;
 
 // Utility functions
 export const getLocalStorage = (key) => {

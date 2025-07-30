@@ -41,9 +41,9 @@ const AddPurchaseContent = () => {
     pro_id: "",
     quantity: "",
     bardaana_type: "",
+    bardaana_entry: "",
+    total_bardaana_quantity: "",
     bardaana_quantity: "",
-    bardaana_given: "", // New field - Bardaana dia kitna
-    bardaana_kept: "", // New field - Hmny rakha kitna
     truck_no: "",
     freight: "",
     price_mann: "",
@@ -69,6 +69,7 @@ const AddPurchaseContent = () => {
     sup_id: null,
     pro_id: null,
     bardaana_type: null,
+    bardaana_entry: null,
     bank_id: null,
   });
 
@@ -91,9 +92,8 @@ const AddPurchaseContent = () => {
   const bardaanaList = [
     { id: 1, label: "add" },
     { id: 2, label: "return" },
-    { id: 3, label: "paid" },
-    // { id: 3, label: "paid in cash" },
-    // { id: 4, label: "paid in ledger" },
+    { id: 3, label: "paid in cash" },
+    { id: 4, label: "paid in ledger" },
   ];
 
   const bardaanaType = [
@@ -278,6 +278,12 @@ const AddPurchaseContent = () => {
         }));
         // Set the selected bardaana ID to show/hide conditional fields
         setSelectedBardaanaId(selectedOption.id);
+      } else if (name === "bardaana_entry") {
+        // Handle bardaana_entry dropdown
+        setFormData((prev) => ({
+          ...prev,
+          [name]: selectedOption.label,
+        }));
       } else if (["sup_id", "pro_id", "bank_id"].includes(name)) {
         setFormData((prev) => ({
           ...prev,
@@ -449,7 +455,7 @@ const AddPurchaseContent = () => {
         </Grid>
 
         <Grid style={{ marginTop: "2.5rem" }} item xs={12} sm={4}>
-          <DropDown
+          <DropDown3
             title="Select Bardaana"
             options={bardaanaList}
             onChange={handleDropdownChange}
@@ -458,15 +464,15 @@ const AddPurchaseContent = () => {
           />
         </Grid>
 
-        {/* <Grid style={{ marginTop: "2.5rem" }} item xs={12} sm={4}>
-          <DropDown
-            title="Select Bardaana Type"
+        <Grid style={{ marginTop: "2.5rem" }} item xs={12} sm={4}>
+          <DropDown3
+            title="Select Bardaana Entry"
             options={bardaanaType}
-            // onChange={handleDropdownChange}
-            // value={dropdownValues.bardaana_type}
-            name="bardaana_type"
+            onChange={handleDropdownChange}
+            value={dropdownValues.bardaana_entry}
+            name="bardaana_entry"
           />
-        </Grid> */}
+        </Grid>
 
         {/* Show these fields when "add" is selected in bardaana dropdown */}
         {selectedBardaanaId === 1 && (
@@ -475,21 +481,21 @@ const AddPurchaseContent = () => {
               <InputWithTitle
                 title={"Bardaana Quantity"}
                 placeholder={"Enter Bardaana Quantity"}
+                name="total_bardaana_quantity"
+                value={formData.total_bardaana_quantity}
+                onChange={handleInputChange}
+              />
+            </Grid>
+
+            <Grid className="mt-5" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bardaana Jama"}
+                placeholder={"Enter Bardaana Jama"}
                 name="bardaana_quantity"
                 value={formData.bardaana_quantity}
                 onChange={handleInputChange}
               />
             </Grid>
-
-            {/* <Grid className="mt-5" item xs={12} sm={4}>
-              <InputWithTitle
-                title={"Bardaana Jama"}
-                placeholder={"Enter Bardaana Jama"}
-                name="bardaana_kept"
-                value={formData.bardaana_kept}
-                onChange={handleInputChange}
-              />
-            </Grid> */}
           </>
         )}
 
@@ -499,8 +505,8 @@ const AddPurchaseContent = () => {
               <InputWithTitle
                 title={"Bardaana Quantity"}
                 placeholder={"Enter Bardaana Quantity"}
-                name="bardaana_quantity"
-                value={formData.bardaana_quantity}
+                name="total_bardaana_quantity"
+                value={formData.total_bardaana_quantity}
                 onChange={handleInputChange}
               />
             </Grid>
@@ -513,8 +519,8 @@ const AddPurchaseContent = () => {
               <InputWithTitle
                 title={"Bardaana Quantity"}
                 placeholder={"Enter Bardaana Quantity"}
-                name="bardaana_quantity"
-                value={formData.bardaana_quantity}
+                name="total_bardaana_quantity"
+                value={formData.total_bardaana_quantity}
                 onChange={handleInputChange}
               />
             </Grid>
@@ -523,8 +529,8 @@ const AddPurchaseContent = () => {
               <InputWithTitle
                 title={"Bardaana Amount"}
                 placeholder={"Enter Bardaana Amount"}
-                name="bardaana_quantity"
-                value={formData.bardaana_quantity}
+                name="total_bardaana_quantity"
+                value={formData.total_bardaana_quantity}
                 onChange={handleInputChange}
               />
             </Grid> */}
@@ -537,8 +543,8 @@ const AddPurchaseContent = () => {
               <InputWithTitle
                 title={"Bardaana Quantity"}
                 placeholder={"Enter Bardaana Quantity"}
-                name="bardaana_quantity"
-                value={formData.bardaana_quantity}
+                name="total_bardaana_quantity"
+                value={formData.total_bardaana_quantity}
                 onChange={handleInputChange}
               />
             </Grid>
@@ -547,15 +553,15 @@ const AddPurchaseContent = () => {
               <InputWithTitle
                 title={"Bardaana Amount"}
                 placeholder={"Enter Bardaana Amount"}
-                name="bardaana_quantity"
-                value={formData.bardaana_quantity}
+                name="total_bardaana_quantity"
+                value={formData.total_bardaana_quantity}
                 onChange={handleInputChange}
               />
             </Grid> */}
           </>
         )}
 
-        <Grid className="mt-3" item xs={12} sm={4}>
+        <Grid className="mt-8" item xs={12} sm={4}>
           <InputWithTitle
             title={"Truck Number"}
             placeholder={"Enter Truck Number"}
