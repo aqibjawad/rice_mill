@@ -305,7 +305,7 @@ const Page = () => {
         {!permissions.hasAccess && (
           <Box sx={{ textAlign: "center", mt: 4 }}>
             <Alert severity="warning">
-              You don't have permission to view investors data.
+              You dont have permission to view investors data.
             </Alert>
           </Box>
         )}

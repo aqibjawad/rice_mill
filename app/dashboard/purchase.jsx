@@ -293,7 +293,7 @@ const Purchase = () => {
         <Alert severity="warning">
           <Typography variant="h6">Access Denied</Typography>
           <Typography variant="body2">
-            You don't have permission to view purchase data.
+            You dont have permission to view purchase data.
           </Typography>
         </Alert>
       </div>

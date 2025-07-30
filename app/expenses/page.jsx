@@ -184,7 +184,7 @@ const Page = () => {
     return (
       <div style={{ padding: 20 }}>
         <Typography variant="h5" color="error">
-          You don't have permission to access expenses.
+          You dont have permission to access expenses.
         </Typography>
       </div>
     );
