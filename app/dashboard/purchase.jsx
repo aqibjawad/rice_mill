@@ -164,7 +164,7 @@ const Purchase = () => {
     router.push("/purchase_details");
   };
 
-    const handleBardaanaDetails = (row) => {
+  const handleBardaanaDetails = (row) => {
     localStorage.setItem("purchaseBookId", row.id);
     router.push("/bardaanaGatepass");
   };
@@ -177,7 +177,22 @@ const Purchase = () => {
   const downloadPDF = () => {
     const doc = new jsPDF();
 
-    // Add title
+    // Add logo to the right side
+    const logoUrl = "/logo.png";
+    // Calculate position for right alignment
+    const pageWidth = doc.internal.pageSize.width;
+    const logoWidth = 40;
+    const logoHeight = 50;
+    const logoX = pageWidth - logoWidth - 14; // 14 is margin from right
+    const logoY = 10; // Top margin
+
+    try {
+      doc.addImage(logoUrl, "PNG", logoX, logoY, logoWidth, logoHeight);
+    } catch (error) {
+      console.warn("Logo could not be added:", error);
+    }
+
+    // Add title (adjusted position to avoid logo overlap)
     doc.setFontSize(18);
     doc.setFont(undefined, "bold");
     doc.text("Purchase Report", 14, 22);
@@ -221,11 +236,11 @@ const Purchase = () => {
       row.total_amount || "",
     ]);
 
-    // Add table
+    // Add table (adjusted startY to accommodate logo if needed)
     doc.autoTable({
       head: [tableColumns],
       body: tableRows,
-      startY: 56,
+      startY: Math.max(56, logoY + logoHeight + 10), // Ensure table starts below logo
       styles: {
         fontSize: 8,
         cellPadding: 3,

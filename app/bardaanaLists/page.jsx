@@ -3,38 +3,40 @@ import React, { useState, useEffect } from "react";
 import BardanaReturnModal from "./returnModal";
 import APICall from "@/networkApi/APICall";
 import { purchaseBook } from "../../networkApi/Constants";
+import DateFilters from "@/components/generic/DateFilter";
 
-// Updated Main Component with Modal Integration
 export default function BardanaList() {
   const api = new APICall();
 
   const [activeTab, setActiveTab] = useState("Jamaa");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-
-  // Missing state variables
   const [loading, setLoading] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [error, setError] = useState(null);
 
+  const [dateFilter, setDateFilter] = useState({
+    startDate: null,
+    endDate: null,
+    selectedDate: null,
+    filterType: null,
+  });
+
   useEffect(() => {
     fetchData();
-  }, [activeTab]); // activeTab ko dependency mein add kiya
+  }, [activeTab]);
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      let endpoint;
-
-      // Tab ke basis par different API endpoints
-      if (activeTab === "Jamaa") {
+      let endpoint = "";
+      if (activeTab === "Jamaa")
         endpoint = `${purchaseBook}/bardaana_jama/list`;
-      } else if (activeTab === "Return") {
+      else if (activeTab === "Return")
         endpoint = `${purchaseBook}/bardaana_return/list`;
-      } else if (activeTab === "Purchase") {
-        endpoint = `${purchaseBook}/bardaana_purchase/list`; // Assuming purchase ka endpoint
-      }
+      else if (activeTab === "Purchase")
+        endpoint = `${purchaseBook}/bardaana_purchase/list`;
 
       const response = await api.getDataWithToken(endpoint);
       const data = response.data;
@@ -46,28 +48,145 @@ export default function BardanaList() {
     }
   };
 
-  // Filter data based on active tab - ab ye function kam nahi karega kyunki data already filtered hai
-  const getFilteredData = () => {
-    // Agar aap chahte hain to additional filtering kar sakte hain
-    return rowData;
-  };
+  const isDateInRange = (itemDate, filterData) => {
+    if (!itemDate) return false;
 
-  const tabs = [
-    { id: "Jamaa", label: "Jamaa", active: true },
-    { id: "Return", label: "Return", active: false },
-    { id: "Purchase", label: "Purchase", active: false },
-  ];
+    const itemDateObj = new Date(itemDate);
+
+    if (
+      filterData.filterType === "lastMonth" ||
+      filterData.type === "lastMonth"
+    ) {
+      const currentDate = new Date();
+      const lastMonthStart = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - 1,
+        1
+      );
+      const lastMonthEnd = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        0
+      );
+      return itemDateObj >= lastMonthStart && itemDateObj <= lastMonthEnd;
+    }
+
+    if (
+      filterData.filterType === "thisMonth" ||
+      filterData.type === "thisMonth"
+    ) {
+      const currentDate = new Date();
+      const thisMonthStart = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        1
+      );
+      const thisMonthEnd = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        0
+      );
+      return itemDateObj >= thisMonthStart && itemDateObj <= thisMonthEnd;
+    }
+
+    const startDate = filterData.startDate || filterData.from;
+    const endDate = filterData.endDate || filterData.to;
+    const selectedDate = filterData.selectedDate || filterData.date;
+
+    if (selectedDate) {
+      const selectedDateObj = new Date(selectedDate);
+      return itemDateObj.toDateString() === selectedDateObj.toDateString();
+    }
+
+    if (startDate && endDate) {
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(endDate);
+      return itemDateObj >= startDateObj && itemDateObj <= endDateObj;
+    }
+
+    if (startDate) return itemDateObj >= new Date(startDate);
+    if (endDate) return itemDateObj <= new Date(endDate);
+
+    return true;
+  };
 
   const getLastBardaanaDetail = (detailsArray) => {
     if (!Array.isArray(detailsArray) || detailsArray.length === 0) return null;
-    const last = detailsArray[detailsArray.length - 1];
-    return last;
+    return detailsArray[detailsArray.length - 1];
+  };
+
+  const getFilteredData = () => {
+    let filtered = rowData;
+
+    const hasDateFilter =
+      dateFilter.startDate ||
+      dateFilter.endDate ||
+      dateFilter.selectedDate ||
+      dateFilter.filterType ||
+      dateFilter.type ||
+      dateFilter.from ||
+      dateFilter.to ||
+      dateFilter.date;
+
+    if (hasDateFilter) {
+      filtered = filtered.filter((item) => {
+        const detailDate = getLastBardaanaDetail(
+          item.purchase_book_bardaana_details
+        )?.date;
+        const mainDate = item.date;
+        const validDate = detailDate || mainDate;
+        return isDateInRange(validDate, dateFilter);
+      });
+    }
+
+    if (activeTab === "Jamaa") {
+      filtered = filtered.filter((item) => {
+        const lastDetail = getLastBardaanaDetail(
+          item.purchase_book_bardaana_details
+        );
+        const remainingQty = lastDetail ? lastDetail.remaining_bardaana_qty : 0;
+        return remainingQty > 0;
+      });
+    }
+
+    return filtered;
+  };
+
+  const handleDateFilterChange = (filterData) => {
+    setDateFilter(filterData);
+  };
+
+  const getLastBardaanaQty = (details) => {
+    if (!details || details.length === 0) return "-";
+    const lastEntry = details[details.length - 1];
+    return (
+      lastEntry?.total_bardaana_qty - lastEntry?.remaining_bardaana_qty || "-"
+    );
+  };
+
+  const getLastBardaanaEntry = (details) => {
+    if (!details || details.length === 0) return "-";
+    const lastEntry = details[details.length - 1];
+    return lastEntry?.bardaana_entry || "-";
+  };
+
+  const getBardaanaQuantity = (item) => {
+    const lastDetail = getLastBardaanaDetail(
+      item.purchase_book_bardaana_details
+    );
+    if (activeTab === "Jamaa") {
+      return lastDetail ? lastDetail.remaining_bardaana_qty : "-";
+    } else if (activeTab === "Return" || activeTab === "Purchase") {
+      return getLastBardaanaQty(item.purchase_book_bardaana_details);
+    }
+    return "-";
+  };
+
+  const getBardaanaEntry = (item) => {
+    return getLastBardaanaEntry(item.purchase_book_bardaana_details);
   };
 
   const handleReturnClick = (item) => {
-    console.log("Button clicked with item:", item); // Debug ke liye
-
-    // remaining_bardaana_qty ko calculate kar ke item mein add kar dete hain
     const lastDetail = getLastBardaanaDetail(
       item.purchase_book_bardaana_details
     );
@@ -77,7 +196,6 @@ export default function BardanaList() {
         ? lastDetail.remaining_bardaana_qty
         : 0,
     };
-
     setSelectedItem(itemWithRemainingQty);
     setIsModalOpen(true);
   };
@@ -88,70 +206,16 @@ export default function BardanaList() {
   };
 
   const handleModalSubmit = () => {
-    // Handle modal submit logic here
-    console.log("Modal submitted");
-    // Modal submit ke baad data refresh kar sakte hain
     fetchData();
   };
 
-  const getLastBardaanaQty = (details) => {
-    if (!details || details.length === 0) return "-";
-
-    const lastEntry = details[details.length - 1]; // Last item
-    return lastEntry?.total_bardaana_qty - lastEntry?.remaining_bardaana_qty || "-";
-  };
-
-  // New function to get bardaana_entry from last entry
-  const getLastBardaanaEntry = (details) => {
-    if (!details || details.length === 0) return "-";
-
-    const lastEntry = details[details.length - 1]; // Last item
-    return lastEntry?.bardaana_entry || "-";
-  };
-
-  const getBardaanaQuantity = (item) => {
-    if (activeTab === "Jamaa") {
-      const lastDetail = getLastBardaanaDetail(
-        item.purchase_book_bardaana_details
-      );
-      return lastDetail ? lastDetail.remaining_bardaana_qty : "-";
-    } else if (activeTab === "Return" || activeTab === "Purchase") {
-      const lastQty = getLastBardaanaQty(item.purchase_book_bardaana_details);
-      return lastQty;
-    }
-    return "-";
-  };
-
-  // Function to get bardaana entry based on active tab
-  const getBardaanaEntry = (item) => {
-    return getLastBardaanaEntry(item.purchase_book_bardaana_details);
-  };
-
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="max-w-6xl mx-auto bg-white p-8 text-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className="max-w-6xl mx-auto bg-white p-8 text-center">
-        <p className="text-red-600">Error: {error}</p>
-        <button
-          onClick={fetchData}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
   const filteredData = getFilteredData();
+
+  const tabs = [
+    { id: "Jamaa", label: "Jamaa", active: true },
+    { id: "Return", label: "Return", active: false },
+    { id: "Purchase", label: "Purchase", active: false },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto bg-white">
@@ -176,6 +240,11 @@ export default function BardanaList() {
         ))}
       </div>
 
+      {/* Date Filter */}
+      <div className="p-4 bg-gray-50 border-b">
+        <DateFilters onFilterChange={handleDateFilterChange} />
+      </div>
+
       {/* Header */}
       <div
         className="text-white py-4 px-6"
@@ -191,43 +260,25 @@ export default function BardanaList() {
         className="overflow-x-auto"
         style={{ borderRadius: "0 0 15px 15px" }}
       >
-        <table className="w-full" style={{ borderRadius: "15px" }}>
+        <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th
-                className="px-6 py-4 text-left text-sm font-medium text-gray-600"
-                style={{ fontSize: "15px" }}
-              >
-                Serial No.
-              </th>
-              <th
-                className="px-6 py-4 text-left text-sm font-medium text-gray-600"
-                style={{ fontSize: "15px" }}
-              >
-                Date
-              </th>
-              <th
-                className="px-6 py-4 text-left text-sm font-medium text-gray-600"
-                style={{ fontSize: "15px" }}
-              >
-                Party Name
-              </th>
-              <th
-                className="px-6 py-4 text-left text-sm font-medium text-gray-600"
-                style={{ fontSize: "15px" }}
-              >
-                Bardaana Quantity
-              </th>
-              <th
-                className="px-6 py-4 text-left text-sm font-medium text-gray-600"
-                style={{ fontSize: "15px" }}
-              >
-                Bardaana Entry
-              </th>
-              <th
-                className="px-6 py-4 text-left text-sm font-medium text-gray-600"
-                style={{ fontSize: "15px" }}
-              ></th>
+              {[
+                "Serial No.",
+                "Date",
+                "Party Name",
+                "Bardaana Quantity",
+                "Bardaana Entry",
+                "",
+              ].map((head) => (
+                <th
+                  key={head}
+                  className="px-6 py-4 text-left text-sm font-medium text-gray-600"
+                  style={{ fontSize: "15px" }}
+                >
+                  {head}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -237,7 +288,10 @@ export default function BardanaList() {
                 className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
               >
                 <td className="px-6 py-4 text-sm text-gray-600">{index + 1}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{item.date}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">
+                  {getLastBardaanaDetail(item.purchase_book_bardaana_details)
+                    ?.date || item.date}
+                </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
                   {item.party?.person_name}
                 </td>
@@ -251,7 +305,7 @@ export default function BardanaList() {
                   {activeTab === "Jamaa" && (
                     <button
                       onClick={() => handleReturnClick(item)}
-                      className="hover:opacity-90 text-white text-sm px-6 py-3 transition-colors"
+                      className="hover:opacity-90 text-white text-sm px-6 py-3"
                       style={{
                         borderRadius: "4px",
                         backgroundColor: "#0075E2",
@@ -267,14 +321,23 @@ export default function BardanaList() {
         </table>
       </div>
 
-      {/* Show message when no data is available */}
+      {/* No Data Message */}
       {filteredData.length === 0 && !loading && (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No data available for {activeTab}</p>
+        <div className="text-center py-8 text-gray-500">
+          {dateFilter.startDate ||
+          dateFilter.endDate ||
+          dateFilter.selectedDate ||
+          dateFilter.filterType ||
+          dateFilter.type ||
+          dateFilter.from ||
+          dateFilter.to ||
+          dateFilter.date
+            ? `No data available for ${activeTab} in the selected date range`
+            : `No data available for ${activeTab}`}
         </div>
       )}
 
-      {/* Modal Component */}
+      {/* Modal */}
       <BardanaReturnModal
         isOpen={isModalOpen}
         onClose={closeModal}
