@@ -382,7 +382,7 @@ const Purchase = () => {
                   <TableCell>Weight</TableCell>
                   <TableCell>Amount</TableCell>
                   <TableCell>Action</TableCell>
-                  {/* <TableCell>Print</TableCell> */}
+                  <TableCell>Print</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -418,7 +418,7 @@ const Purchase = () => {
                       >
                         View Details
                       </TableCell>
-                      {/* <TableCell
+                      <TableCell
                         onClick={() => handleBardaanaDetails(row)}
                         style={{
                           cursor: "pointer",
@@ -427,7 +427,7 @@ const Purchase = () => {
                         }}
                       >
                         Print Bardaana Gate Pass
-                      </TableCell> */}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (

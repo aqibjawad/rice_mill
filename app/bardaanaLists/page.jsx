@@ -19,15 +19,24 @@ export default function BardanaList() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [activeTab]); // activeTab ko dependency mein add kiya
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await api.getDataWithToken(
-        `${purchaseBook}/bardaana_jama/list`
-      );
+      let endpoint;
 
+      // Tab ke basis par different API endpoints
+      if (activeTab === "Jamaa") {
+        endpoint = `${purchaseBook}/bardaana_jama/list`;
+      } else if (activeTab === "Return") {
+        endpoint = `${purchaseBook}/bardaana_return/list`;
+      } else if (activeTab === "Purchase") {
+        endpoint = `${purchaseBook}/bardaana_purchase/list`; // Assuming purchase ka endpoint
+      }
+
+      const response = await api.getDataWithToken(endpoint);
       const data = response.data;
       setRowData(data);
     } catch (error) {
@@ -37,15 +46,9 @@ export default function BardanaList() {
     }
   };
 
-  // Filter data based on active tab
+  // Filter data based on active tab - ab ye function kam nahi karega kyunki data already filtered hai
   const getFilteredData = () => {
-    if (activeTab === "Jamaa") {
-      return rowData.filter((item) => item.bardaana_type === "add");
-    } else if (activeTab === "Return") {
-      return rowData.filter((item) => item.bardaana_type === "return");
-    } else if (activeTab === "Purchase") {
-      return rowData.filter((item) => item.bardaana_type === "purchase");
-    }
+    // Agar aap chahte hain to additional filtering kar sakte hain
     return rowData;
   };
 
@@ -55,9 +58,27 @@ export default function BardanaList() {
     { id: "Purchase", label: "Purchase", active: false },
   ];
 
+  const getLastBardaanaDetail = (detailsArray) => {
+    if (!Array.isArray(detailsArray) || detailsArray.length === 0) return null;
+    const last = detailsArray[detailsArray.length - 1];
+    return last;
+  };
+
   const handleReturnClick = (item) => {
     console.log("Button clicked with item:", item); // Debug ke liye
-    setSelectedItem(item);
+
+    // remaining_bardaana_qty ko calculate kar ke item mein add kar dete hain
+    const lastDetail = getLastBardaanaDetail(
+      item.purchase_book_bardaana_details
+    );
+    const itemWithRemainingQty = {
+      ...item,
+      remaining_bardaana_qty: lastDetail
+        ? lastDetail.remaining_bardaana_qty
+        : 0,
+    };
+
+    setSelectedItem(itemWithRemainingQty);
     setIsModalOpen(true);
   };
 
@@ -69,7 +90,41 @@ export default function BardanaList() {
   const handleModalSubmit = () => {
     // Handle modal submit logic here
     console.log("Modal submitted");
-    // You can add API call or other logic here
+    // Modal submit ke baad data refresh kar sakte hain
+    fetchData();
+  };
+
+  const getLastBardaanaQty = (details) => {
+    if (!details || details.length === 0) return "-";
+
+    const lastEntry = details[details.length - 1]; // Last item
+    return lastEntry?.total_bardaana_qty - lastEntry?.remaining_bardaana_qty || "-";
+  };
+
+  // New function to get bardaana_entry from last entry
+  const getLastBardaanaEntry = (details) => {
+    if (!details || details.length === 0) return "-";
+
+    const lastEntry = details[details.length - 1]; // Last item
+    return lastEntry?.bardaana_entry || "-";
+  };
+
+  const getBardaanaQuantity = (item) => {
+    if (activeTab === "Jamaa") {
+      const lastDetail = getLastBardaanaDetail(
+        item.purchase_book_bardaana_details
+      );
+      return lastDetail ? lastDetail.remaining_bardaana_qty : "-";
+    } else if (activeTab === "Return" || activeTab === "Purchase") {
+      const lastQty = getLastBardaanaQty(item.purchase_book_bardaana_details);
+      return lastQty;
+    }
+    return "-";
+  };
+
+  // Function to get bardaana entry based on active tab
+  const getBardaanaEntry = (item) => {
+    return getLastBardaanaEntry(item.purchase_book_bardaana_details);
   };
 
   // Show loading state
@@ -161,13 +216,13 @@ export default function BardanaList() {
                 className="px-6 py-4 text-left text-sm font-medium text-gray-600"
                 style={{ fontSize: "15px" }}
               >
-                Quantity
+                Bardaana Quantity
               </th>
               <th
                 className="px-6 py-4 text-left text-sm font-medium text-gray-600"
                 style={{ fontSize: "15px" }}
               >
-                Type
+                Bardaana Entry
               </th>
               <th
                 className="px-6 py-4 text-left text-sm font-medium text-gray-600"
@@ -187,10 +242,10 @@ export default function BardanaList() {
                   {item.party?.person_name}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {item.bardaana_quantity}
+                  {getBardaanaQuantity(item)}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {item.bardaana_type}
+                  {getBardaanaEntry(item)}
                 </td>
                 <td className="px-6 py-4">
                   {activeTab === "Jamaa" && (
