@@ -149,7 +149,7 @@ const Page = () => {
     if (!permissions.canAddProducts) {
       Swal.fire({
         title: "Permission Denied!",
-        text: "You don't have permission to delete products.",
+        text: "You dont have permission to delete products.",
         icon: "error",
         confirmButtonText: "OK",
       });

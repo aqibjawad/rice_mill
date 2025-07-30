@@ -166,7 +166,7 @@ const Page = () => {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="warning">
-          You don't have permission to access the Banks module.
+          You dont have permission to access the this module.
         </Alert>
       </Box>
     );

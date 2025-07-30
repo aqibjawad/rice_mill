@@ -11,7 +11,7 @@ const TrialBalanceModal = ({ isOpen, onClose }) => {
   const api = new APICall();
   const router = useRouter();
   
-  if (!isOpen) return null;
+  
 
   const [seasonsList, setSeasons] = useState([]);
   const [loadingSeasons, setLoadingSeasons] = useState(true);
@@ -96,6 +96,8 @@ const TrialBalanceModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     fetchSeasons();
   }, []);
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
