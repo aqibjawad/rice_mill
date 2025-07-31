@@ -140,7 +140,8 @@ const AddPurchaseContent = () => {
     const firstWeight = parseFloat(formData.khoot) || 0;
     const secondWeight = parseFloat(formData.chungi) || 0;
     const bardaana_deduction = parseFloat(formData.bardaana_deduction) || 0;
-    const total_bardaana_quantity = parseFloat(formData.total_bardaana_quantity) || 0;
+    const total_bardaana_quantity =
+      parseFloat(formData.total_bardaana_quantity) || 0;
 
     const finalWeight =
       netWeight - firstWeight - secondWeight - bardaana_deduction;
@@ -301,7 +302,7 @@ const AddPurchaseContent = () => {
         }));
         // Set the selected bardaana ID to show/hide conditional fields
         setSelectedBardaanaId(selectedOption.id);
-        
+
         // Clear bardaana_quantity when changing bardaana type
         setFormData((prev) => ({
           ...prev,
@@ -390,8 +391,17 @@ const AddPurchaseContent = () => {
 
     setLoadingSubmit(true);
     try {
-      const payload = { ...formData, bardaana_amount: 0 };
-      console.log("Payload being sent:", payload); // Debug log to see the bardaana_type value
+      // Remove the hardcoded bardaana_amount override
+      const payload = { ...formData };
+
+      // Only set bardaana_amount to 0 for specific bardaana types if needed
+      // For "add" and "return" types, bardaana_amount should remain 0
+      if (selectedBardaanaId === 1 || selectedBardaanaId === 2) {
+        payload.bardaana_amount = "0";
+      }
+      // For "paid_as_cash" and "paid_as_ledger", keep the user-entered value
+
+      console.log("Payload being sent:", payload); // Debug log
 
       const response = await api.postDataWithToken(purchaseBook, payload);
 
