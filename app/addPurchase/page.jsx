@@ -89,11 +89,12 @@ const AddPurchaseContent = () => {
   const [totalAmount, setTotalAmounts] = useState(0);
   const [selectedBardaanaId, setSelectedBardaanaId] = useState(null);
 
+  // Updated bardaanaList with backend values
   const bardaanaList = [
-    { id: 1, label: "add" },
-    { id: 2, label: "return" },
-    { id: 3, label: "paid in cash" },
-    { id: 4, label: "paid in ledger" },
+    { id: 1, label: "add", backendValue: "add" },
+    { id: 2, label: "return", backendValue: "return" },
+    { id: 3, label: "paid as cash", backendValue: "paid_as_cash" },
+    { id: 4, label: "paid in ledger", backendValue: "paid_as_ledger" },
   ];
 
   const bardaanaType = [
@@ -107,6 +108,17 @@ const AddPurchaseContent = () => {
     fetchBanks();
     fetchSeasons();
   }, []);
+
+  // Modified: Only auto sync bardaana_quantity with total_bardaana_quantity for non-"add" types
+  useEffect(() => {
+    if (formData.total_bardaana_quantity && selectedBardaanaId !== 1) {
+      // Only sync when bardaana type is NOT "add" (id !== 1)
+      setFormData((prev) => ({
+        ...prev,
+        bardaana_quantity: prev.total_bardaana_quantity,
+      }));
+    }
+  }, [formData.total_bardaana_quantity, selectedBardaanaId]);
 
   const calculateMunds = (weight) => {
     const weightInKg = parseFloat(weight);
@@ -128,7 +140,7 @@ const AddPurchaseContent = () => {
     const firstWeight = parseFloat(formData.khoot) || 0;
     const secondWeight = parseFloat(formData.chungi) || 0;
     const bardaana_deduction = parseFloat(formData.bardaana_deduction) || 0;
-    const bardaana_quantity = parseFloat(formData.bardaana_quantity) || 0;
+    const total_bardaana_quantity = parseFloat(formData.total_bardaana_quantity) || 0;
 
     const finalWeight =
       netWeight - firstWeight - secondWeight - bardaana_deduction;
@@ -138,7 +150,7 @@ const AddPurchaseContent = () => {
     }));
 
     const weightPerBag = finalWeight
-      ? (finalWeight / bardaana_quantity).toFixed(2)
+      ? (finalWeight / total_bardaana_quantity).toFixed(2)
       : 0;
     setFormData((prevData) => ({
       ...prevData,
@@ -151,7 +163,7 @@ const AddPurchaseContent = () => {
     formData.khoot,
     formData.chungi,
     formData.bardaana_deduction,
-    formData.bardaana_quantity,
+    formData.total_bardaana_quantity,
   ]);
 
   const calculateAmount = () => {
@@ -258,10 +270,20 @@ const AddPurchaseContent = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+
+    setFormData((prevState) => {
+      const updatedData = {
+        ...prevState,
+        [name]: value,
+      };
+
+      // Modified: Only sync bardaana_quantity with total_bardaana_quantity for non-"add" types
+      if (name === "total_bardaana_quantity" && selectedBardaanaId !== 1) {
+        updatedData.bardaana_quantity = value;
+      }
+
+      return updatedData;
+    });
   };
 
   const handleDropdownChange = (name, selectedOption) => {
@@ -272,12 +294,19 @@ const AddPurchaseContent = () => {
 
     if (selectedOption) {
       if (name === "bardaana_type") {
+        // Use backendValue for API submission
         setFormData((prev) => ({
           ...prev,
-          [name]: selectedOption.label,
+          [name]: selectedOption.backendValue || selectedOption.label,
         }));
         // Set the selected bardaana ID to show/hide conditional fields
         setSelectedBardaanaId(selectedOption.id);
+        
+        // Clear bardaana_quantity when changing bardaana type
+        setFormData((prev) => ({
+          ...prev,
+          bardaana_quantity: "",
+        }));
       } else if (name === "bardaana_entry") {
         // Handle bardaana_entry dropdown
         setFormData((prev) => ({
@@ -362,6 +391,8 @@ const AddPurchaseContent = () => {
     setLoadingSubmit(true);
     try {
       const payload = { ...formData, bardaana_amount: 0 };
+      console.log("Payload being sent:", payload); // Debug log to see the bardaana_type value
+
       const response = await api.postDataWithToken(purchaseBook, payload);
 
       if (response.status === "success") {
@@ -493,7 +524,7 @@ const AddPurchaseContent = () => {
                 placeholder={"Enter Bardaana Jama"}
                 name="bardaana_quantity"
                 value={formData.bardaana_quantity}
-                onChange={handleInputChange}
+                onChange={handleInputChange} // Made editable for "add" type
               />
             </Grid>
           </>
@@ -508,6 +539,17 @@ const AddPurchaseContent = () => {
                 name="total_bardaana_quantity"
                 value={formData.total_bardaana_quantity}
                 onChange={handleInputChange}
+              />
+            </Grid>
+
+            {/* Show bardaana_quantity as read-only for return type */}
+            <Grid className="mt-5" item xs={12} sm={4}>
+              <InputWithTitle
+                title={"Bardaana Return"}
+                placeholder={"Auto-synced with Bardaana Quantity"}
+                name="bardaana_quantity"
+                value={formData.bardaana_quantity}
+                readOnly
               />
             </Grid>
           </>
@@ -525,15 +567,15 @@ const AddPurchaseContent = () => {
               />
             </Grid>
 
-            {/* <Grid className="mt-5" item xs={12} sm={4}>
+            <Grid className="mt-5" item xs={12} sm={4}>
               <InputWithTitle
                 title={"Bardaana Amount"}
                 placeholder={"Enter Bardaana Amount"}
-                name="total_bardaana_quantity"
-                value={formData.total_bardaana_quantity}
+                name="bardaana_amount"
+                value={formData.bardaana_amount}
                 onChange={handleInputChange}
               />
-            </Grid> */}
+            </Grid>
           </>
         )}
 
@@ -549,15 +591,15 @@ const AddPurchaseContent = () => {
               />
             </Grid>
 
-            {/* <Grid className="mt-5" item xs={12} sm={4}>
+            <Grid className="mt-5" item xs={12} sm={4}>
               <InputWithTitle
                 title={"Bardaana Amount"}
                 placeholder={"Enter Bardaana Amount"}
-                name="total_bardaana_quantity"
-                value={formData.total_bardaana_quantity}
+                name="bardaana_amount"
+                value={formData.bardaana_amount}
                 onChange={handleInputChange}
               />
-            </Grid> */}
+            </Grid>
           </>
         )}
 
