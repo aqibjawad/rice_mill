@@ -216,7 +216,7 @@ export default function Page() {
       <div className="flex justify-between mt-10">
         {/* Receiver Name */}
         <div className="flex items-center space-x-2">
-          <span className="font-medium text-gray-700">Receiver's Name:</span>
+          <span className="font-medium text-gray-700">Receivers Name:</span>
           <div className="border-b-2 border-black w-48 h-6"> {receiptData?.receiverName} </div>
         </div>
 

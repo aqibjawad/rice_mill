@@ -212,7 +212,7 @@ const Page = () => {
                   style={{ marginRight: 10 }}
                   onClick={handleAddExpenseClick}
                 >
-                  Add Expense
+                  Add Expense here
                 </Button>
               )}
               <Button

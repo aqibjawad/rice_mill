@@ -58,7 +58,11 @@ const ExpensePayments = () => {
   const [selectedSeasonName, setSelectedSeasonName] = useState(""); // Added missing state
 
   const handleOpenExpense = () => setOpenExpense(true);
-  const handleCloseExpense = () => setOpenExpense(false);
+  const handleCloseExpense = () => 
+    {
+      setOpenExpense(false);
+      fetchExpenseData();
+    }
 
   useEffect(() => {
     fetchBankData();
@@ -273,7 +277,7 @@ const ExpensePayments = () => {
                 onClick={handleOpenExpense}
                 style={{ cursor: "pointer", marginBottom: "1rem" }}
               >
-                Add Expense
+                Add Expense Category
               </div>
 
               <DropDown

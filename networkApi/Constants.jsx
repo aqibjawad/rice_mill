@@ -8,7 +8,7 @@ const isLocalhost = typeof window !== 'undefined' && window.location.hostname ==
 const ENVIRONMENTS = {
   development: "https://pre-backend-ghulambari.worldcitizenconsultants.com/public",
   staging: "https://pre-backend-ghulambari.worldcitizenconsultants.com/public", 
-  production: "https://backend-ghulambari.worldcitizenconsultants.com"
+  production: "https://api.gbrmchn.com"
 };
 
 // Get current environment
