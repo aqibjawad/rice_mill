@@ -267,7 +267,7 @@ const Page = () => {
                   <TableCell sx={{ color: "white" }}>Bank</TableCell>
                   <TableCell sx={{ color: "white" }}>Cheque No</TableCell>
                   <TableCell sx={{ color: "white" }}>Amount</TableCell>
-                  <TableCell sx={{ color: "white" }}>Balance</TableCell>
+                  {/* <TableCell sx={{ color: "white" }}>Category</TableCell> */}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -334,9 +334,9 @@ const Page = () => {
                             ? row.cheque_amount || row.cr_amount || "0"
                             : row.cr_amount || "0"}
                         </TableCell>
-                        <TableCell sx={{ color: "success.main" }}>
+                        {/* <TableCell sx={{ color: "success.main" }}>
                           {row.balance || "Expense"}
-                        </TableCell>
+                        </TableCell> */}
                       </TableRow>
                     ))}
               </TableBody>

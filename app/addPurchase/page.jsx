@@ -41,6 +41,8 @@ const AddPurchaseContent = () => {
     pro_id: "",
     quantity: "",
     bardaana_type: "",
+    bardaana_entry: "tora",
+    total_bardaana_quantity: "1",
     bardaana_quantity: "",
     bardaana_given: "", // New field - Bardaana dia kitna
     bardaana_kept: "", // New field - Hmny rakha kitna

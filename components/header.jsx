@@ -76,7 +76,7 @@ const Header = () => {
     {
       href: "/companyLedger/",
       icon: <FaMoneyBill />,
-      label: "Ledger",
+      label: "Add Capital",
       parent: "Ledger",
     },
     {
@@ -103,7 +103,7 @@ const Header = () => {
     //   label: "Bardaana List",
     //   parent: "Seasons",
     // },
-    { href: "/user/", icon: <FaShoppingCart />, label: "User", parent: "User" },
+    { href: "/user/", icon: <FaShoppingCart />, label: "Users", parent: "User" },
     // { href: "/packing/", icon: <FaBox />, label: "Packing", parent: "Packing" },
     // { href: "/stock/", icon: <FaBoxes />, label: "Stock", parent: "Stock" },
   ];

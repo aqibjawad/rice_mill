@@ -26,8 +26,8 @@ const getCurrentEnvironment = () => {
 };
 
 // Base URL selection
-// const baseURL = ENVIRONMENTS[getCurrentEnvironment()];
-const baseURL = "https://api.gbrmchn.com";
+const baseURL = ENVIRONMENTS[getCurrentEnvironment()];
+// const baseURL = "https://api.gbrmchn.com";
 export const apiPrefix = baseURL + "/api";
 
 // Log current configuration
