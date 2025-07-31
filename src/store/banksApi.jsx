@@ -17,7 +17,7 @@ const baseQuery = fetchBaseQuery({
 export const banksApi = createApi({
   reducerPath: "banksApi",
   baseQuery: baseQuery,
-  tagTypes: ["expense"],
+  tagTypes: ["Banks"], // Changed from "expense" to "Banks" for consistency
   initialState: {
     data: [],
     loading: false,
@@ -31,7 +31,7 @@ export const banksApi = createApi({
           url: "/bank",
         };
       },
-      providesTags: ["banks"],
+      providesTags: ["Banks"], // Changed to match tagTypes
       transformResponse: (response) => {
         console.log("API Response:", response); // Debug log
         // Handle different response structures
@@ -55,7 +55,39 @@ export const banksApi = createApi({
 
     getbanksById: builder.query({
       query: (id) => `/bank/${id}`,
-      providesTags: (result, error, id) => [{ type: "banks", id }],
+      providesTags: (result, error, id) => [{ type: "Banks", id }],
+    }),
+
+    // Add mutation for creating banks - THIS IS KEY FOR AUTO-REFRESH
+    addBank: builder.mutation({
+      query: (bankData) => ({
+        url: "/bank",
+        method: "POST",
+        body: bankData,
+      }),
+      invalidatesTags: ["Banks"], // This will automatically refetch getbanks query
+    }),
+
+    // Add mutation for updating banks if needed
+    updateBank: builder.mutation({
+      query: ({ id, ...bankData }) => ({
+        url: `/bank/${id}`,
+        method: "PUT", // or PATCH depending on your API
+        body: bankData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "Banks",
+        { type: "Banks", id },
+      ],
+    }),
+
+    // Add mutation for deleting banks if needed
+    deleteBank: builder.mutation({
+      query: (id) => ({
+        url: `/bank/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Banks"],
     }),
   }),
 });
@@ -63,8 +95,10 @@ export const banksApi = createApi({
 export const {
   // Main hooks that match component usage
   useGetbanksQuery,
-
-  // Existing hooks for backward compatibility
-  useGetbankssQuery,
   useGetbanksByIdQuery,
+
+  // Mutation hooks - use these in your AddBank component
+  useAddBankMutation,
+  useUpdateBankMutation,
+  useDeleteBankMutation,
 } = banksApi;
