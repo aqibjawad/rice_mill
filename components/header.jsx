@@ -76,7 +76,7 @@ const Header = () => {
     {
       href: "/companyLedger/",
       icon: <FaMoneyBill />,
-      label: "Ledger",
+      label: "Add Capital",
       parent: "Ledger",
     },
     {

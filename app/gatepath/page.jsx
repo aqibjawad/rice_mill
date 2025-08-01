@@ -140,7 +140,7 @@ const Gateway = () => {
                     Product Name
                   </TableCell>
                   <TableCell style={{ width: "15%", padding: "8px 4px" }}>
-                    Bardaana Quantity
+                      Quantity
                   </TableCell>
                 </TableRow>
               </TableHead>

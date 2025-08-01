@@ -57,7 +57,6 @@ const SideBar = () => {
     { name: "Stock", href: "/stock/", icon: <FaBoxes /> },
   ];
 
-  console.log(pathname);
 
   return (
     <>

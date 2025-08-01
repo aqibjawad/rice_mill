@@ -366,13 +366,6 @@ const Page = () => {
   const validateForm = () => {
     const errors = {};
 
-    // Common validations
-    if (!formData.description.trim()) {
-      errors.description = "Description is required";
-    } else if (formData.description.trim().length < 3) {
-      errors.description = "Description must be at least 3 characters long";
-    }
-
     if (!formData.payment_type) {
       errors.payment_type = "Payment type is required";
     }

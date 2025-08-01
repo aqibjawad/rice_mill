@@ -553,7 +553,7 @@ const AddPurchaseContent = () => {
             </Grid>
 
             {/* Show bardaana_quantity as read-only for return type */}
-            <Grid className="mt-5" item xs={12} sm={4}>
+            {/* <Grid className="mt-5" item xs={12} sm={4}>
               <InputWithTitle
                 title={"Bardaana Return"}
                 placeholder={"Auto-synced with Bardaana Quantity"}
@@ -561,7 +561,7 @@ const AddPurchaseContent = () => {
                 value={formData.bardaana_quantity}
                 readOnly
               />
-            </Grid>
+            </Grid> */}
           </>
         )}
 

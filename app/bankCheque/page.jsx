@@ -50,7 +50,10 @@ const Page = () => {
 
   const [openBank, setOpenBank] = useState(false);
   const handleOpenBank = () => setOpenBank(true);
-  const handleCloseBank = () => setOpenBank(false);
+  const handleCloseBank = () => {
+    refetchBanks();
+    setOpenBank(false);
+  }
 
   // Permission states
   const [permissions, setPermissions] = useState({
