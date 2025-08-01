@@ -404,7 +404,7 @@ const Purchase = () => {
                 {isLoading || isFetching ? (
                   Array.from(new Array(5)).map((_, index) => (
                     <TableRow key={index}>
-                      {Array.from(new Array(8)).map((_, cellIndex) => (
+                      {Array.from(new Array(9)).map((_, cellIndex) => (
                         <TableCell key={cellIndex}>
                           <Skeleton />
                         </TableCell>
@@ -433,21 +433,28 @@ const Purchase = () => {
                       >
                         View Details
                       </TableCell>
-                      <TableCell
-                        onClick={() => handleBardaanaDetails(row)}
-                        style={{
-                          cursor: "pointer",
-                          color: "#1976d2",
-                          textDecoration: "underline",
-                        }}
-                      >
-                        Print Bardaana Gate Pass
+                      <TableCell>
+                        {row.bardaana_type === "return" ||
+                        row.bardaana_type === "add" ? (
+                          <span
+                            onClick={() => handleBardaanaDetails(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#1976d2",
+                              textDecoration: "underline",
+                            }}
+                          >
+                            Bardaana Gate Pass ({row.bardaana_type})
+                          </span>
+                        ) : (
+                          <span style={{ color: "#ccc" }}>N/A</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
+                    <TableCell colSpan={9} align="center">
                       <Typography variant="body2" color="textSecondary">
                         No purchase records found
                       </Typography>
@@ -457,27 +464,6 @@ const Purchase = () => {
               </TableBody>
             </Table>
           </TableContainer>
-
-          {/* Pagination could be added here */}
-          {/* {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <Button
-                disabled={currentPage === 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </Button>
-              <Typography sx={{ mx: 2, alignSelf: 'center' }}>
-                Page {currentPage} of {totalPages}
-              </Typography>
-              <Button
-                disabled={currentPage === totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </Button>
-            </Box>
-          )} */}
         </>
       )}
     </div>

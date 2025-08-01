@@ -36,7 +36,7 @@ export default function BardanaList() {
       else if (activeTab === "Return")
         endpoint = `${purchaseBook}/bardaana_return/list`;
       else if (activeTab === "Purchase")
-        endpoint = `${purchaseBook}/bardaana_purchase/list`;
+        endpoint = `${purchaseBook}/bardaana_paid_as/cash_or_ledger`;
 
       const response = await api.getDataWithToken(endpoint);
       const data = response.data;
@@ -174,18 +174,27 @@ export default function BardanaList() {
     const lastDetail = getLastBardaanaDetail(
       item.purchase_book_bardaana_details
     );
+
     if (activeTab === "Jamaa") {
       return lastDetail ? lastDetail.remaining_bardaana_qty : "-";
-    } else if (activeTab === "Return" || activeTab === "Purchase") {
+    } else if (activeTab === "Return") {
       return getLastBardaanaQty(item.purchase_book_bardaana_details);
+    } else if (activeTab === "Purchase") {
+      // For Purchase tab, use direct property from item
+      return item.bardaana_quantity || "-";
     }
     return "-";
   };
 
   const getBardaanaEntry = (item) => {
+    if (activeTab === "Purchase") {
+      // For Purchase tab, use direct property from item
+      return item.bardaana_entry || "-";
+    }
+    // For other tabs, use the existing logic
     return getLastBardaanaEntry(item.purchase_book_bardaana_details);
   };
-
+  
   const handleReturnClick = (item) => {
     const lastDetail = getLastBardaanaDetail(
       item.purchase_book_bardaana_details
