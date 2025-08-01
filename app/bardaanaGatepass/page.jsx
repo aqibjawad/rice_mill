@@ -39,6 +39,16 @@ export default function Page() {
       ? saleBookData.purchase_book_bardaana_details[saleBookData.purchase_book_bardaana_details.length - 1]
       : null;
 
+    // Calculate remaining bardaana quantity
+    const calculateRemainingBardaana = () => {
+      const mainBardaanaQty = parseInt(saleBookData?.bardaana_quantity || 0);
+      const firstEntryBardaanaQty = saleBookData?.purchase_book_bardaana_details?.length > 0 
+        ? parseInt(saleBookData.purchase_book_bardaana_details[0]?.bardaana_qty || 0)
+        : 0;
+      
+      return mainBardaanaQty - firstEntryBardaanaQty;
+    };
+
     return (
       <div className="mx-auto mb-16">
         <div className="flex items-start justify-between mb-8">
@@ -134,7 +144,7 @@ export default function Page() {
             <tr className="bg-gray-50">
               <td className="border border-gray-400 px-4 py-2 text-center">1</td>
               <td className="border border-gray-400 px-4 py-2 text-center">
-                {latestBardaanaEntry?.remaining_bardaana_qty || "0"}
+                {calculateRemainingBardaana()}
               </td>
               <td className="border border-gray-400 px-4 py-2 text-center">
                 {latestBardaanaEntry?.bardaana_entry || "N/A"}
