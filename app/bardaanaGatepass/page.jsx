@@ -39,14 +39,26 @@ export default function Page() {
       ? saleBookData.purchase_book_bardaana_details[saleBookData.purchase_book_bardaana_details.length - 1]
       : null;
 
-    // Calculate remaining bardaana quantity
-    const calculateRemainingBardaana = () => {
-      const mainBardaanaQty = parseInt(saleBookData?.bardaana_quantity || 0);
-      const firstEntryBardaanaQty = saleBookData?.purchase_book_bardaana_details?.length > 0 
-        ? parseInt(saleBookData.purchase_book_bardaana_details[0]?.bardaana_qty || 0)
-        : 0;
-      
-      return mainBardaanaQty - firstEntryBardaanaQty;
+    // Calculate quantity and get bardaana entry based on bardaana_type
+    const getBardaanaQuantity = () => {
+      if (saleBookData?.bardaana_type === "return") {
+        return saleBookData?.bardaana_quantity || "0";
+      } else {
+        const mainBardaanaQty = parseInt(saleBookData?.bardaana_quantity || 0);
+        const firstEntryBardaanaQty = saleBookData?.purchase_book_bardaana_details?.length > 0 
+          ? parseInt(saleBookData.purchase_book_bardaana_details[0]?.bardaana_qty || 0)
+          : 0;
+        
+        return mainBardaanaQty - firstEntryBardaanaQty;
+      }
+    };
+
+    const getBardaanaEntry = () => {
+      if (saleBookData?.bardaana_type === "return") {
+        return saleBookData?.bardaana_entry || "N/A";
+      } else {
+        return latestBardaanaEntry?.bardaana_entry || "N/A";
+      }
     };
 
     return (
@@ -144,10 +156,10 @@ export default function Page() {
             <tr className="bg-gray-50">
               <td className="border border-gray-400 px-4 py-2 text-center">1</td>
               <td className="border border-gray-400 px-4 py-2 text-center">
-                {calculateRemainingBardaana()}
+                {getBardaanaQuantity()}
               </td>
               <td className="border border-gray-400 px-4 py-2 text-center">
-                {latestBardaanaEntry?.bardaana_entry || "N/A"}
+                {getBardaanaEntry()}
               </td>
             </tr>
           </tbody>
