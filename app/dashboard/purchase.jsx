@@ -444,7 +444,7 @@ const Purchase = () => {
                               textDecoration: "underline",
                             }}
                           >
-                            Bardaana Gate Pass ({row.bardaana_type})
+                            Bardaana Gate Pass
                           </span>
                         ) : (
                           <span style={{ color: "#ccc" }}>N/A</span>
