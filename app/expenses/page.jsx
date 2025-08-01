@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import styles from "../../styles/expenses.module.css";
 import {
   Table,
@@ -20,13 +21,11 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import AddExpense from "@/components/stock/addExpense";
 import DateFilter from "@/components/generic/DateFilter";
-import { expenseCat } from "@/networkApi/Constants";
-import APICall from "@/networkApi/APICall";
-
+import { useGetexpenseCategoriesQuery } from "@/src/store/expenseApi";
 
 const Page = () => {
+  const dispatch = useDispatch();
   const router = useRouter();
-  const api = new APICall();
 
   // Date filter states
   const [startDate, setStartDate] = useState(null);
@@ -37,12 +36,6 @@ const Page = () => {
   const handleOpenExpense = () => setOpenExpense(true);
   const handleCloseExpense = () => setOpenExpense(false);
 
-  // API data states
-  const [expenseData, setExpenseData] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
   // Permission states
   const [permissions, setPermissions] = useState({
     canAddExpense: false,
@@ -50,16 +43,30 @@ const Page = () => {
     hasAccess: false,
   });
 
+  // Redux query with conditional fetching based on permissions
+  const {
+    data: expenseData,
+    error,
+    isLoading,
+    refetch,
+  } = useGetexpenseCategoriesQuery(undefined, {
+    skip: !permissions.canViewExpense, // Only fetch if user has view permission
+  });
+
+  // Extract data from Redux response
+  const tableData = expenseData?.data || [];
+  const totalCount = expenseData?.total || 0;
+
   useEffect(() => {
     checkPermissions();
   }, []);
 
   useEffect(() => {
-    // Fetch data when permissions are loaded and user has view permission
-    if (permissions.canViewExpense) {
-      fetchData();
+    // Refetch data when date filters change
+    if (permissions.canViewExpense && (startDate || endDate)) {
+      refetch();
     }
-  }, [permissions.canViewExpense, startDate, endDate]);
+  }, [startDate, endDate, permissions.canViewExpense, refetch]);
 
   const checkPermissions = () => {
     try {
@@ -110,38 +117,13 @@ const Page = () => {
     }
   };
 
-  const fetchData = async () => {
-    setIsLoading(true); // Set loading to true at start
-    setError(null); // Clear any previous errors
-    try {
-      const response = await api.getDataWithToken(expenseCat);
-      const data = response.data;
-      if (Array.isArray(data)) {
-        setExpenseData(data); // Fixed: was setTableData, should be setExpenseData
-      } else {
-        throw new Error("Fetched data is not an array");
-      }
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false); // Fixed: was setLoading, should be setIsLoading
-    }
-  };
-
-  // Refetch function for manual refresh
-  const refetch = () => {
-    if (permissions.canViewExpense) {
-      fetchData(); // Fixed: was fetchExpenseCategories, should be fetchData
-    }
-  };
-
   const handleViewDetails = (id) => {
     localStorage.setItem("expenseId", id);
     router.push("/expenseDetails");
   };
 
   // Filter out Product Expense category and calculate total
-  const filteredTableData = expenseData.filter(
+  const filteredTableData = tableData.filter(
     (item) => item.expense_category !== "Product Expense"
   );
 
@@ -182,12 +164,12 @@ const Page = () => {
         </Grid>
         <Card style={{ marginTop: 20, marginBottom: 20, padding: 15 }}>
           <Typography variant="h6" color="error">
-            Error loading expenses: {error}
+            Error loading expenses: {error.message || "Something went wrong"}
           </Typography>
           <Button
             variant="contained"
             color="primary"
-            onClick={refetch}
+            onClick={() => refetch()}
             style={{ marginTop: 10 }}
           >
             Retry
@@ -202,7 +184,7 @@ const Page = () => {
     return (
       <div style={{ padding: 20 }}>
         <Typography variant="h5" color="error">
-          You don't have permission to access expenses.
+          You dont have permission to access expenses.
         </Typography>
       </div>
     );
@@ -311,7 +293,7 @@ const Page = () => {
         <AddExpense
           openExpense={openExpense}
           handleCloseExpense={handleCloseExpense}
-          onExpenseAdded={refetch} // Refetch data when new expense is added
+          onExpenseAdded={() => refetch()} // Refetch data when new expense is added
         />
       )}
     </>

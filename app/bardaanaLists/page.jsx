@@ -382,7 +382,7 @@ export default function BardanaList() {
         <div className="text-center py-8 text-gray-500">
           No data available for {activeTab} with selected date filter
         </div>
-      )} 
+      )}
 
       {/* Modal */}
       <BardanaReturnModal
