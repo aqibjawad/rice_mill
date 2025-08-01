@@ -97,13 +97,13 @@ const Header = () => {
       label: "Seasons",
       parent: "Seasons",
     },
-    // {
-    //   href: "/bardaanaLists/",
-    //   icon: <FaShoppingCart />,
-    //   label: "Bardaana List",
-    //   parent: "Seasons",
-    // },
-    { href: "/user/", icon: <FaShoppingCart />, label: "Users", parent: "User" },
+    {
+      href: "/bardaanaLists/",
+      icon: <FaShoppingCart />,
+      label: "Bardaana List",
+      parent: "Seasons",
+    },
+    { href: "/user/", icon: <FaShoppingCart />, label: "User", parent: "User" },
     // { href: "/packing/", icon: <FaBox />, label: "Packing", parent: "Packing" },
     // { href: "/stock/", icon: <FaBoxes />, label: "Stock", parent: "Stock" },
   ];

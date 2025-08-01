@@ -191,6 +191,82 @@ const CombinedTable = () => {
   // PDF Generation Function
   const downloadPDF = () => {
     const doc = new jsPDF();
+
+    // Add title on the left
+    doc.text("Financial Report", 14, 15);
+
+    // Add logo on the right side
+    const img = new Image();
+    img.onload = function () {
+      // Calculate position for right alignment
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const logoWidth = 40; // Adjust logo width as needed
+      const logoHeight = 50; // Adjust logo height as needed
+      const logoX = pageWidth - logoWidth - 14; // 14 is margin from right edge
+      const logoY = 5; // Y position from top
+
+      // Add the logo
+      doc.addImage(this, "PNG", logoX, logoY, logoWidth, logoHeight);
+
+      // Continue with the rest of the PDF generation
+      doc.setFontSize(12);
+
+      const tableColumn = ["Name", "Credit", "Debit"];
+      const tableRows = [];
+
+      // Filter out "Product Expense" when generating PDF
+      combinedData
+        .filter(
+          (item) =>
+            !(
+              item.type === "product" && item.product_name === "Product Expense"
+            )
+        )
+        .forEach((item) => {
+          const amounts = renderAmount(item);
+          const name =
+            item.type === "cash"
+              ? `Cash: ${item.cash_amount || 0}`
+              : item.person_name ||
+                item.expense_category ||
+                item.bank_name ||
+                item.product_name ||
+                "Unknown";
+
+          tableRows.push([name, amounts.credit, amounts.debit]);
+        });
+
+      // Add totals
+      tableRows.push(["Total", totalCredit.toFixed(2), totalDebit.toFixed(2)]);
+
+      // Calculate startY based on logo position and height + some margin
+      const tableStartY = logoY + logoHeight + 10; // 10 is margin below logo
+
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: tableStartY, // Dynamic positioning based on logo
+      });
+
+      doc.save("financial_report.pdf");
+    };
+
+    // Handle image load error
+    img.onerror = function () {
+      console.log("Logo could not be loaded, generating PDF without logo");
+      // Generate PDF without logo if image fails to load
+      generatePDFWithoutLogo();
+    };
+
+    // Set the image source
+    img.src = "/logo.png";
+  };
+
+  // Function to generate PDF without logo (fallback)
+  const generatePDFWithoutLogo = () => {
+    const doc = new jsPDF();
+
+    // Add title
     doc.text("Financial Report", 14, 15);
     doc.setFontSize(12);
 
@@ -223,11 +299,12 @@ const CombinedTable = () => {
     doc.autoTable({
       head: [tableColumn],
       body: tableRows,
-      startY: 20,
+      startY: 25, // Safe position without logo
     });
 
     doc.save("financial_report.pdf");
   };
+
 
   const getRowColor = (type) => {
     switch (type) {

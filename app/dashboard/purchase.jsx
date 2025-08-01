@@ -164,7 +164,7 @@ const Purchase = () => {
     router.push("/purchase_details");
   };
 
-    const handleBardaanaDetails = (row) => {
+  const handleBardaanaDetails = (row) => {
     localStorage.setItem("purchaseBookId", row.id);
     router.push("/bardaanaGatepass");
   };
@@ -177,7 +177,22 @@ const Purchase = () => {
   const downloadPDF = () => {
     const doc = new jsPDF();
 
-    // Add title
+    // Add logo to the right side
+    const logoUrl = "/logo.png";
+    // Calculate position for right alignment
+    const pageWidth = doc.internal.pageSize.width;
+    const logoWidth = 40;
+    const logoHeight = 50;
+    const logoX = pageWidth - logoWidth - 14; // 14 is margin from right
+    const logoY = 10; // Top margin
+
+    try {
+      doc.addImage(logoUrl, "PNG", logoX, logoY, logoWidth, logoHeight);
+    } catch (error) {
+      console.warn("Logo could not be added:", error);
+    }
+
+    // Add title (adjusted position to avoid logo overlap)
     doc.setFontSize(18);
     doc.setFont(undefined, "bold");
     doc.text("Purchase Report", 14, 22);
@@ -221,11 +236,11 @@ const Purchase = () => {
       row.total_amount || "",
     ]);
 
-    // Add table
+    // Add table (adjusted startY to accommodate logo if needed)
     doc.autoTable({
       head: [tableColumns],
       body: tableRows,
-      startY: 56,
+      startY: Math.max(56, logoY + logoHeight + 10), // Ensure table starts below logo
       styles: {
         fontSize: 8,
         cellPadding: 3,
@@ -382,14 +397,14 @@ const Purchase = () => {
                   <TableCell>Weight</TableCell>
                   <TableCell>Amount</TableCell>
                   <TableCell>Action</TableCell>
-                  {/* <TableCell>Print</TableCell> */}
+                  <TableCell>Print</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {isLoading || isFetching ? (
                   Array.from(new Array(5)).map((_, index) => (
                     <TableRow key={index}>
-                      {Array.from(new Array(8)).map((_, cellIndex) => (
+                      {Array.from(new Array(9)).map((_, cellIndex) => (
                         <TableCell key={cellIndex}>
                           <Skeleton />
                         </TableCell>
@@ -418,21 +433,28 @@ const Purchase = () => {
                       >
                         View Details
                       </TableCell>
-                      {/* <TableCell
-                        onClick={() => handleBardaanaDetails(row)}
-                        style={{
-                          cursor: "pointer",
-                          color: "#1976d2",
-                          textDecoration: "underline",
-                        }}
-                      >
-                        Print Bardaana Gate Pass
-                      </TableCell> */}
+                      <TableCell>
+                        {row.bardaana_type === "return" ||
+                        row.bardaana_type === "add" ? (
+                          <span
+                            onClick={() => handleBardaanaDetails(row)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#1976d2",
+                              textDecoration: "underline",
+                            }}
+                          >
+                            Bardaana Gate Pass ({row.bardaana_type})
+                          </span>
+                        ) : (
+                          <span style={{ color: "#ccc" }}>N/A</span>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
+                    <TableCell colSpan={9} align="center">
                       <Typography variant="body2" color="textSecondary">
                         No purchase records found
                       </Typography>
@@ -442,27 +464,6 @@ const Purchase = () => {
               </TableBody>
             </Table>
           </TableContainer>
-
-          {/* Pagination could be added here */}
-          {/* {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <Button
-                disabled={currentPage === 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </Button>
-              <Typography sx={{ mx: 2, alignSelf: 'center' }}>
-                Page {currentPage} of {totalPages}
-              </Typography>
-              <Button
-                disabled={currentPage === totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </Button>
-            </Box>
-          )} */}
         </>
       )}
     </div>

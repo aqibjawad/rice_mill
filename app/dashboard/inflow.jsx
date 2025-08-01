@@ -319,6 +319,40 @@ const Page = () => {
   const downloadPDF = () => {
     const doc = new jsPDF();
 
+    // Add logo first
+    try {
+      // Load and add logo - positioned at right end
+      const logoImg = new Image();
+      logoImg.onload = function () {
+        // Calculate right position for logo
+        const pageWidth = doc.internal.pageSize.width;
+        const logoWidth = 40;
+        const logoHeight = 50;
+        const rightMargin = 14;
+
+        // Add logo at right end (x position calculated from right edge)
+        doc.addImage(
+          logoImg,
+          "PNG",
+          pageWidth - logoWidth - rightMargin,
+          10,
+          logoWidth,
+          logoHeight
+        );
+
+        // Continue with rest of the PDF generation after logo is loaded
+        generateRestOfPDF(doc);
+      };
+      logoImg.src = "/logo.png";
+    } catch (error) {
+      console.error("Error loading logo:", error);
+      // Continue without logo if there's an error
+      generateRestOfPDF(doc);
+    }
+  };
+
+  const generateRestOfPDF = (doc) => {
+    // Title positioned back to left since logo is now on right
     doc.setFontSize(18);
     doc.setFont(undefined, "bold");
     doc.text("Amount Receives Report", 14, 22);
@@ -386,7 +420,7 @@ const Page = () => {
         row.description || "N/A",
         row.bank?.bank_name || "N/A",
         row.cheque_no || "N/A",
-        getAmountByPaymentType(row).toFixed(2), // Fixed amount display
+        getAmountByPaymentType(row).toFixed(2),
         parseFloat(row.balance || 0).toFixed(2),
       ]);
     });
@@ -413,11 +447,11 @@ const Page = () => {
       ]);
     });
 
-    // Add table
+    // Add table - back to original startY position
     doc.autoTable({
       head: [tableColumns],
       body: tableRows,
-      startY: 95, // Adjusted for additional summary line
+      startY: 95,
       styles: {
         fontSize: 7,
         cellPadding: 2,

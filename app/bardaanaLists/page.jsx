@@ -1,34 +1,199 @@
 "use client";
-import React, { useState } from 'react';
-// import BardanaReturnModal from './BardanaReturnModal';
+import React, { useState, useEffect } from "react";
+import BardanaReturnModal from "./returnModal";
+import APICall from "@/networkApi/APICall";
+import { purchaseBook } from "../../networkApi/Constants";
 
-// Updated Main Component with Modal Integration
 export default function BardanaList() {
-  const [activeTab, setActiveTab] = useState('Jamaa');
+  const api = new APICall();
+
+  const [activeTab, setActiveTab] = useState("Jamaa");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [rowData, setRowData] = useState([]);
+  const [error, setError] = useState(null);
+  
+  // Date filter states
+  const [dateFilter, setDateFilter] = useState("today");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
 
-  const bardanaData = [
-    { id: '01', date: '01/12/2024', partyName: 'Abubakar Siddique', quantity: 500, type: 'Bori' },
-    { id: '02', date: '01/02/2025', partyName: 'Aqib Ali', quantity: 1000, type: 'Tora' },
-    { id: '03', date: '01/05/2025', partyName: 'M. Hamza', quantity: 1500, type: 'Tora' },
-    { id: '04', date: '01/12/2024', partyName: 'Zeeshan', quantity: 1300, type: 'Tora' },
-    { id: '05', date: '01/06/2023', partyName: 'Shehbaz', quantity: 500, type: 'Tora' },
-    { id: '06', date: '01/12/2024', partyName: 'Aqib Ali', quantity: 800, type: 'Tora' },
-    { id: '07', date: '01/02/2025', partyName: 'M. Hamza', quantity: 500, type: 'Bori' },
-    { id: '08', date: '01/12/2024', partyName: 'Shehbaz', quantity: 500, type: 'Bori' },
-    { id: '09', date: '01/02/2025', partyName: 'Aqib Ali', quantity: 2000, type: 'Tora' },
-    { id: '10', date: '01/12/2024', partyName: 'Aqib Ali', quantity: 1800, type: 'Bori' },
-  ];
+  useEffect(() => {
+    fetchData();
+  }, [activeTab]);
 
-  const tabs = [
-    { id: 'Jamaa', label: 'Jamaa', active: true },
-    { id: 'Return', label: 'Return', active: false },
-    { id: 'Purchase', label: 'Purchase', active: false }
-  ];
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let endpoint = "";
+      if (activeTab === "Jamaa")
+        endpoint = `${purchaseBook}/bardaana_jama/list`;
+      else if (activeTab === "Return")
+        endpoint = `${purchaseBook}/bardaana_return/list`;
+      else if (activeTab === "Purchase")
+        endpoint = `${purchaseBook}/bardaana_paid_as/cash_or_ledger`;
 
+      const response = await api.getDataWithToken(endpoint);
+      const data = response.data;
+      setRowData(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getLastBardaanaDetail = (detailsArray) => {
+    if (!Array.isArray(detailsArray) || detailsArray.length === 0) return null;
+    return detailsArray[detailsArray.length - 1];
+  };
+
+  // Helper function to get date ranges
+  const getDateRange = (filter) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let startDate, endDate;
+
+    switch (filter) {
+      case "today":
+        startDate = new Date(today);
+        endDate = new Date(today);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      
+      case "this_month":
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      
+      case "last_month":
+        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      
+      case "date_range":
+        if (customStartDate && customEndDate) {
+          startDate = new Date(customStartDate);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(customEndDate);
+          endDate.setHours(23, 59, 59, 999);
+        } else {
+          return null;
+        }
+        break;
+      
+      default:
+        return null;
+    }
+
+    return { startDate, endDate };
+  };
+
+  // Function to check if a date falls within the selected range
+  const isDateInRange = (dateString, startDate, endDate) => {
+    if (!dateString || !startDate || !endDate) return false;
+    
+    const itemDate = new Date(dateString);
+    itemDate.setHours(0, 0, 0, 0);
+    
+    return itemDate >= startDate && itemDate <= endDate;
+  };
+
+  // Get filtered data based on active tab and date filter
+  const getFilteredData = () => {
+    let filtered = rowData;
+
+    // Apply tab-specific filtering for Jamaa
+    if (activeTab === "Jamaa") {
+      filtered = filtered.filter((item) => {
+        const lastDetail = getLastBardaanaDetail(item.purchase_book_bardaana_details);
+        const remainingQty = lastDetail ? lastDetail.remaining_bardaana_qty : 0;
+        return remainingQty > 0;
+      });
+    }
+
+    // Apply date filtering
+    const dateRange = getDateRange(dateFilter);
+    if (dateRange) {
+      const { startDate, endDate } = dateRange;
+      
+      filtered = filtered.filter((item) => {
+        // Get the date from the item
+        const itemDate = getLastBardaanaDetail(item.purchase_book_bardaana_details)?.date || item.date;
+        return isDateInRange(itemDate, startDate, endDate);
+      });
+    }
+
+    return filtered;
+  };
+
+  // Helper function to format dates for display
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return '-';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const getLastBardaanaQty = (details) => {
+    if (!details || details.length === 0) return "-";
+    const lastEntry = details[details.length - 1];
+    return (
+      lastEntry?.total_bardaana_qty - lastEntry?.remaining_bardaana_qty || "-"
+    );
+  };
+
+  const getLastBardaanaEntry = (details) => {
+    if (!details || details.length === 0) return "-";
+    const lastEntry = details[details.length - 1];
+    return lastEntry?.bardaana_entry || "-";
+  };
+
+  const getBardaanaQuantity = (item) => {
+    const lastDetail = getLastBardaanaDetail(
+      item.purchase_book_bardaana_details
+    );
+
+    if (activeTab === "Jamaa") {
+      return lastDetail ? lastDetail.remaining_bardaana_qty : "-";
+    } else if (activeTab === "Return") {
+      return getLastBardaanaQty(item.purchase_book_bardaana_details);
+    } else if (activeTab === "Purchase") {
+      // For Purchase tab, use direct property from item
+      return item.bardaana_quantity || "-";
+    }
+    return "-";
+  };
+
+  const getBardaanaEntry = (item) => {
+    if (activeTab === "Purchase") {
+      // For Purchase tab, use direct property from item
+      return item.bardaana_entry || "-";
+    }
+    // For other tabs, use the existing logic
+    return getLastBardaanaEntry(item.purchase_book_bardaana_details);
+  };
+  
   const handleReturnClick = (item) => {
-    setSelectedItem(item);
+    const lastDetail = getLastBardaanaDetail(
+      item.purchase_book_bardaana_details
+    );
+    const itemWithRemainingQty = {
+      ...item,
+      remaining_bardaana_qty: lastDetail
+        ? lastDetail.remaining_bardaana_qty
+        : 0,
+    };
+    setSelectedItem(itemWithRemainingQty);
     setIsModalOpen(true);
   };
 
@@ -36,6 +201,18 @@ export default function BardanaList() {
     setIsModalOpen(false);
     setSelectedItem(null);
   };
+
+  const handleModalSubmit = () => {
+    fetchData();
+  };
+
+  const filteredData = getFilteredData();
+
+  const tabs = [
+    { id: "Jamaa", label: "Jamaa", active: true },
+    { id: "Return", label: "Return", active: false },
+    { id: "Purchase", label: "Purchase", active: false },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto bg-white">
@@ -47,12 +224,12 @@ export default function BardanaList() {
             onClick={() => setActiveTab(tab.id)}
             className={`px-6 py-3 text-sm font-medium transition-colors ${
               activeTab === tab.id
-                ? 'text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? "text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
             style={{
-              borderRadius: '8px',
-              backgroundColor: activeTab === tab.id ? '#0075E2' : undefined
+              borderRadius: "8px",
+              backgroundColor: activeTab === tab.id ? "#0075E2" : undefined,
             }}
           >
             {tab.label}
@@ -60,116 +237,160 @@ export default function BardanaList() {
         ))}
       </div>
 
-      {/* Header */}
-      <div className="text-white py-4 px-6" style={{borderRadius: '15px 15px 0 0', backgroundColor: '#0075E2'}}>
-        <h1 style={{fontWeight:"bold", fontSize:"24px"}}>Bardana List</h1>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto" style={{borderRadius: '0 0 15px 15px'}}>
-        <table className="w-full" style={{borderRadius: '15px'}}>
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600" style={{fontSize:"18px"}}>Serial No.</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600" style={{fontSize:"18px"}}>Date</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600" style={{fontSize:"18px"}}>Party Name</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600" style={{fontSize:"18px"}}>Quantity</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600" style={{fontSize:"18px"}}>Type</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-600" style={{fontSize:"18px"}}></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {bardanaData.map((item, index) => (
-              <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                <td className="px-6 py-4 text-sm text-gray-600">{item.id}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{item.date}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{item.partyName}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{item.quantity}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{item.type}</td>
-                <td className="px-6 py-4">
-                  <button 
-                    onClick={() => handleReturnClick(item)}
-                    className="hover:opacity-90 text-white text-sm px-6 py-3 transition-colors" 
-                    style={{borderRadius: '4px', backgroundColor: '#0075E2'}}
-                  >
-                    Return
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-96 max-w-md mx-4">
-            {/* Header */}
-            <div className="text-white py-4 px-6 rounded-t-lg" style={{backgroundColor: '#0075E2'}}>
-              <h2 className="text-xl font-bold">Bardana Return</h2>
-            </div>
-            
-            {/* Form */}
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Party Name:
-                </label>
-                <input
-                  type="text"
-                  value={selectedItem?.partyName || ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
-                  readOnly
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date:
-                </label>
-                <input
-                  type="text"
-                  value={selectedItem?.date || ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
-                  readOnly
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Quantity:
-                </label>
-                <input
-                  type="number"
-                  defaultValue={selectedItem?.quantity || ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              {/* Buttons */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    console.log('Return submitted');
-                    closeModal();
-                  }}
-                  className="px-6 py-2 text-white rounded-md hover:opacity-90 transition-colors"
-                  style={{backgroundColor: '#0075E2'}}
-                >
-                  Submit
-                </button>
-                <button
-                  onClick={closeModal}
-                  className="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+      {/* Date Filter Section */}
+      <div className="bg-gray-50 p-4 border-b border-gray-200">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Filter by Date:</label>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="today">Today</option>
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="date_range">Date Range</option>
+            </select>
           </div>
+
+          {/* Custom Date Range Inputs */}
+          {dateFilter === "date_range" && (
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Start Date"
+              />
+              <span className="text-gray-500">to</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="End Date"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Header */}
+      <div
+        className="text-white py-4 px-6"
+        style={{ borderRadius: "15px 15px 0 0", backgroundColor: "#0075E2" }}
+      >
+        <h1 style={{ fontWeight: "bold", fontSize: "24px" }}>
+          Bardana List - {activeTab}
+        </h1>
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
         </div>
       )}
+
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-8">
+          <p className="text-red-600">Error: {error}</p>
+          <button 
+            onClick={fetchData}
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Table */}
+      {!loading && !error && (
+        <div
+          className="overflow-x-auto"
+          style={{ borderRadius: "0 0 15px 15px" }}
+        >
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                {[
+                  "Serial No.",
+                  "Date",
+                  "Party Name",
+                  "Bardaana Quantity",
+                  "Bardaana Entry",
+                  "",
+                ].map((head) => (
+                  <th
+                    key={head}
+                    className="px-6 py-4 text-left text-sm font-medium text-gray-600"
+                    style={{ fontSize: "15px" }}
+                  >
+                    {head}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredData.map((item, index) => (
+                <tr
+                  key={item.id}
+                  className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                >
+                  <td className="px-6 py-4 text-sm text-gray-600">{index + 1}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {formatDateForDisplay(
+                      getLastBardaanaDetail(item.purchase_book_bardaana_details)?.date || item.date
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {item.party?.person_name || '-'}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {getBardaanaQuantity(item)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {getBardaanaEntry(item)}
+                  </td>
+                  <td className="px-6 py-4">
+                    {activeTab === "Jamaa" && (
+                      <button
+                        onClick={() => handleReturnClick(item)}
+                        className="hover:opacity-90 text-white text-sm px-6 py-3"
+                        style={{
+                          borderRadius: "4px",
+                          backgroundColor: "#0075E2",
+                        }}
+                      >
+                        Return
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* No Data Message */}
+      {!loading && !error && filteredData.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          No data available for {activeTab} with selected date filter
+        </div>
+      )} 
+
+      {/* Modal */}
+      <BardanaReturnModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        selectedItem={selectedItem}
+        onSubmit={handleModalSubmit}
+      />
     </div>
   );
 }

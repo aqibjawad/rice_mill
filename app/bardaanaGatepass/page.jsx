@@ -129,7 +129,7 @@ export default function Page() {
             <td className="border border-gray-400 px-4 py-2 text-center">1</td>
             <td className="border border-gray-400 px-4 py-2 text-center">
               {saleBookData?.bardaana_type === "add"
-                ? "bardaana_jama"
+                ? saleBookData?.bardaana_quantity
                 : saleBookData?.bardaana_quantity || "0"}
             </td>
             <td className="border border-gray-400 px-4 py-2 text-center">

@@ -82,6 +82,8 @@ export const endpoints = {
   getSupplierPaidAmounts: apiPrefix + "/paid_party_amount",
   debitTrial: apiPrefix + "/dr/api",
   creditTrial: apiPrefix + "/cr/api",
+
+  bardaanaList: apiPrefix + "/"
 };
 
 // Legacy exports for backward compatibility
@@ -113,6 +115,7 @@ export const debitTrial = endpoints.debitTrial;
 export const creditTrial = endpoints.creditTrial;
 export const selfPayment = endpoints.selfPayment;
 export const companyProduct = endpoints.companyProduct;
+export const bardaanaList = endpoints.bardaanaList;
 
 // Utility functions
 export const getLocalStorage = (key) => {
