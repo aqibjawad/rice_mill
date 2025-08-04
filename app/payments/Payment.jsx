@@ -440,19 +440,12 @@ const Page = () => {
         errors.bank_id = "Bank selection is required for online payment";
       }
 
-      if (!formData.transection_id.trim()) {
+      if (!formData.transection_id) {
         errors.transection_id = "Transaction ID is required";
-      } else if (formData.transection_id.trim().length < 5) {
-        errors.transection_id = "Transaction ID must be at least 5 characters";
       }
 
       if (!formData.cash_amount) {
         errors.cash_amount = "Amount is required for online payment";
-      } else if (
-        isNaN(formData.cash_amount) ||
-        parseFloat(formData.cash_amount) <= 0
-      ) {
-        errors.cash_amount = "Amount must be a positive number";
       }
     }
 
@@ -689,7 +682,7 @@ const Page = () => {
 
         <Grid container spacing={3}>
           {!isSelf && (
-            <Grid item xs={12} md={6}>
+            <Grid className="mt-5" item xs={12} md={6}>
               {loading ||
               loadingStates.parties ||
               loadingStates.investors ||

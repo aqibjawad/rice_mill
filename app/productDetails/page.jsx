@@ -193,15 +193,22 @@ const Page = () => {
                         ? stock.stock_out
                         : stock.stock_in}
                     </TableCell>
-
                     <TableCell>
                       {/* Credit if entry_type is 'purchase' or if it's 'expense' with expense_entry_type 'cr' */}
                       {stock.entry_type === "purchase" ||
                       (stock.entry_type === "expense" &&
-                        stock.expense_entry_type === "cr")
-                        ? stock.total_amount
-                        : "-"}
+                        stock.expense_entry_type === "cr") ? (
+                        <>
+                          {stock.total_amount}
+                          {stock.bardaana_amt > 0 && (
+                            <div style={{fontSize:"10px"}}>({stock.bardaana_amt})</div>
+                          )}
+                        </>
+                      ) : (
+                        "-"
+                      )}
                     </TableCell>
+
                     <TableCell>
                       {/* Debit if entry_type is 'sale' or if it's 'expense' with expense_entry_type 'dr' */}
                       {stock.entry_type === "sale" ||
