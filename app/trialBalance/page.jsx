@@ -136,11 +136,12 @@ const CombinedTable = () => {
       };
     }
 
+    // Updated: Expenses now go to credit side instead of debit
     if (item.expense_category) {
       const amount = parseFloat(item.expenses_sum_total_amount || 0);
       return {
-        credit: "-",
-        debit: amount > 0 ? amount.toFixed(2) : "-",
+        credit: amount > 0 ? amount.toFixed(2) : "-", // Changed from debit to credit
+        debit: "-", // Changed from credit to debit
       };
     }
 
@@ -304,7 +305,6 @@ const CombinedTable = () => {
 
     doc.save("financial_report.pdf");
   };
-
 
   const getRowColor = (type) => {
     switch (type) {
