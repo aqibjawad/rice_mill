@@ -23,7 +23,6 @@ import DateFilter from "@/components/generic/DateFilter";
 import { expenseCat } from "@/networkApi/Constants";
 import APICall from "@/networkApi/APICall";
 
-
 const Page = () => {
   const router = useRouter();
   const api = new APICall();
@@ -140,10 +139,14 @@ const Page = () => {
     router.push("/expenseDetails");
   };
 
-  // Filter out Product Expense category and calculate total
-  const filteredTableData = expenseData.filter(
-    (item) => item.expense_category !== "Product Expense"
-  );
+  // Filter out Product Expense category and sort alphabetically by expense_category
+  const filteredTableData = expenseData
+    .filter((item) => item.expense_category !== "Product Expense")
+    .sort((a, b) => {
+      const categoryA = (a.expense_category || "").toLowerCase();
+      const categoryB = (b.expense_category || "").toLowerCase();
+      return categoryA.localeCompare(categoryB);
+    });
 
   // Calculate total expenses - excluding Product Expense category
   const totalExpenses = filteredTableData.reduce(

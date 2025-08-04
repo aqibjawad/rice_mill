@@ -95,8 +95,13 @@ const Page = () => {
     hasAccess: false,
   });
 
-  // Extract table data from Redux response
-  const tableData = apiResponse?.data || [];
+  // Extract table data from Redux response and sort alphabetically by person_name
+  const tableData = Array.from(apiResponse?.data || []).sort((a, b) => {
+    const nameA = (a.person_name || "").toLowerCase();
+    const nameB = (b.person_name || "").toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
   const error = apiError?.message || null;
 
   useEffect(() => {
@@ -110,7 +115,13 @@ const Page = () => {
       const filtered = tableData.filter((item) =>
         item.person_name.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredData(filtered);
+      // Also sort the filtered data alphabetically
+      const sortedFiltered = filtered.sort((a, b) => {
+        const nameA = (a.person_name || "").toLowerCase();
+        const nameB = (b.person_name || "").toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+      setFilteredData(sortedFiltered);
     }
   }, [searchQuery, tableData]);
 

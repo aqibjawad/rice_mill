@@ -366,6 +366,13 @@ const Page = () => {
   const validateForm = () => {
     const errors = {};
 
+    // Check if party/investor/product is selected (only if not self payment)
+    if (!isSelf) {
+      if (!formData.party_id && !formData.investor_id && !formData.product_id) {
+        errors.selection = "Please select a Party, Investor, or Product";
+      }
+    }
+
     if (!formData.payment_type) {
       errors.payment_type = "Payment type is required";
     }
@@ -401,12 +408,15 @@ const Page = () => {
     }
 
     // Cheque payment validations
-    if (formData.payment_type === "cheque") {
+    if (
+      formData.payment_type === "cheque" ||
+      formData.payment_type === "both"
+    ) {
       if (!formData.bank_id) {
         errors.bank_id = "Bank selection is required for cheque";
       }
 
-      if (!formData.cheque_no.trim()) {
+      if (!formData.cheque_no || !formData.cheque_no.trim()) {
         errors.cheque_no = "Cheque number is required";
       } else if (formData.cheque_no.trim().length < 3) {
         errors.cheque_no = "Cheque number must be at least 3 characters";
@@ -440,59 +450,54 @@ const Page = () => {
         errors.bank_id = "Bank selection is required for online payment";
       }
 
-      if (!formData.transection_id) {
+      if (!isSelf && !formData.transection_id) {
         errors.transection_id = "Transaction ID is required";
       }
 
       if (!formData.cash_amount) {
         errors.cash_amount = "Amount is required for online payment";
+      } else if (
+        isNaN(formData.cash_amount) ||
+        parseFloat(formData.cash_amount) <= 0
+      ) {
+        errors.cash_amount = "Amount must be a positive number";
       }
     }
 
-    // Customer selection validations (when not self payment)
-    if (!isSelf) {
-      const hasParty = formData.party_id;
-      const hasInvestor = formData.investor_id;
-      const hasProduct = formData.product_id;
-
-      if (!hasParty && !hasInvestor && !hasProduct) {
-        errors.customer_selection =
-          "Please select a party, investor, or product";
-      }
-
-      // Ensure only one customer type is selected
-      const selectedCount = [hasParty, hasInvestor, hasProduct].filter(
-        Boolean
-      ).length;
-      if (selectedCount > 1) {
-        errors.customer_selection = "Please select only one customer type";
-      }
-    } else {
-      // Self payment specific validations
-      if (!formData.bank_id) {
-        errors.bank_id = "Bank selection is required for self payment";
-      }
-    }
-
+    console.log("Validation errors:", errors); // Debug log
     return errors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Debug logs
+    console.log("Form data before validation:", formData);
+    console.log("Active tab:", activeTab);
+    console.log("Is self payment:", isSelf);
+    console.log("Selected party:", selectedParty);
+
     // Clear previous errors
     setFormErrors({});
 
     // Validate form
     const errors = validateForm();
+    console.log("Validation errors found:", errors);
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
 
+      // Create detailed error message
+      const errorMessages = Object.values(errors);
+      const errorText =
+        errorMessages.length > 1
+          ? `Multiple errors found:\n${errorMessages.join("\n")}`
+          : errorMessages[0];
+
       // Show validation error alert
       Swal.fire({
         title: "Validation Error",
-        text: "Please fix the errors in the form before submitting",
+        text: errorText,
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -505,6 +510,8 @@ const Page = () => {
     try {
       let response;
       let requestData = { ...formData };
+
+      console.log("Submitting with data:", requestData);
 
       if (isSelf) {
         requestData = {
@@ -525,6 +532,8 @@ const Page = () => {
             (item.customer_type === "product" &&
               item.id === formData.product_id)
         );
+
+        console.log("Selected item for submission:", selectedItem);
 
         if (selectedItem) {
           switch (selectedItem.customer_type) {
@@ -586,6 +595,7 @@ const Page = () => {
           transection_id: "",
         });
         setFormErrors({});
+        setSelectedParty(null);
 
         setResponseData(response);
         Swal.fire({
@@ -609,6 +619,7 @@ const Page = () => {
     } catch (error) {
       console.error("Error submitting data:", error);
       const errorMessage =
+        error.response?.data?.message ||
         error.response?.message ||
         error.message ||
         "The cash amount cannot be greater than the available company balance";
@@ -617,7 +628,7 @@ const Page = () => {
       setLoadingSubmit(false);
     }
   };
-
+  
   // Show loading if no permissions or still checking
   if (!permissions.hasAccess) {
     return (

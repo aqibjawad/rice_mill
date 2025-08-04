@@ -150,8 +150,12 @@ const Page = () => {
     refetch();
   };
 
-  // Extract table data from Redux response
-  const tableData = investorsData?.data || [];
+  // Extract table data from Redux response and sort alphabetically by person_name
+  const tableData = Array.from(investorsData?.data || []).sort((a, b) => {
+    const nameA = (a.person_name || "").toLowerCase();
+    const nameB = (b.person_name || "").toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
 
   // Calculate total balance
   const totalBalance = tableData.reduce(

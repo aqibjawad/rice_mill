@@ -2,20 +2,20 @@
 import React, { useState, useEffect } from "react";
 import styles from "../../styles/bankCheque.module.css";
 import {
+  Alert,
+  Box,
+  Button,
+  Grid,
+  Paper,
+  Skeleton,
+  styled,
   Table,
   TableBody,
   TableCell,
+  tableCellClasses,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Skeleton,
-  Grid,
-  Button,
-  Box,
-  styled,
-  tableCellClasses,
-  Alert,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useGetbanksQuery } from "@/src/store/banksApi";
@@ -49,17 +49,12 @@ const Page = () => {
   const router = useRouter();
 
   const [openBank, setOpenBank] = useState(false);
-  const handleOpenBank = () => setOpenBank(true);
-  const handleCloseBank = () => {
-    refetchBanks();
-    setOpenBank(false);
-  }
 
   // Permission states
   const [permissions, setPermissions] = useState({
     canAddBanks: false,
     canViewBanks: false,
-    hasAccess: false
+    hasAccess: false,
   });
 
   // Redux Query Hook - only call if user has view permission
@@ -67,15 +62,18 @@ const Page = () => {
     data: banksResponse,
     error: banksError,
     isLoading: banksLoading,
-    refetch: refetchBanks
+    refetch: refetchBanks,
   } = useGetbanksQuery(undefined, {
     skip: !permissions.canViewBanks, // Skip query if no view permission
   });
 
   // Extract data from the response
-  const tableData = banksResponse?.data || [];
+  const error =
+    banksError?.data?.message ||
+    banksError?.error ||
+    (banksError ? "Failed to fetch banks data" : null);
   const loading = banksLoading;
-  const error = banksError?.data?.message || banksError?.error || (banksError ? "Failed to fetch banks data" : null);
+  const tableData = banksResponse?.data || [];
 
   useEffect(() => {
     checkPermissions();
@@ -84,37 +82,39 @@ const Page = () => {
   const checkPermissions = () => {
     try {
       const storedPermissions = localStorage.getItem("permissions");
-      
+
       if (storedPermissions) {
         const parsedPermissions = JSON.parse(storedPermissions);
-        
+
         // Find Banks module permissions
         let canAddBanks = false;
         let canViewBanks = false;
-        
-        if (parsedPermissions.modules && Array.isArray(parsedPermissions.modules)) {
+
+        if (
+          parsedPermissions.modules &&
+          Array.isArray(parsedPermissions.modules)
+        ) {
           const banksModule = parsedPermissions.modules.find(
-            module => module.parent === "Banks" || module.name === "Banks"
+            (module) => module.parent === "Banks" || module.name === "Banks"
           );
-          
+
           if (banksModule && banksModule.permissions) {
             canAddBanks = banksModule.permissions.includes("Add Banks");
             canViewBanks = banksModule.permissions.includes("View Banks");
           }
         }
-        
+
         setPermissions({
           canAddBanks,
           canViewBanks,
-          hasAccess: canAddBanks || canViewBanks
+          hasAccess: canAddBanks || canViewBanks,
         });
-        
       } else {
         // No permissions found - default behavior
         setPermissions({
           canAddBanks: true,
           canViewBanks: true,
-          hasAccess: true
+          hasAccess: true,
         });
       }
     } catch (error) {
@@ -123,31 +123,23 @@ const Page = () => {
       setPermissions({
         canAddBanks: true,
         canViewBanks: true,
-        hasAccess: true
+        hasAccess: true,
       });
     }
   };
 
-  // Handle viewing bank details
-  const handleViewDetails = (id) => {
-    if (!permissions.canViewBanks) {
-      console.warn("No permission to view bank details");
-      return;
-    }
-    
-    localStorage.setItem("selectedRowId", id);
-    router.push("/bankDetails");
+  // Handle successful bank addition - refetch data
+  const handleBankAdded = () => {
+    refetchBanks();
+    handleCloseBank();
   };
 
-  const handleViewLedger = (id) => {
-    if (!permissions.canViewBanks) {
-      console.warn("No permission to view bank ledger");
-      return;
-    }
-    
-    localStorage.setItem("selectedRowId", id);
-    router.push("/bankLedger");
+  const handleCloseBank = () => {
+    refetchBanks();
+    setOpenBank(false);
   };
+
+  const handleOpenBank = () => setOpenBank(true);
 
   // Handle Add Bank with permission check
   const handleOpenBankWithPermission = () => {
@@ -158,10 +150,25 @@ const Page = () => {
     }
   };
 
-  // Handle successful bank addition - refetch data
-  const handleBankAdded = () => {
-    refetchBanks();
-    handleCloseBank();
+  // Handle viewing bank details
+  const handleViewDetails = (id) => {
+    if (!permissions.canViewBanks) {
+      console.warn("No permission to view bank details");
+      return;
+    }
+
+    localStorage.setItem("selectedRowId", id);
+    router.push("/bankDetails");
+  };
+
+  const handleViewLedger = (id) => {
+    if (!permissions.canViewBanks) {
+      console.warn("No permission to view bank ledger");
+      return;
+    }
+
+    localStorage.setItem("selectedRowId", id);
+    router.push("/bankLedger");
   };
 
   // Show access denied message if user has no permissions
@@ -227,9 +234,9 @@ const Page = () => {
             {error && (
               <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
                 Error loading banks data: {error}
-                <Button 
-                  size="small" 
-                  onClick={() => refetchBanks()} 
+                <Button
+                  size="small"
+                  onClick={() => refetchBanks()}
                   sx={{ ml: 2 }}
                 >
                   Retry
@@ -248,56 +255,62 @@ const Page = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {loading
-                    ? [...Array(5)].map((_, index) => (
-                        <StyledTableRow key={index}>
-                          <StyledTableCell>
-                            <Skeleton variant="text" width={30} />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant="text" width={120} />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant="text" width={100} />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant="text" width={150} />
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      ))
-                    : error && !tableData.length
-                    ? (
-                        <StyledTableRow>
-                          <StyledTableCell colSpan={4} style={{ textAlign: 'center' }}>
-                            Unable to load banks data. Please try again.
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      )
-                    : tableData.length === 0
-                    ? (
-                        <StyledTableRow>
-                          <StyledTableCell colSpan={4} style={{ textAlign: 'center' }}>
-                            No banks data available
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      )
-                    : tableData.map((row, index) => (
-                        <StyledTableRow key={row.id}>
-                          <StyledTableCell>{index + 1}</StyledTableCell>
-                          <StyledTableCell>{row.bank_name}</StyledTableCell>
-                          <StyledTableCell>{row.balance || "N/A"}</StyledTableCell>
-                          <StyledTableCell>
-                            <Button 
-                              onClick={() => handleViewLedger(row.id)}
-                              disabled={!permissions.canViewBanks}
-                              variant="outlined"
-                              size="small"
-                            >
-                              View Ledger
-                            </Button>
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      ))}
+                  {loading ? (
+                    [...Array(5)].map((_, index) => (
+                      <StyledTableRow key={index}>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={30} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={120} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={100} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={150} />
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    ))
+                  ) : error && !tableData.length ? (
+                    <StyledTableRow>
+                      <StyledTableCell
+                        colSpan={4}
+                        style={{ textAlign: "center" }}
+                      >
+                        Unable to load banks data. Please try again.
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ) : tableData.length === 0 ? (
+                    <StyledTableRow>
+                      <StyledTableCell
+                        colSpan={4}
+                        style={{ textAlign: "center" }}
+                      >
+                        No banks data available
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ) : (
+                    tableData.map((row, index) => (
+                      <StyledTableRow key={row.id}>
+                        <StyledTableCell>{index + 1}</StyledTableCell>
+                        <StyledTableCell>{row.bank_name}</StyledTableCell>
+                        <StyledTableCell>
+                          {row.balance || "N/A"}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Button
+                            onClick={() => handleViewLedger(row.id)}
+                            disabled={!permissions.canViewBanks}
+                            variant="outlined"
+                            size="small"
+                          >
+                            View Ledger
+                          </Button>
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -307,8 +320,8 @@ const Page = () => {
 
       {/* Only render AddBank modal if user has add permission */}
       {permissions.canAddBanks && (
-        <AddBank 
-          openBank={openBank} 
+        <AddBank
+          openBank={openBank}
           handleCloseBank={handleCloseBank}
           onBankAdded={handleBankAdded} // Pass callback to refresh data after adding
         />

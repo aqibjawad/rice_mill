@@ -17,8 +17,13 @@ import {
   Button,
   tableCellClasses,
   styled,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  TextField,
 } from "@mui/material";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete, MdEdit, MdSort } from "react-icons/md";
 import AddProduct from "../../components/stock/addProduct";
 import Swal from "sweetalert2";
 import Link from "next/link";
@@ -53,6 +58,10 @@ const Page = () => {
   const [open, setOpen] = useState(false);
   const [editingData, setEditingData] = useState(null);
 
+  // Sorting and filtering states
+  const [sortOrder, setSortOrder] = useState("asc"); // "asc" for A-Z, "desc" for Z-A
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Permission states
   const [permissions, setPermissions] = useState({
     canAddProducts: false,
@@ -70,8 +79,34 @@ const Page = () => {
     skip: !permissions.canViewProducts, // Skip query if no view permission
   });
 
-  // Extract table data from Redux response
+  // Extract and sort table data from Redux response
   const tableData = productsData?.data || [];
+
+  // Function to sort and filter products
+  const getSortedAndFilteredData = () => {
+    let filteredData = tableData;
+
+    // Filter by search term
+    if (searchTerm) {
+      filteredData = tableData.filter((product) =>
+        product.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Sort alphabetically
+    const sortedData = [...filteredData].sort((a, b) => {
+      const nameA = a.product_name.toLowerCase();
+      const nameB = b.product_name.toLowerCase();
+
+      if (sortOrder === "asc") {
+        return nameA.localeCompare(nameB);
+      } else {
+        return nameB.localeCompare(nameA);
+      }
+    });
+
+    return sortedData;
+  };
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -194,6 +229,18 @@ const Page = () => {
     }
   };
 
+  // Handle sort order change
+  const handleSortChange = (event) => {
+    setSortOrder(event.target.value);
+  };
+
+  // Handle search
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const sortedAndFilteredData = getSortedAndFilteredData();
+
   return (
     <div>
       <Box sx={{ p: 3 }}>
@@ -239,87 +286,144 @@ const Page = () => {
           )}
         </Grid>
 
-        {/* Show table only if user has View Products permission */}
+        {/* Show filters and table only if user has View Products permission */}
         {permissions.canViewProducts && (
-          <TableContainer className="mt-5" component={Paper} elevation={3}>
-            <Table sx={{ minWidth: 700 }}>
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Sr No</StyledTableCell>
-                  <StyledTableCell>Product Name</StyledTableCell>
-                  <StyledTableCell>Weight in Stock</StyledTableCell>
-                  <StyledTableCell>Balance</StyledTableCell>
-                  <StyledTableCell>View</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {isLoading ? (
-                  [...Array(5)].map((_, index) => (
-                    <StyledTableRow key={index}>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={30} />
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={120} />
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={100} />
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={150} />
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Skeleton variant="text" width={150} />
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  ))
-                ) : error ? (
-                  <StyledTableRow>
-                    <StyledTableCell
-                      colSpan={permissions.canAddProducts ? 6 : 5}
-                      style={{ textAlign: "center" }}
+          <>
+            {/* Filters Section */}
+            <Box sx={{ mt: 3, mb: 2 }}>
+              <Grid container spacing={2} alignItems="center">
+                {/* Search Box */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Search Products"
+                    variant="outlined"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    placeholder="Type product name..."
+                    size="small"
+                  />
+                </Grid>
+
+                {/* Sort Dropdown */}
+                <Grid item xs={12} md={3}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Sort By Name</InputLabel>
+                    <Select
+                      value={sortOrder}
+                      label="Sort By Name"
+                      onChange={handleSortChange}
                     >
-                      Error: {error.message || "Failed to load products"}
+                      <MenuItem value="asc">A to Z</MenuItem>
+                      <MenuItem value="desc">Z to A</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                {/* Results Count */}
+                <Grid item xs={12} md={3}>
+                  <Box
+                    sx={{
+                      textAlign: { xs: "left", md: "right" },
+                      color: "text.secondary",
+                    }}
+                  >
+                    Showing {sortedAndFilteredData.length} of {tableData.length}{" "}
+                    products
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+
+            <TableContainer className="mt-5" component={Paper} elevation={3}>
+              <Table sx={{ minWidth: 700 }}>
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>Sr No</StyledTableCell>
+                    <StyledTableCell>
+                      Product Name
+                      <IconButton size="small" sx={{ ml: 1, color: "white" }}>
+                        <MdSort />
+                      </IconButton>
                     </StyledTableCell>
-                  </StyledTableRow>
-                ) : tableData.length === 0 ? (
-                  <StyledTableRow>
-                    <StyledTableCell
-                      colSpan={permissions.canAddProducts ? 6 : 5}
-                      style={{ textAlign: "center" }}
-                    >
-                      No products data available
-                    </StyledTableCell>
-                  </StyledTableRow>
-                ) : (
-                  tableData.map((row, index) => {
-                    const stock = row.company_product_stocks?.[0] || {}; // Stock ka pehla element ya empty object
-                    return (
-                      <StyledTableRow key={row.id}>
-                        <StyledTableCell>{index + 1}</StyledTableCell>
-                        <StyledTableCell>{row.product_name}</StyledTableCell>
+                    <StyledTableCell>Weight in Stock</StyledTableCell>
+                    <StyledTableCell>Balance</StyledTableCell>
+                    <StyledTableCell>View</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {isLoading ? (
+                    [...Array(5)].map((_, index) => (
+                      <StyledTableRow key={index}>
                         <StyledTableCell>
-                          {stock.remaining_weight || "N/A"}
+                          <Skeleton variant="text" width={30} />
                         </StyledTableCell>
                         <StyledTableCell>
-                          {stock.balance || "N/A"}
+                          <Skeleton variant="text" width={120} />
                         </StyledTableCell>
                         <StyledTableCell>
-                          {permissions.canViewProducts ? (
-                            <Link href={`/productDetails/?id=${row.id}`}>
-                              View Details
-                            </Link>
-                          ) : (
-                            <span style={{ color: "#ccc" }}>View Details</span>
-                          )}
+                          <Skeleton variant="text" width={100} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={150} />
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          <Skeleton variant="text" width={150} />
                         </StyledTableCell>
                       </StyledTableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                    ))
+                  ) : error ? (
+                    <StyledTableRow>
+                      <StyledTableCell
+                        colSpan={permissions.canAddProducts ? 6 : 5}
+                        style={{ textAlign: "center" }}
+                      >
+                        Error: {error.message || "Failed to load products"}
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ) : sortedAndFilteredData.length === 0 ? (
+                    <StyledTableRow>
+                      <StyledTableCell
+                        colSpan={permissions.canAddProducts ? 6 : 5}
+                        style={{ textAlign: "center" }}
+                      >
+                        {searchTerm
+                          ? "No products found matching your search"
+                          : "No products data available"}
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ) : (
+                    sortedAndFilteredData.map((row, index) => {
+                      const stock = row.company_product_stocks?.[0] || {}; // Stock ka pehla element ya empty object
+                      return (
+                        <StyledTableRow key={row.id}>
+                          <StyledTableCell>{index + 1}</StyledTableCell>
+                          <StyledTableCell>{row.product_name}</StyledTableCell>
+                          <StyledTableCell>
+                            {stock.remaining_weight || "N/A"}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {stock.balance || "N/A"}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {permissions.canViewProducts ? (
+                              <Link href={`/productDetails/?id=${row.id}`}>
+                                View Details
+                              </Link>
+                            ) : (
+                              <span style={{ color: "#ccc" }}>
+                                View Details
+                              </span>
+                            )}
+                          </StyledTableCell>
+                        </StyledTableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
         )}
       </Box>
 
