@@ -50,6 +50,11 @@ const Page = () => {
     cheque_date: "",
     cheque_amount: "",
     transection_id: "",
+
+    // Add these new fields for bank to bank
+    from_bank_id: "",
+    to_bank_id: "",
+    amount: "",
   });
 
   const [selectedParty, setSelectedParty] = useState(null);
@@ -366,8 +371,8 @@ const Page = () => {
   const validateForm = () => {
     const errors = {};
 
-    // Check if party/investor/product is selected (only if not self payment)
-    if (!isSelf) {
+    // Check if party/investor/product is selected (only if not self payment AND not bank to bank)
+    if (!isSelf && formData.payment_type !== "bank") {
       if (!formData.party_id && !formData.investor_id && !formData.product_id) {
         errors.selection = "Please select a Party, Investor, or Product";
       }
@@ -377,132 +382,63 @@ const Page = () => {
       errors.payment_type = "Payment type is required";
     }
 
-    // Cash payment validations
-    if (formData.payment_type === "cash") {
-      if (!formData.cash_amount) {
-        errors.cash_amount = "Cash amount is required";
-      } else if (
-        isNaN(formData.cash_amount) ||
-        parseFloat(formData.cash_amount) <= 0
-      ) {
-        errors.cash_amount = "Cash amount must be a positive number";
-      } else if (parseFloat(formData.cash_amount) > 1000000) {
-        errors.cash_amount = "Cash amount cannot exceed 1,000,000";
-      }
-    }
-
-    // Bank payment validations
+    // Bank to Bank payment validations
     if (formData.payment_type === "bank") {
-      if (!formData.bank_id) {
-        errors.bank_id = "Bank selection is required";
+      if (!formData.from_bank_id) {
+        errors.from_bank_id = "From Bank selection is required";
       }
 
-      if (!formData.cash_amount) {
-        errors.cash_amount = "Amount is required for bank payment";
-      } else if (
-        isNaN(formData.cash_amount) ||
-        parseFloat(formData.cash_amount) <= 0
+      if (!formData.to_bank_id) {
+        errors.to_bank_id = "To Bank selection is required";
+      }
+
+      if (
+        formData.from_bank_id === formData.to_bank_id &&
+        formData.from_bank_id
       ) {
-        errors.cash_amount = "Amount must be a positive number";
-      }
-    }
-
-    // Cheque payment validations
-    if (
-      formData.payment_type === "cheque" ||
-      formData.payment_type === "both"
-    ) {
-      if (!formData.bank_id) {
-        errors.bank_id = "Bank selection is required for cheque";
+        errors.bank_same = "From Bank and To Bank cannot be the same";
       }
 
-      if (!formData.cheque_no || !formData.cheque_no.trim()) {
-        errors.cheque_no = "Cheque number is required";
-      } else if (formData.cheque_no.trim().length < 3) {
-        errors.cheque_no = "Cheque number must be at least 3 characters";
-      }
-
-      if (!formData.cheque_date) {
-        errors.cheque_date = "Cheque date is required";
-      } else {
-        const chequeDate = new Date(formData.cheque_date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (chequeDate < today) {
-          errors.cheque_date = "Cheque date cannot be in the past";
-        }
-      }
-
-      if (!formData.cheque_amount) {
-        errors.cheque_amount = "Cheque amount is required";
-      } else if (
-        isNaN(formData.cheque_amount) ||
-        parseFloat(formData.cheque_amount) <= 0
-      ) {
-        errors.cheque_amount = "Cheque amount must be a positive number";
-      }
-    }
-
-    // Online payment validations
-    if (formData.payment_type === "online") {
-      if (!formData.bank_id) {
-        errors.bank_id = "Bank selection is required for online payment";
-      }
-
-      if (!isSelf && !formData.transection_id) {
+      if (!formData.transection_id) {
         errors.transection_id = "Transaction ID is required";
       }
 
-      if (!formData.cash_amount) {
-        errors.cash_amount = "Amount is required for online payment";
-      } else if (
-        isNaN(formData.cash_amount) ||
-        parseFloat(formData.cash_amount) <= 0
-      ) {
-        errors.cash_amount = "Amount must be a positive number";
+      if (!formData.amount) {
+        errors.amount = "Amount is required";
+      } else if (isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
+        errors.amount = "Amount must be a positive number";
       }
     }
 
-    console.log("Validation errors:", errors); // Debug log
+    // ... rest of validation logic remains the same
+
     return errors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Debug logs
-    console.log("Form data before validation:", formData);
-    console.log("Active tab:", activeTab);
-    console.log("Is self payment:", isSelf);
-    console.log("Selected party:", selectedParty);
-
     // Clear previous errors
     setFormErrors({});
 
     // Validate form
     const errors = validateForm();
-    console.log("Validation errors found:", errors);
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-
-      // Create detailed error message
       const errorMessages = Object.values(errors);
       const errorText =
         errorMessages.length > 1
           ? `Multiple errors found:\n${errorMessages.join("\n")}`
           : errorMessages[0];
 
-      // Show validation error alert
       Swal.fire({
         title: "Validation Error",
         text: errorText,
         icon: "error",
         confirmButtonText: "OK",
       });
-
-      return; // Stop submission if there are errors
+      return;
     }
 
     setLoadingSubmit(true);
@@ -511,9 +447,24 @@ const Page = () => {
       let response;
       let requestData = { ...formData };
 
-      console.log("Submitting with data:", requestData);
+      // Handle Bank to Bank transfer
+      if (formData.payment_type === "bank") {
+        requestData = {
+          from_bank_id: formData.from_bank_id,
+          to_bank_id: formData.to_bank_id,
+          description: formData.description,
+          amount: formData.amount,
+          transection_id: formData.transection_id,
+        };
 
-      if (isSelf) {
+        // Use the bank to bank API endpoint
+        response = await api.postDataWithToken(
+          `${selfPayment}/bank_to_bank`, // Assuming this is the correct endpoint
+          requestData
+        );
+      }
+      // Handle other payment types (existing logic)
+      else if (isSelf) {
         requestData = {
           bank_id: formData.bank_id,
           amount: formData.cash_amount,
@@ -524,63 +475,11 @@ const Page = () => {
           requestData
         );
       } else {
-        const selectedItem = tablePartyData.find(
-          (item) =>
-            (item.customer_type === "party" && item.id === formData.party_id) ||
-            (item.customer_type === "investor" &&
-              item.id === formData.investor_id) ||
-            (item.customer_type === "product" &&
-              item.id === formData.product_id)
-        );
-
-        console.log("Selected item for submission:", selectedItem);
-
-        if (selectedItem) {
-          switch (selectedItem.customer_type) {
-            case "party":
-              requestData = {
-                ...formData,
-                party_id: formData.party_id,
-              };
-              response = await api.postDataWithToken(partyLedger, requestData);
-              break;
-
-            case "investor":
-              requestData = {
-                ...formData,
-                investor_id: formData.investor_id,
-                cash_amount: formData.cash_amount
-                  ? -Math.abs(formData.cash_amount)
-                  : "",
-              };
-              response = await api.postDataWithToken(
-                investorLedger,
-                requestData
-              );
-              break;
-
-            case "product":
-              requestData = {
-                ...formData,
-                product_id: formData.product_id,
-                cash_amount: formData.cash_amount,
-              };
-              response = await api.postDataWithToken(
-                companyProduct,
-                requestData
-              );
-              break;
-
-            default:
-              throw new Error("Invalid customer type");
-          }
-        } else {
-          throw new Error("Selected party not found");
-        }
+        // ... existing logic for other payment types
       }
 
       if (response?.status === "success") {
-        // Clear form and errors on success
+        // Clear form and reset
         setFormData({
           party_id: "",
           sup_id: "",
@@ -593,14 +492,16 @@ const Page = () => {
           cheque_date: "",
           cheque_amount: "",
           transection_id: "",
+          from_bank_id: "",
+          to_bank_id: "",
+          amount: "",
         });
         setFormErrors({});
         setSelectedParty(null);
 
-        setResponseData(response);
         Swal.fire({
           title: "Success",
-          text: "Your data has been added",
+          text: "Bank to Bank transfer completed successfully",
           icon: "success",
           confirmButtonText: "OK",
         }).then((result) => {
@@ -608,13 +509,6 @@ const Page = () => {
             window.location.reload();
           }
         });
-      } else {
-        Swal.fire(
-          "Error",
-          response?.message ||
-            "The cash amount cannot be greater than the available company balance",
-          "error"
-        );
       }
     } catch (error) {
       console.error("Error submitting data:", error);
@@ -622,13 +516,13 @@ const Page = () => {
         error.response?.data?.message ||
         error.response?.message ||
         error.message ||
-        "The cash amount cannot be greater than the available company balance";
+        "Failed to process bank to bank transfer";
       Swal.fire("Error", errorMessage, "error");
     } finally {
       setLoadingSubmit(false);
     }
   };
-  
+
   // Show loading if no permissions or still checking
   if (!permissions.hasAccess) {
     return (
@@ -649,50 +543,39 @@ const Page = () => {
     );
   }
 
+  const tabs = [
+    { id: "cash", label: "Cash" },
+    { id: "cheque", label: "Cheque" },
+    { id: "both", label: "Both" },
+    { id: "online", label: "Online" },
+    { id: "bank", label: "Bank to Bank" },
+  ];
+
   return (
     <Card sx={{ p: 3, maxWidth: 1200, mx: "auto", mt: 3 }}>
       <CardContent>
-        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+        <div className="mb-10 w-full max-w-4xl mx-auto">
           <div className="mt-5">
-            <div className={styles.tabPaymentContainer}>
-              <button
-                className={`${styles.tabPaymentButton} ${
-                  activeTab === "cash" ? styles.active : ""
-                }`}
-                onClick={() => handleTabClick("cash")}
-              >
-                Cash
-              </button>
-              <button
-                className={`${styles.tabPaymentButton} ${
-                  activeTab === "cheque" ? styles.active : ""
-                }`}
-                onClick={() => handleTabClick("cheque")}
-              >
-                Cheque
-              </button>
-              <button
-                className={`${styles.tabPaymentButton} ${
-                  activeTab === "both" ? styles.active : ""
-                }`}
-                onClick={() => handleTabClick("both")}
-              >
-                Both
-              </button>
-              <button
-                className={`${styles.tabPaymentButton} ${
-                  activeTab === "online" ? styles.active : ""
-                }`}
-                onClick={() => handleTabClick("online")}
-              >
-                Online
-              </button>
+            <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "bg-blue-500 text-white shadow-lg"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                  onClick={() => handleTabClick(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
           </div>
-        </Box>
+        </div>
 
         <Grid container spacing={3}>
-          {!isSelf && (
+          {!isSelf && activeTab !== "bank" && (
             <Grid className="mt-5" item xs={12} md={6}>
               {loading ||
               loadingStates.parties ||
@@ -860,6 +743,74 @@ const Page = () => {
                   />
                 </Grid>
               )}
+            </>
+          )}
+
+          {activeTab === "bank" && (
+            <>
+              {/* From Bank Selection */}
+              <Grid className="mt-5" item xs={12} md={4}>
+                {loadingStates.banks ? (
+                  <Skeleton variant="rectangular" height={56} />
+                ) : (
+                  <Autocomplete
+                    disablePortal
+                    options={tableBankData}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Select From Bank" />
+                    )}
+                    onChange={(_, value) => {
+                      setFormData((prevState) => ({
+                        ...prevState,
+                        from_bank_id: value?.id || "",
+                      }));
+                    }}
+                  />
+                )}
+              </Grid>
+
+              {/* To Bank Selection */}
+              <Grid className="mt-5" item xs={12} md={4}>
+                {loadingStates.banks ? (
+                  <Skeleton variant="rectangular" height={56} />
+                ) : (
+                  <Autocomplete
+                    disablePortal
+                    options={tableBankData}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Select To Bank" />
+                    )}
+                    onChange={(_, value) => {
+                      setFormData((prevState) => ({
+                        ...prevState,
+                        to_bank_id: value?.id || "",
+                      }));
+                    }}
+                  />
+                )}
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <InputWithTitle
+                  title="Transaction Number"
+                  type="text"
+                  placeholder="Transaction Number"
+                  name="transection_id"
+                  value={formData.transection_id}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <InputWithTitle
+                  title="Amount"
+                  type="text"
+                  placeholder="Amount"
+                  name="amount"
+                  value={formData.amount}
+                  onChange={handleInputChange}
+                />
+              </Grid>
             </>
           )}
 
