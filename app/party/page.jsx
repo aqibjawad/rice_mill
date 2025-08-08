@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Skeleton,
   Table,
@@ -18,7 +18,7 @@ import {
   styled,
 } from "@mui/material";
 import AddBuyer from "../../components/stock/addBuyer";
-import { useGetpartiesQuery } from "@/src/store/partyApi"; // Import the Redux hook
+import { useGetpartiesQuery } from "@/src/store/partyApi";
 import Swal from "sweetalert2";
 import { FaPlus } from "react-icons/fa";
 
@@ -44,7 +44,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:hover": {
     backgroundColor: theme.palette.action.selected,
   },
-  // hide last border
   "&:last-child td, &:last-child th": {
     border: 0,
   },
@@ -86,7 +85,6 @@ const Page = () => {
   const [open, setOpen] = useState(false);
   const [editingData, setEditingData] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredData, setFilteredData] = useState([]);
 
   // Permission states
   const [permissions, setPermissions] = useState({
@@ -95,44 +93,42 @@ const Page = () => {
     hasAccess: false,
   });
 
-  // Extract table data from Redux response and sort alphabetically by person_name
-  const tableData = Array.from(apiResponse?.data || []).sort((a, b) => {
-    const nameA = (a.person_name || "").toLowerCase();
-    const nameB = (b.person_name || "").toLowerCase();
-    return nameA.localeCompare(nameB);
-  });
+  // Memoize sorted table data to prevent unnecessary recalculations
+  const tableData = useMemo(() => {
+    if (!apiResponse?.data) return [];
+    
+    return [...apiResponse.data].sort((a, b) => {
+      const nameA = (a.person_name || "").toLowerCase();
+      const nameB = (b.person_name || "").toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }, [apiResponse?.data]);
+
+  // Memoize filtered data
+  const filteredData = useMemo(() => {
+    if (searchQuery.trim() === "") {
+      return tableData;
+    }
+    
+    return tableData.filter((item) =>
+      item.person_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, tableData]);
 
   const error = apiError?.message || null;
 
+  // Check permissions only once on mount
   useEffect(() => {
     checkPermissions();
   }, []);
 
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredData(tableData);
-    } else {
-      const filtered = tableData.filter((item) =>
-        item.person_name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      // Also sort the filtered data alphabetically
-      const sortedFiltered = filtered.sort((a, b) => {
-        const nameA = (a.person_name || "").toLowerCase();
-        const nameB = (b.person_name || "").toLowerCase();
-        return nameA.localeCompare(nameB);
-      });
-      setFilteredData(sortedFiltered);
-    }
-  }, [searchQuery, tableData]);
-
-  const checkPermissions = () => {
+  const checkPermissions = useCallback(() => {
     try {
       const storedPermissions = localStorage.getItem("permissions");
 
       if (storedPermissions) {
         const parsedPermissions = JSON.parse(storedPermissions);
 
-        // Find Party module permissions
         let canAddParty = false;
         let canViewParty = false;
 
@@ -156,7 +152,6 @@ const Page = () => {
           hasAccess: canAddParty || canViewParty,
         });
       } else {
-        // No permissions found - default behavior
         setPermissions({
           canAddParty: true,
           canViewParty: true,
@@ -165,32 +160,30 @@ const Page = () => {
       }
     } catch (error) {
       console.error("Error parsing permissions:", error);
-      // Default to showing all on error
       setPermissions({
         canAddParty: true,
         canViewParty: true,
         hasAccess: true,
       });
     }
-  };
+  }, []);
 
-  const handleOpen = () => setOpen(true);
+  const handleOpen = useCallback(() => setOpen(true), []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
     setEditingData(null);
-    // Use refetch instead of fetchData
     refetch();
-  };
+  }, [refetch]);
 
-  const handleSearch = (value) => {
+  const handleSearch = useCallback((value) => {
     setSearchQuery(value);
-  };
+  }, []);
 
-  const handleViewDetails = (id) => {
+  const handleViewDetails = useCallback((id) => {
     localStorage.setItem("partyId", id);
     router.push("/partyLedger");
-  };
+  }, [router]);
 
   // Show error message if API call fails
   if (apiError) {
@@ -278,13 +271,6 @@ const Page = () => {
                         <StyledTableCell align="right">
                           <Skeleton variant="text" width={80} />
                         </StyledTableCell>
-                        <StyledTableCell align="right">
-                          <Skeleton
-                            variant="rectangular"
-                            width={50}
-                            height={25}
-                          />
-                        </StyledTableCell>
                       </StyledTableRow>
                     ))
                   : filteredData.map((row, index) => (
@@ -309,17 +295,15 @@ const Page = () => {
                           {row.current_balance}
                         </StyledTableCell>
                         <StyledTableCell>
-                          <div
-                            style={{
+                          <Button 
+                            onClick={() => handleViewDetails(row.id)}
+                            sx={{
                               color: "#316AFF",
                               fontSize: "15px",
-                              marginTop: "1rem",
                             }}
                           >
-                            <Button onClick={() => handleViewDetails(row.id)}>
-                              View Details
-                            </Button>
-                          </div>
+                            View Details
+                          </Button>
                         </StyledTableCell>
                       </StyledTableRow>
                     ))}
